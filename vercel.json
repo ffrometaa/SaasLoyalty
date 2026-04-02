@@ -1,3 +1,5 @@
 {
-  "packageManager": "pnpm@9.0.0"
+  "installCommand": "cd ../.. && pnpm install",
+  "buildCommand": "cd ../.. && pnpm turbo build --filter=@loyalty-os/web",
+  "outputDirectory": ".next"
 }
