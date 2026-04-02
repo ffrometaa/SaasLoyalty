@@ -1,0 +1,8 @@
+{
+  "packageManager": "pnpm"
+}
+```
+
+Y también asegurate de tener en la raíz un archivo llamado `.npmrc` con:
+```
+enable-pre-post-scripts=true
