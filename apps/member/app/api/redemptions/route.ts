@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib';
+import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 
 // GET /api/member/redemptions - Get member's redemptions
 export async function GET(request: NextRequest) {

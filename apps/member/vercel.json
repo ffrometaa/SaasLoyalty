@@ -1,0 +1,10 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "cd ../.. && pnpm turbo build --filter=@loyalty-os/member",
+  "devCommand": "npm run dev",
+  "installCommand": "cd ../.. && pnpm install",
+  "regions": ["iad1"],
+  "github": {
+    "silent": true
+  }
+}

@@ -1,5 +1,5 @@
 import { Users, Gift, TrendingUp, Calendar } from 'lucide-react';
-import { MetricCard } from '../components/MetricCard';
+import { MetricCard } from '../../components/MetricCard';
 
 export default function DashboardPage() {
   return (

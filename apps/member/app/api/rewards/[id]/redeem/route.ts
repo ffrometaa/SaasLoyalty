@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib';
+import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 
 // POST /api/member/rewards/[id]/redeem - Create a redemption
 export async function POST(

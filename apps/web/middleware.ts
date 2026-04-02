@@ -75,7 +75,8 @@ export async function middleware(request: NextRequest) {
   const isApiRoute = pathname.startsWith('/api');
 
   // Get the current session
-  const { data: { session } } = await supabase.auth.getSession();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: { session } } = await (supabase.auth as any).getSession();
 
   // Protected routes
   const protectedRoutes = ['/dashboard', '/settings', '/members', '/rewards', '/campaigns', '/analytics'];

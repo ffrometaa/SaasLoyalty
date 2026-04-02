@@ -29,6 +29,7 @@
       "@loyalty-os/email": ["./packages/email/src"],
       "@loyalty-os/email/*": ["./packages/email/src/*"],
       "@loyalty-os/lib": ["./packages/lib/src"],
+      "@loyalty-os/lib/server": ["./packages/lib/src/server"],
       "@loyalty-os/lib/*": ["./packages/lib/src/*"]
     }
   },

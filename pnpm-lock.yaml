@@ -29,6 +29,9 @@ importers:
       '@loyalty-os/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@loyalty-os/lib':
+        specifier: workspace:*
+        version: link:../../packages/lib
       '@loyalty-os/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -114,6 +117,9 @@ importers:
       '@loyalty-os/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@loyalty-os/lib':
+        specifier: workspace:*
+        version: link:../../packages/lib
       '@loyalty-os/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -243,6 +249,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.45.0
         version: 2.101.1
+      next:
+        specifier: '>=14.0.0'
+        version: 14.2.35(@babel/core@7.29.0)(@playwright/test@1.59.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
   packages/ui:
     dependencies:

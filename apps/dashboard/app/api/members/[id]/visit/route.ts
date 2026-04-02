@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib';
+import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 
 // POST /api/members/[id]/visit - Register a visit (earn points)
 export async function POST(

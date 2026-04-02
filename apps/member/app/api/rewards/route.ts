@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib';
+import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 
 // GET /api/member/rewards - Get rewards for member's tenant
 export async function GET(request: NextRequest) {
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 
     // Filter by valid dates if set
     const now = new Date();
-    const activeRewards = (rewards || []).filter(reward => {
+    const activeRewards = (rewards || []).filter((reward: any) => {
       if (reward.valid_from && new Date(reward.valid_from) > now) return false;
       if (reward.valid_until && new Date(reward.valid_until) < now) return false;
       if (reward.max_redemptions && reward.redemption_count >= reward.max_redemptions) return false;

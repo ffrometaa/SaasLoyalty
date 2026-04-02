@@ -1,8 +1,8 @@
 {
   "framework": "nextjs",
-  "buildCommand": "npm run build",
+  "buildCommand": "cd ../.. && pnpm turbo build --filter=@loyalty-os/dashboard",
   "devCommand": "npm run dev",
-  "installCommand": "npm install",
+  "installCommand": "cd ../.. && pnpm install",
   "regions": ["iad1"],
   "github": {
     "silent": true

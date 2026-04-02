@@ -242,8 +242,8 @@ function RewardModal({
     onSubmit({
       name: formData.name,
       description: formData.description,
-      pointsRequired: parseInt(formData.pointsRequired),
-      maxRedemptions: formData.maxRedemptions ? parseInt(formData.maxRedemptions) : null,
+      pointsRequired: parseInt(String(formData.pointsRequired)),
+      maxRedemptions: formData.maxRedemptions ? parseInt(String(formData.maxRedemptions)) : null,
       validUntil: formData.validUntil || null,
       isActive: formData.isActive,
     });

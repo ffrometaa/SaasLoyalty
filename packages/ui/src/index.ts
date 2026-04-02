@@ -1,5 +1,5 @@
-export { Button, buttonVariants } from './button';
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from './card';
-export { Input } from './input';
-export { Label } from './label';
+export { Button, buttonVariants } from './components/button';
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from './components/card';
+export { Input } from './components/input';
+export { Label } from './components/label';
 export { cn } from './utils';

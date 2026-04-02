@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib';
+import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       .eq('type', 'redeem')
       .gte('created_at', startOfMonth.toISOString());
 
-    const pointsRedeemedThisMonth = redemptionsThisMonth?.reduce((sum, t) => sum + Math.abs(t.points), 0) || 0;
+    const pointsRedeemedThisMonth = redemptionsThisMonth?.reduce((sum: number, t: { points: number }) => sum + Math.abs(t.points), 0) || 0;
 
     // Points redeemed last month
     const { data: redemptionsLastMonth } = await supabase
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       .gte('created_at', startOfLastMonth.toISOString())
       .lte('created_at', endOfLastMonth.toISOString());
 
-    const pointsRedeemedLastMonth = redemptionsLastMonth?.reduce((sum, t) => sum + Math.abs(t.points), 0) || 0;
+    const pointsRedeemedLastMonth = redemptionsLastMonth?.reduce((sum: number, t: { points: number }) => sum + Math.abs(t.points), 0) || 0;
 
     // Retention rate (active / total members ever created)
     const { count: totalMembersEver } = await supabase
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate changes
     const visitsChange = visitsLastMonth ? 
-      Math.round(((visitsThisMonth || 0) - visitsLastMonth) / visitsLastMonth * 100 : 0;
+      Math.round(((visitsThisMonth || 0) - visitsLastMonth) / visitsLastMonth * 100) : 0;
     
     const pointsChange = pointsRedeemedLastMonth ? 
       Math.round((pointsRedeemedThisMonth - pointsRedeemedLastMonth) / pointsRedeemedLastMonth * 100) : 0;

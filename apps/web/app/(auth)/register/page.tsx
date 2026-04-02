@@ -29,7 +29,7 @@ export default function RegisterPage() {
     
     // Auto-generate slug from business name
     if (field === 'businessName') {
-      const slug = value
+      const slug = (value as string)
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '');

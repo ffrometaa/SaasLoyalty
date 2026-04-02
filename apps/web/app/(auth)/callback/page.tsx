@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getSupabaseClient } from '@loyalty-os/lib';
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +19,7 @@ export default function AuthCallbackPage() {
       const next = searchParams.get('next') ?? '/dashboard';
 
       if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        const { error } = await (supabase.auth as any).exchangeCodeForSession(code);
         
         if (error) {
           setError(error.message);
@@ -32,7 +32,7 @@ export default function AuthCallbackPage() {
         router.refresh();
       } else {
         // No code, try to get session directly
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await (supabase.auth as any).getSession();
         
         if (sessionError || !session) {
           setError('Invalid or expired link');
@@ -86,5 +86,22 @@ export default function AuthCallbackPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="text-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent mx-auto" />
+            <h2 className="auth-title mt-4">Signing you in...</h2>
+          </div>
+        </div>
+      </div>
+    }>
+      <AuthCallbackContent />
+    </Suspense>
   );
 }

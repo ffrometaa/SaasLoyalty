@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib';
+import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -83,7 +83,6 @@ export async function POST(request: NextRequest) {
       automatic_tax: {
         enabled: true,
       },
-      tax_code: 'txcd_10103001', // SaaS
       metadata: {
         tenant_slug: slug,
         business_name: businessName,
