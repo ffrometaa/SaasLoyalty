@@ -1,0 +1,16 @@
+{
+  "name": "@loyalty-os/db",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "migrate": "supabase db push",
+    "push": "supabase db push",
+    "reset": "supabase db reset",
+    "generate-types": "supabase gen types typescript --project-id $PROJECT_ID > src/database.types.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}

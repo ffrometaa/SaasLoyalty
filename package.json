@@ -1,0 +1,53 @@
+{
+  "name": "loyalty-os",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "type-check": "turbo type-check",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "clean": "turbo clean",
+    
+    "db:migrate": "pnpm --filter @loyalty-os/db migrate",
+    "db:push": "pnpm --filter @loyalty-os/db push",
+    "db:studio": "supabase studio",
+    "db:reset": "supabase db reset",
+    
+    "dev:web": "pnpm --filter @loyalty-os/web dev",
+    "dev:dashboard": "pnpm --filter @loyalty-os/dashboard dev",
+    "dev:member": "pnpm --filter @loyalty-os/member dev",
+    
+    "dev:all": "concurrently \"pnpm dev:web\" \"pnpm dev:dashboard\" \"pnpm dev:member\"",
+    
+    "deploy:web": "pnpm --filter @loyalty-os/web vercel --prod",
+    "deploy:dashboard": "pnpm --filter @loyalty-os/dashboard vercel --prod",
+    "deploy:member": "pnpm --filter @loyalty-os/member vercel --prod",
+    
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:link": "supabase link",
+    
+    "test": "pnpm --filter @loyalty-os/dashboard test",
+    "test:ui": "pnpm --filter @loyalty-os/dashboard test:ui",
+    "test:coverage": "pnpm --filter @loyalty-os/dashboard test:coverage",
+    "test:e2e": "pnpm --filter @loyalty-os/dashboard test:e2e",
+    "test:e2e:ui": "pnpm --filter @loyalty-os/dashboard test:e2e:ui",
+    "test:all": "pnpm test && pnpm test:e2e"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "prettier": "^3.3.0",
+    "turbo": "^2.0.0",
+    "typescript": "^5.5.0"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ]
+}
