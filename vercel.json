@@ -1,5 +1,7 @@
 {
+  "framework": "nextjs",
   "installCommand": "cd ../.. && pnpm install",
   "buildCommand": "cd ../.. && pnpm turbo build --filter=@loyalty-os/web",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "ignoreCommand": "exit 1"
 }
