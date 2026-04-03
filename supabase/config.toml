@@ -23,7 +23,6 @@ max_client_conn = 100
 [realtime]
 enabled = true
 ip_version = "IPv4"
-port = 54327
 max_header_length = 4096
 
 [studio]
@@ -43,12 +42,9 @@ file_size_limit = "50MiB"
 
 [auth]
 enabled = true
-# Port used by the GoTrue server
-port = 54321
 site_url = "http://127.0.0.1:3000"
 additional_redirect_urls = ["https://127.0.0.1:3000"]
 jwt_expiry = 3600
-refresh_token_expiry = 604800
 enable_signup = true
 enable_anonymous_sign_ins = false
 
@@ -56,10 +52,6 @@ enable_anonymous_sign_ins = false
 enable_signup = true
 double_confirm_changes = false
 enable_confirmations = true
-secure_email_change_enabled = true
-# Magic link template
-template_subject = "Your Magic Link"
-template_body = '<p>Hi {{ .User.Email }},</p><p>Click the link to sign in:</p><p><a href="{{ .ConfirmationURL }}">Sign In to LoyaltyOS</a></p>'
 
 [edge_runtime]
 enabled = true
@@ -69,8 +61,5 @@ enabled = true
 port = 54328
 backend = "postgres"
 
-[pg_cron]
-enabled = true
-
-[vault]
-enabled = true
+[experimental]
+orioledb_version = ""
