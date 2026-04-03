@@ -79,7 +79,6 @@ export default function ContactPage() {
 
     setLoading(true);
     try {
-      const supabase = getSupabaseClient();
       const { error: dbError } = await supabase.from('demo_requests').insert([{
         business_name: form.business_name.trim(),
         business_type: form.business_type,
