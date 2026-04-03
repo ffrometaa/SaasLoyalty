@@ -108,11 +108,11 @@ export async function POST(request: NextRequest) {
 async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.Session) {
   console.log('Checkout completed:', session.id);
 
-  // Get tenant metadata from session
   const tenantSlug = session.metadata?.tenant_slug;
   const businessName = session.metadata?.business_name;
   const businessType = session.metadata?.business_type;
   const plan = session.metadata?.plan || 'starter';
+  const customerEmail = session.customer_email || session.customer_details?.email || '';
 
   if (!tenantSlug) {
     console.error('Missing tenant_slug in session metadata');
@@ -134,7 +134,143 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
     })
     .eq('slug', tenantSlug);
 
-  console.log('Tenant updated from checkout:', tenantSlug);
+  // Check if this customer had a previous demo request (attribution)
+  let cameFromDemo = false;
+  let demoRequestedAt: string | null = null;
+
+  if (customerEmail) {
+    const { data: demoRequest } = await supabase
+      .from('demo_requests')
+      .select('id, created_at')
+      .eq('email', customerEmail.toLowerCase())
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (demoRequest) {
+      cameFromDemo = true;
+      demoRequestedAt = demoRequest.created_at;
+
+      await supabase
+        .from('demo_requests')
+        .update({
+          status: 'converted',
+          converted_at: new Date().toISOString(),
+          converted_tenant_slug: tenantSlug,
+        })
+        .eq('id', demoRequest.id);
+    }
+  }
+
+  // Notify owner of new customer
+  await notifyNewCustomer({
+    businessName: businessName || tenantSlug,
+    businessType: businessType || '',
+    email: customerEmail,
+    plan,
+    tenantSlug,
+    cameFromDemo,
+    demoRequestedAt,
+  });
+
+  console.log('Tenant updated from checkout:', tenantSlug, { cameFromDemo });
+}
+
+async function notifyNewCustomer({
+  businessName,
+  businessType,
+  email,
+  plan,
+  tenantSlug,
+  cameFromDemo,
+  demoRequestedAt,
+}: {
+  businessName: string;
+  businessType: string;
+  email: string;
+  plan: string;
+  tenantSlug: string;
+  cameFromDemo: boolean;
+  demoRequestedAt: string | null;
+}) {
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  if (!RESEND_API_KEY) {
+    console.error('RESEND_API_KEY not set — skipping owner notification');
+    return;
+  }
+
+  const planNames: Record<string, string> = {
+    starter: 'Starter ($79/mo)',
+    pro: 'Pro ($199/mo)',
+    scale: 'Scale ($399/mo)',
+  };
+
+  const planLabel = planNames[plan] || plan;
+  const attributionBadge = cameFromDemo
+    ? `<span style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: #10b981; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;">✓ Viene de demo</span>`
+    : `<span style="background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.4); color: #a78bfa; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;">Orgánico</span>`;
+
+  const demoNote = cameFromDemo && demoRequestedAt
+    ? `<tr style="border-top: 1px solid rgba(255,255,255,0.07);">
+        <td style="padding: 10px 0; color: rgba(255,255,255,0.5); font-size: 13px; width: 140px;">Demo solicitado</td>
+        <td style="padding: 10px 0; font-size: 13px;">${new Date(demoRequestedAt).toLocaleDateString('es-AR', { dateStyle: 'long' })}</td>
+      </tr>`
+    : '';
+
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: 'LoyaltyOS <leads@loyalbase.dev>',
+      to: ['felixdfrometa@gmail.com'],
+      subject: `🎉 Nuevo cliente: ${businessName} — ${planLabel}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0f; color: #fff; border-radius: 12px; overflow: hidden;">
+          <div style="background: linear-gradient(135deg, #059669, #2563eb); padding: 24px 32px;">
+            <h1 style="margin: 0; font-size: 22px; font-weight: 800;">🎉 ¡Nuevo cliente en LoyaltyOS!</h1>
+            <p style="margin: 6px 0 0; opacity: 0.85; font-size: 14px;">Trial de 14 días activado</p>
+          </div>
+
+          <div style="padding: 32px;">
+            <div style="margin-bottom: 20px;">${attributionBadge}</div>
+
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 10px 0; color: rgba(255,255,255,0.5); font-size: 13px; width: 140px;">Negocio</td>
+                <td style="padding: 10px 0; font-weight: 700; font-size: 15px;">${businessName}</td>
+              </tr>
+              <tr style="border-top: 1px solid rgba(255,255,255,0.07);">
+                <td style="padding: 10px 0; color: rgba(255,255,255,0.5); font-size: 13px;">Tipo</td>
+                <td style="padding: 10px 0;">${businessType}</td>
+              </tr>
+              <tr style="border-top: 1px solid rgba(255,255,255,0.07);">
+                <td style="padding: 10px 0; color: rgba(255,255,255,0.5); font-size: 13px;">Email</td>
+                <td style="padding: 10px 0;">
+                  <a href="mailto:${email}" style="color: #a78bfa; text-decoration: none;">${email}</a>
+                </td>
+              </tr>
+              <tr style="border-top: 1px solid rgba(255,255,255,0.07);">
+                <td style="padding: 10px 0; color: rgba(255,255,255,0.5); font-size: 13px;">Plan</td>
+                <td style="padding: 10px 0; font-weight: 600; color: #34d399;">${planLabel}</td>
+              </tr>
+              <tr style="border-top: 1px solid rgba(255,255,255,0.07);">
+                <td style="padding: 10px 0; color: rgba(255,255,255,0.5); font-size: 13px;">Dashboard</td>
+                <td style="padding: 10px 0; font-size: 13px;">loyalbase.dev/dashboard</td>
+              </tr>
+              ${demoNote}
+            </table>
+
+            <div style="margin-top: 28px; padding: 16px; background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.25); border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7);">
+              💡 Contactalos en los próximos días para asegurarte de que el onboarding salga bien — los clientes que reciben ayuda en la primera semana tienen 3x más retención.
+            </div>
+          </div>
+        </div>
+      `,
+    }),
+  });
 }
 
 async function handleSubscriptionCreated(supabase: any, subscription: Stripe.Subscription) {
