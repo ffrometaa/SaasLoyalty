@@ -18,7 +18,7 @@ import { useState, useEffect } from 'react';
 import { getSupabaseClient } from '@loyalty-os/lib';
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: Home },
+  { name: 'Dashboard', href: '/', icon: Home },
   { name: 'Members', href: '/members', icon: Users },
   { name: 'Rewards', href: '/rewards', icon: Gift },
   { name: 'Redemptions', href: '/redemptions', icon: QrCode },
@@ -88,20 +88,22 @@ export function Sidebar() {
       `}>
         {/* Logo */}
         <div className="h-16 flex items-center px-6 border-b">
-          <Link href="/dashboard" className="flex items-center gap-2">
+          <a href="https://loyalbase.dev" className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-brand-purple flex items-center justify-center">
               <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <span className="text-xl font-bold text-gray-900">LoyaltyOS</span>
-          </Link>
+          </a>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
           {navigation.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+            const isActive = item.href === '/'
+            ? pathname === '/'
+            : pathname === item.href || pathname.startsWith(item.href + '/');
             const Icon = item.icon;
 
             return (

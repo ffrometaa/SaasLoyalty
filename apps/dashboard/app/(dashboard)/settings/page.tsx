@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Building2,
   Mail,
-  Phone,
-  MapPin,
   Palette,
   CreditCard,
   AlertTriangle,
@@ -13,39 +11,202 @@ import {
   Trash2,
   Check,
   QrCode,
+  ExternalLink,
+  FileText,
+  Globe,
 } from 'lucide-react';
 import { MemberAppTab } from '../../../components/MemberAppTab';
 
+type Invoice = {
+  id: string;
+  number: string | null;
+  status: string | null;
+  amount_paid: number;
+  currency: string;
+  created: number;
+  period_start: number;
+  period_end: number;
+  hosted_invoice_url: string | null;
+  invoice_pdf: string | null;
+};
+
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<'profile' | 'branding' | 'member-app' | 'billing' | 'danger'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'branding' | 'member-app' | 'billing' | 'language' | 'danger'>('profile');
   const [saved, setSaved] = useState(false);
+  const [settingsLoading, setSettingsLoading] = useState(true);
+
+  // Billing state
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [invoicesLoading, setInvoicesLoading] = useState(false);
+  const [invoicesError, setInvoicesError] = useState<string | null>(null);
+
+  // Logo state
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoError, setLogoError] = useState<string | null>(null);
 
   // Form states
   const [profile, setProfile] = useState({
-    businessName: 'Serenity Spa & Wellness',
-    email: 'contact@serenityspa.com',
-    phone: '+1 (555) 123-4567',
-    address: '123 Main Street\nDowntown District\nNew York, NY 10001',
+    businessName: '',
+    email: '',
+    businessPhone: '',
+    businessAddress: '',
   });
+
+  const [ownerContact, setOwnerContact] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+  });
+
+  const [sameAsBusiness, setSameAsBusiness] = useState(false);
+  const [showSecondaryContact, setShowSecondaryContact] = useState(false);
+  const [secondaryContact, setSecondaryContact] = useState({ firstName: '', lastName: '', phone: '', email: '' });
 
   const [branding, setBranding] = useState({
     primaryColor: '#6366f1',
-    accentColor: '#10b981',
+    accentColor: '#818cf8',
   });
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data) {
+          setProfile({
+            businessName: data.businessName ?? '',
+            email: data.email ?? '',
+            businessPhone: data.businessPhone ?? '',
+            businessAddress: data.businessAddress ?? '',
+          });
+          setOwnerContact({
+            firstName: data.ownerFirstName ?? '',
+            lastName: data.ownerLastName ?? '',
+            phone: data.ownerPhone ?? '',
+            email: data.ownerEmail ?? '',
+          });
+          const hasSecondary = data.secondaryContactFirstName || data.secondaryContactLastName || data.secondaryContactPhone || data.secondaryContactEmail;
+          if (hasSecondary) {
+            setShowSecondaryContact(true);
+            setSecondaryContact({
+              firstName: data.secondaryContactFirstName ?? '',
+              lastName: data.secondaryContactLastName ?? '',
+              phone: data.secondaryContactPhone ?? '',
+              email: data.secondaryContactEmail ?? '',
+            });
+          }
+          setLogoUrl(data.logoUrl ?? null);
+          if (data.branding) setBranding(data.branding);
+        }
+      })
+      .finally(() => setSettingsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'billing') {
+      loadInvoices();
+    }
+  }, [activeTab]);
 
   const tabs = [
     { id: 'profile', label: 'Business Profile', icon: Building2 },
     { id: 'branding', label: 'Branding', icon: Palette },
     { id: 'member-app', label: 'App de Miembros', icon: QrCode },
     { id: 'billing', label: 'Plan & Billing', icon: CreditCard },
+    { id: 'language', label: 'Language / Idioma', icon: Globe },
     { id: 'danger', label: 'Danger Zone', icon: AlertTriangle },
   ];
 
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const res = await fetch('/api/billing/portal');
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || 'Unable to open billing portal');
+      }
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
+  const loadInvoices = async () => {
+    setInvoicesLoading(true);
+    setInvoicesError(null);
+    try {
+      const res = await fetch('/api/billing/invoices');
+      const data = await res.json();
+      if (res.ok) {
+        setInvoices(data.invoices ?? []);
+      } else {
+        setInvoicesError(data.error || 'Failed to load invoices');
+      }
+    } catch {
+      setInvoicesError('Failed to load invoices');
+    } finally {
+      setInvoicesLoading(false);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoUploading(true);
+    setLogoError(null);
+    try {
+      const form = new FormData();
+      form.append('logo', file);
+      const res = await fetch('/api/settings/logo', { method: 'POST', body: form });
+      const data = await res.json();
+      if (res.ok) {
+        setLogoUrl(data.logoUrl);
+      } else {
+        setLogoError(data.error || 'Upload failed');
+      }
+    } catch {
+      setLogoError('Upload failed');
+    } finally {
+      setLogoUploading(false);
+    }
+  };
+
+  const handleSameAsBusiness = (checked: boolean) => {
+    setSameAsBusiness(checked);
+    if (checked) {
+      setOwnerContact(prev => ({
+        ...prev,
+        phone: profile.businessPhone,
+        email: profile.email,
+      }));
+    }
+  };
+
   const handleSaveProfile = async () => {
-    // Mock save - in real implementation, call API
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    const res = await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        businessName: profile.businessName,
+        businessPhone: profile.businessPhone,
+        businessAddress: profile.businessAddress,
+        ownerFirstName: ownerContact.firstName,
+        ownerLastName: ownerContact.lastName,
+        ownerPhone: ownerContact.phone,
+        ownerEmail: ownerContact.email,
+        secondaryContactFirstName: showSecondaryContact ? secondaryContact.firstName : null,
+        secondaryContactLastName: showSecondaryContact ? secondaryContact.lastName : null,
+        secondaryContactPhone: showSecondaryContact ? secondaryContact.phone : null,
+        secondaryContactEmail: showSecondaryContact ? secondaryContact.email : null,
+      }),
+    });
+    if (res.ok) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
   };
 
   const handleExportData = () => {
@@ -122,15 +283,26 @@ export default function SettingsPage() {
                     Business Logo
                   </label>
                   <div className="flex items-center gap-4">
-                    <div className="h-20 w-20 rounded-lg bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
-                      <Building2 className="h-8 w-8 text-gray-400" />
+                    <div className="h-20 w-20 rounded-lg bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+                      {logoUrl ? (
+                        <img src={logoUrl} alt="Business logo" className="h-full w-full object-cover" />
+                      ) : (
+                        <Building2 className="h-8 w-8 text-gray-400" />
+                      )}
                     </div>
                     <div>
-                      <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
-                        <span>Upload Logo</span>
-                        <input type="file" accept="image/*" className="hidden" />
+                      <label className={`cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 ${logoUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                        <span>{logoUploading ? 'Uploading...' : 'Upload Logo'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={logoUploading}
+                          onChange={handleLogoUpload}
+                        />
                       </label>
                       <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 2MB</p>
+                      {logoError && <p className="text-xs text-red-600 mt-1">{logoError}</p>}
                     </div>
                   </div>
                 </div>
@@ -169,40 +341,150 @@ export default function SettingsPage() {
                   <p className="text-xs text-gray-500 mt-1">Contact support to change your email</p>
                 </div>
 
-                {/* Phone */}
+                {/* Business Phone */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      type="tel"
-                      value={profile.phone}
-                      onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
-                    />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Phone</label>
+                  <input
+                    type="tel"
+                    value={profile.businessPhone}
+                    onChange={(e) => setProfile({ ...profile, businessPhone: e.target.value })}
+                    placeholder="+1 234 567 8900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+                  />
+                </div>
+
+                {/* Business Address */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Address</label>
+                  <textarea
+                    value={profile.businessAddress}
+                    onChange={(e) => setProfile({ ...profile, businessAddress: e.target.value })}
+                    rows={2}
+                    placeholder="123 Main Street, City, State"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+                  />
+                </div>
+
+                {/* Owner Contact */}
+                <div className="pt-4 border-t">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-900">Owner Contact</h3>
+                      <p className="text-xs text-gray-500 mt-0.5">Contact information for the registered owner</p>
+                    </div>
+                    <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={sameAsBusiness}
+                        onChange={(e) => handleSameAsBusiness(e.target.checked)}
+                        className="rounded border-gray-300 text-brand-purple focus:ring-brand-purple"
+                      />
+                      Same as business
+                    </label>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">First Name</label>
+                      <input
+                        type="text"
+                        value={ownerContact.firstName}
+                        onChange={(e) => setOwnerContact({ ...ownerContact, firstName: e.target.value })}
+                        placeholder="Jane"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Last Name</label>
+                      <input
+                        type="text"
+                        value={ownerContact.lastName}
+                        onChange={(e) => setOwnerContact({ ...ownerContact, lastName: e.target.value })}
+                        placeholder="Doe"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Phone</label>
+                      <input
+                        type="tel"
+                        value={ownerContact.phone}
+                        onChange={(e) => setOwnerContact({ ...ownerContact, phone: e.target.value })}
+                        placeholder="+1 234 567 8900"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Email</label>
+                      <input
+                        type="email"
+                        value={ownerContact.email}
+                        onChange={(e) => setOwnerContact({ ...ownerContact, email: e.target.value })}
+                        placeholder="owner@email.com"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                {/* Address */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Business Address
-                  </label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                    <textarea
-                      value={profile.address}
-                      onChange={(e) => setProfile({ ...profile, address: e.target.value })}
-                      rows={3}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
-                    />
-                  </div>
+                {/* Secondary Contact (optional) */}
+                <div className="border-t pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowSecondaryContact(v => !v)}
+                    className="text-sm text-brand-purple hover:text-brand-purple-700 font-medium"
+                  >
+                    {showSecondaryContact ? '− Remove secondary contact' : '+ Add secondary contact (optional)'}
+                  </button>
+
+                  {showSecondaryContact && (
+                    <div className="mt-4 grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">First Name</label>
+                        <input
+                          type="text"
+                          value={secondaryContact.firstName}
+                          onChange={(e) => setSecondaryContact({ ...secondaryContact, firstName: e.target.value })}
+                          placeholder="John"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Last Name</label>
+                        <input
+                          type="text"
+                          value={secondaryContact.lastName}
+                          onChange={(e) => setSecondaryContact({ ...secondaryContact, lastName: e.target.value })}
+                          placeholder="Smith"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Phone</label>
+                        <input
+                          type="tel"
+                          value={secondaryContact.phone}
+                          onChange={(e) => setSecondaryContact({ ...secondaryContact, phone: e.target.value })}
+                          placeholder="+1 234 567 8900"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Email</label>
+                        <input
+                          type="email"
+                          value={secondaryContact.email}
+                          onChange={(e) => setSecondaryContact({ ...secondaryContact, email: e.target.value })}
+                          placeholder="contact@email.com"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t">
-                  <p className="text-sm text-gray-500">Last updated: March 15, 2026</p>
+                  <span />
                   <button
                     onClick={handleSaveProfile}
                     className="inline-flex items-center gap-2 px-4 py-2 bg-brand-purple text-white rounded-lg text-sm font-medium hover:bg-brand-purple-700 transition-colors"
@@ -356,16 +638,12 @@ export default function SettingsPage() {
 
                 <div className="flex flex-wrap gap-3">
                   <button
-                    onClick={() => alert('Redirecting to Stripe customer portal...')}
-                    className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+                    onClick={handleManageSubscription}
+                    disabled={portalLoading}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Manage Subscription
-                  </button>
-                  <button
-                    onClick={() => alert('Opening invoice history...')}
-                    className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-                  >
-                    View Invoices
+                    <ExternalLink className="h-4 w-4" />
+                    {portalLoading ? 'Opening...' : 'Manage Subscription'}
                   </button>
                 </div>
               </div>
@@ -402,6 +680,117 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Invoice History */}
+              <div className="bg-white rounded-xl border p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Invoice History</h3>
+
+                {invoicesLoading && (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-purple border-t-transparent" />
+                  </div>
+                )}
+
+                {invoicesError && (
+                  <p className="text-sm text-red-600">{invoicesError}</p>
+                )}
+
+                {!invoicesLoading && !invoicesError && invoices.length === 0 && (
+                  <p className="text-sm text-gray-500">No invoices yet.</p>
+                )}
+
+                {!invoicesLoading && invoices.length > 0 && (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead>
+                        <tr>
+                          <th className="pb-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice</th>
+                          <th className="pb-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                          <th className="pb-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                          <th className="pb-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                          <th className="pb-3 text-right text-xs font-medium text-gray-500 uppercase">Download</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {invoices.map((inv) => (
+                          <tr key={inv.id}>
+                            <td className="py-3 text-sm text-gray-900 font-mono">{inv.number || inv.id.slice(-8)}</td>
+                            <td className="py-3 text-sm text-gray-600">
+                              {new Date(inv.created * 1000).toLocaleDateString()}
+                            </td>
+                            <td className="py-3 text-sm text-gray-900 font-medium">
+                              {new Intl.NumberFormat('en-US', { style: 'currency', currency: inv.currency.toUpperCase() }).format(inv.amount_paid / 100)}
+                            </td>
+                            <td className="py-3">
+                              <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full capitalize ${
+                                inv.status === 'paid' ? 'bg-green-100 text-green-800' :
+                                inv.status === 'open' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {inv.status}
+                              </span>
+                            </td>
+                            <td className="py-3 text-right">
+                              {inv.invoice_pdf && (
+                                <a
+                                  href={inv.invoice_pdf}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-sm text-brand-purple hover:text-brand-purple-700"
+                                >
+                                  <FileText className="h-4 w-4" />
+                                  PDF
+                                </a>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Language Tab */}
+          {activeTab === 'language' && (
+            <div className="bg-white rounded-xl border p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">Language / Idioma</h2>
+              <p className="text-gray-600 mb-6 text-sm">Choose your preferred language for the dashboard.</p>
+
+              <div className="grid gap-3 sm:grid-cols-2 max-w-md">
+                {[
+                  { code: 'en', label: 'English', flag: '🇺🇸' },
+                  { code: 'es', label: 'Español', flag: '🇦🇷' },
+                ].map(({ code, label, flag }) => {
+                  const current = typeof document !== 'undefined'
+                    ? document.cookie.split('; ').find(r => r.startsWith('NEXT_LOCALE='))?.split('=')[1] ?? 'en'
+                    : 'en';
+                  const isActive = current === code;
+                  return (
+                    <button
+                      key={code}
+                      onClick={() => {
+                        document.cookie = `NEXT_LOCALE=${code}; path=/; max-age=31536000; SameSite=Lax`;
+                        window.location.reload();
+                      }}
+                      className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-colors text-left ${
+                        isActive
+                          ? 'border-brand-purple bg-brand-purple-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <span className="text-2xl">{flag}</span>
+                      <div>
+                        <p className={`font-medium ${isActive ? 'text-brand-purple' : 'text-gray-900'}`}>{label}</p>
+                        {isActive && <p className="text-xs text-brand-purple mt-0.5">Active</p>}
+                      </div>
+                      {isActive && <Check className="ml-auto h-4 w-4 text-brand-purple" />}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

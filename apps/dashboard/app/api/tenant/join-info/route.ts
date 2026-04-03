@@ -13,7 +13,7 @@ export async function GET() {
     const { data: tenant, error } = await supabase
       .from('tenants')
       .select('slug, business_name, app_name')
-      .eq('user_id', session.user.id)
+      .eq('auth_user_id', session.user.id)
       .is('deleted_at', null)
       .single();
 
