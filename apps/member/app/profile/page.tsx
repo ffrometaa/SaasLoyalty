@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, User, Mail, Bell, Shield, LogOut } from 'lucide-react';
+import { LanguageSwitcher } from '@/components/member/LanguageSwitcher';
 
 // Mock member data
 const mockMember = {
@@ -141,6 +142,7 @@ export default function ProfilePage() {
             <h3 className="font-semibold text-gray-900">Account</h3>
           </div>
           <div className="p-4 space-y-4">
+            <LanguageSwitcher />
             <button className="w-full flex items-center gap-3 p-3 -mx-3 rounded-lg hover:bg-gray-50">
               <div className="p-2 bg-gray-100 rounded-lg">
                 <Shield className="h-5 w-5 text-gray-500" />

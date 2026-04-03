@@ -33,6 +33,7 @@
     "totalVisits": "Visitas totales"
   },
   "langSwitch": {
+    "label": "Idioma",
     "en": "EN",
     "es": "ES"
   }
