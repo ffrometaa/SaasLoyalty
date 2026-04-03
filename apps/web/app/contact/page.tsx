@@ -3,7 +3,15 @@
 import { useState } from 'react';
 import { Navbar } from '@/components/landing/Navbar';
 import { Footer } from '@/components/landing/Footer';
-import { getSupabaseClient } from '@loyalty-os/lib';
+import { createClient } from '@supabase/supabase-js';
+
+// Use plain client (no session management) so the insert always runs
+// as anon regardless of any active dashboard session in the browser
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  { auth: { persistSession: false, autoRefreshToken: false } }
+);
 
 const BUSINESS_TYPES = [
   'Spa/Salon',
