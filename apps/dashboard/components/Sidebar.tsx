@@ -16,27 +16,29 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { getSupabaseClient } from '@loyalty-os/lib';
-
-const navigation = [
-  { name: 'Dashboard', href: '/', icon: Home },
-  { name: 'Members', href: '/members', icon: Users },
-  { name: 'Rewards', href: '/rewards', icon: Gift },
-  { name: 'Redemptions', href: '/redemptions', icon: QrCode },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Campaigns', href: '/campaigns', icon: Megaphone },
-  { name: 'Settings', href: '/settings', icon: Settings },
-];
-
-const planLabels: Record<string, string> = {
-  starter: 'Starter Plan',
-  pro: 'Pro Plan',
-  scale: 'Scale Plan',
-};
+import { useTranslations } from 'next-intl';
 
 export function Sidebar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userInfo, setUserInfo] = useState<{ email: string; businessName: string; plan: string } | null>(null);
+  const t = useTranslations('nav');
+
+  const navigation = [
+    { name: t('overview'), href: '/', icon: Home },
+    { name: t('members'), href: '/members', icon: Users },
+    { name: t('rewards'), href: '/rewards', icon: Gift },
+    { name: t('redemptions'), href: '/redemptions', icon: QrCode },
+    { name: t('analytics'), href: '/analytics', icon: BarChart3 },
+    { name: t('campaigns'), href: '/campaigns', icon: Megaphone },
+    { name: t('settings'), href: '/settings', icon: Settings },
+  ];
+
+  const planLabels: Record<string, string> = {
+    starter: t('starterPlan'),
+    pro: t('proPlan'),
+    scale: t('scalePlan'),
+  };
 
   useEffect(() => {
     fetch('/api/tenant/me')
@@ -140,7 +142,7 @@ export function Sidebar() {
                 {userInfo ? (planLabels[userInfo.plan] ?? userInfo.plan) : '—'}
               </p>
             </div>
-            <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-gray-600" title="Sign out">
+            <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-gray-600" title={t('logout')}>
               <LogOut className="h-5 w-5" />
             </button>
           </div>

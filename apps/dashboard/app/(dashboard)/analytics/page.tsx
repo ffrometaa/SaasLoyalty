@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Users, TrendingUp, TrendingDown, Minus, Calendar, Gift, Percent, Clock, Download } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { FeatureGate } from '../../../components/dashboard/FeatureGate';
 import type { Plan } from '../../../lib/plans/features';
 
@@ -9,6 +10,9 @@ import type { Plan } from '../../../lib/plans/features';
 const TENANT_PLAN: Plan = 'starter';
 
 export default function AnalyticsPage() {
+  const t = useTranslations('analytics');
+  const tCommon = useTranslations('common');
+
   const [dateRange, setDateRange] = useState<'week' | 'month' | 'year'>('month');
 
   // Mock data
@@ -20,11 +24,11 @@ export default function AnalyticsPage() {
   };
 
   const memberSegments = [
-    { name: 'Frequent', count: 89, percentage: 36, color: 'bg-green-500' },
-    { name: 'Regular', count: 67, percentage: 27, color: 'bg-blue-500' },
-    { name: 'Occasional', count: 52, percentage: 21, color: 'bg-yellow-500' },
-    { name: 'At Risk', count: 28, percentage: 11, color: 'bg-orange-500' },
-    { name: 'Inactive', count: 12, percentage: 5, color: 'bg-red-500' },
+    { name: t('segmentFrequent'), count: 89, percentage: 36, color: 'bg-green-500' },
+    { name: t('segmentRegular'), count: 67, percentage: 27, color: 'bg-blue-500' },
+    { name: t('segmentOccasional'), count: 52, percentage: 21, color: 'bg-yellow-500' },
+    { name: t('segmentAtRisk'), count: 28, percentage: 11, color: 'bg-orange-500' },
+    { name: t('segmentInactive'), count: 12, percentage: 5, color: 'bg-red-500' },
   ];
 
   // Mock visits heatmap data
@@ -48,6 +52,12 @@ export default function AnalyticsPage() {
     { name: 'Aromatherapy', visits: 87, revenue: 4350 },
     { name: 'Body Wrap', visits: 65, revenue: 3250 },
   ];
+
+  const rangeLabel: Record<'week' | 'month' | 'year', string> = {
+    week: t('week'),
+    month: t('month'),
+    year: t('year'),
+  };
 
   const ChangeIndicator = ({ change }: { change: number }) => {
     if (change > 0) {
@@ -78,8 +88,8 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
-          <p className="text-gray-600 mt-1">Track your loyalty program performance</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
+          <p className="text-gray-600 mt-1">{t('subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           {(['week', 'month', 'year'] as const).map((range) => (
@@ -92,14 +102,14 @@ export default function AnalyticsPage() {
                   : 'bg-white text-gray-600 border hover:bg-gray-50'
               }`}
             >
-              {range.charAt(0).toUpperCase() + range.slice(1)}
+              {rangeLabel[range]}
             </button>
           ))}
           {/* Export — Scale only */}
           <FeatureGate plan={TENANT_PLAN} feature="analytics_export" silent>
             <button className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-white border hover:bg-gray-50 text-gray-600">
               <Download className="h-4 w-4" />
-              Export
+              {tCommon('export')}
             </button>
           </FeatureGate>
         </div>
@@ -109,57 +119,57 @@ export default function AnalyticsPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="bg-white rounded-xl border p-6">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-500">Active Members</span>
+            <span className="text-sm font-medium text-gray-500">{t('activeMembers')}</span>
             <Users className="h-5 w-5 text-gray-400" />
           </div>
           <div className="mt-2">
             <span className="text-3xl font-bold text-gray-900">{metrics.activeMembers.value}</span>
             <ChangeIndicator change={metrics.activeMembers.change} />
           </div>
-          <p className="text-sm text-gray-500 mt-1">+18 this month</p>
+          <p className="text-sm text-gray-500 mt-1">{t('thisMonth')}</p>
         </div>
 
         <div className="bg-white rounded-xl border p-6">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-500">Visits</span>
+            <span className="text-sm font-medium text-gray-500">{t('visits')}</span>
             <Calendar className="h-5 w-5 text-gray-400" />
           </div>
           <div className="mt-2">
             <span className="text-3xl font-bold text-gray-900">{metrics.visitsThisMonth.value.toLocaleString()}</span>
             <ChangeIndicator change={metrics.visitsThisMonth.change} />
           </div>
-          <p className="text-sm text-gray-500 mt-1">This month</p>
+          <p className="text-sm text-gray-500 mt-1">{t('thisMonth')}</p>
         </div>
 
         <div className="bg-white rounded-xl border p-6">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-500">Points Redeemed</span>
+            <span className="text-sm font-medium text-gray-500">{t('pointsRedeemed')}</span>
             <Gift className="h-5 w-5 text-gray-400" />
           </div>
           <div className="mt-2">
             <span className="text-3xl font-bold text-gray-900">{metrics.pointsRedeemed.value.toLocaleString()}</span>
             <ChangeIndicator change={metrics.pointsRedeemed.change} />
           </div>
-          <p className="text-sm text-gray-500 mt-1">This month</p>
+          <p className="text-sm text-gray-500 mt-1">{t('thisMonth')}</p>
         </div>
 
         <div className="bg-white rounded-xl border p-6">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-500">Retention Rate</span>
+            <span className="text-sm font-medium text-gray-500">{t('retentionRate')}</span>
             <Percent className="h-5 w-5 text-gray-400" />
           </div>
           <div className="mt-2">
             <span className="text-3xl font-bold text-gray-900">{metrics.retentionRate.value}%</span>
             <ChangeIndicator change={metrics.retentionRate.change} />
           </div>
-          <p className="text-sm text-gray-500 mt-1">Active / Total members</p>
+          <p className="text-sm text-gray-500 mt-1">{t('activeTotalMembers')}</p>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Member Segments */}
         <div className="bg-white rounded-xl border p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Member Segments</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('memberSegments')}</h2>
           <div className="space-y-4">
             {memberSegments.map((segment) => (
               <div key={segment.name}>
@@ -182,9 +192,9 @@ export default function AnalyticsPage() {
             <div className="flex items-start gap-2">
               <Clock className="h-5 w-5 text-amber-600 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-amber-800">28 members at risk</p>
+                <p className="text-sm font-medium text-amber-800">{t('atRiskCount', { count: 28 })}</p>
                 <p className="text-sm text-amber-700">
-                  Consider sending a reactivation campaign
+                  {t('atRiskDesc')}
                 </p>
               </div>
             </div>
@@ -194,7 +204,7 @@ export default function AnalyticsPage() {
         {/* Visits Heatmap — Pro/Scale only */}
         <FeatureGate plan={TENANT_PLAN} feature="analytics_heatmap">
           <div className="bg-white rounded-xl border p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Peak Hours</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('peakHours')}</h2>
             <div className="overflow-x-auto">
               <div className="min-w-[500px]">
                 {/* Hour labels */}
@@ -225,22 +235,22 @@ export default function AnalyticsPage() {
               </div>
             </div>
             <p className="text-xs text-gray-500 mt-4 text-center">
-              Darker colors indicate higher visit frequency
+              {t('darkerColorsNote')}
             </p>
           </div>
         </FeatureGate>
 
         {/* Top Products */}
         <div className="bg-white rounded-xl border p-6 lg:col-span-2">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Popular Services</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('popularServices')}</h2>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Service</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Visits</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Revenue</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Trend</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">{t('service')}</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">{t('visits')}</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">{t('revenue')}</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">{t('trend')}</th>
                 </tr>
               </thead>
               <tbody>

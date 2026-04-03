@@ -3,42 +3,44 @@
 import { Users, Gift, TrendingUp, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { MetricCard } from '../../components/MetricCard';
+import { useTranslations } from 'next-intl';
 
 export default function DashboardPage() {
   const router = useRouter();
+  const t = useTranslations('dashboard');
 
   return (
     <div className="p-6 lg:p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Welcome back! Here&apos;s what&apos;s happening with your loyalty program.</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
+        <p className="text-gray-600 mt-1">{t('subtitle')}</p>
       </div>
 
       {/* Metrics Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <MetricCard
-          title="Active Members"
+          title={t('activeMembers')}
           value="248"
           change={12}
           icon={Users}
-          description="+18 this month"
+          description={t('newThisMonth', { count: 18 })}
         />
         <MetricCard
-          title="Visits This Month"
+          title={t('visitsThisMonth')}
           value="1,432"
           change={8}
           icon={Calendar}
         />
         <MetricCard
-          title="Points Redeemed"
+          title={t('pointsRedeemed')}
           value="12,450"
           change={-3}
           icon={Gift}
-          description="Last month: 12,850"
+          description={t('lastMonthValue', { value: '12,850' })}
         />
         <MetricCard
-          title="Retention Rate"
+          title={t('retentionRate')}
           value="78%"
           change={5}
           icon={TrendingUp}
@@ -47,7 +49,7 @@ export default function DashboardPage() {
 
       {/* Quick Actions */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('quickActions')}</h2>
         <div className="grid gap-4 md:grid-cols-3">
           <button onClick={() => router.push('/members')} className="p-4 bg-white rounded-lg border hover:border-brand-purple hover:shadow-md transition-all text-left">
             <div className="flex items-center gap-3">
@@ -55,8 +57,8 @@ export default function DashboardPage() {
                 <Users className="h-5 w-5 text-brand-purple" />
               </div>
               <div>
-                <p className="font-medium text-gray-900">Add Member</p>
-                <p className="text-sm text-gray-500">Register a new customer</p>
+                <p className="font-medium text-gray-900">{t('addMember')}</p>
+                <p className="text-sm text-gray-500">{t('addMemberDesc')}</p>
               </div>
             </div>
           </button>
@@ -66,8 +68,8 @@ export default function DashboardPage() {
                 <Gift className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <p className="font-medium text-gray-900">Create Reward</p>
-                <p className="text-sm text-gray-500">Add a new reward item</p>
+                <p className="font-medium text-gray-900">{t('createReward')}</p>
+                <p className="text-sm text-gray-500">{t('createRewardDesc')}</p>
               </div>
             </div>
           </button>
@@ -77,8 +79,8 @@ export default function DashboardPage() {
                 <TrendingUp className="h-5 w-5 text-amber-600" />
               </div>
               <div>
-                <p className="font-medium text-gray-900">Register Visit</p>
-                <p className="text-sm text-gray-500">Add points for a customer</p>
+                <p className="font-medium text-gray-900">{t('registerVisit')}</p>
+                <p className="text-sm text-gray-500">{t('registerVisitDesc')}</p>
               </div>
             </div>
           </button>
@@ -88,7 +90,7 @@ export default function DashboardPage() {
       {/* Recent Activity */}
       <div className="bg-white rounded-lg border">
         <div className="px-6 py-4 border-b">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t('recentActivity')}</h2>
         </div>
         <div className="divide-y">
           <div className="px-6 py-4 flex items-center justify-between">

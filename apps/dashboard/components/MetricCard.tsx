@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@loyalty-os/ui';
 import { LucideIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface MetricCardProps {
   title: string;
@@ -12,6 +13,8 @@ interface MetricCardProps {
 }
 
 export function MetricCard({ title, value, change, icon: Icon, description }: MetricCardProps) {
+  const t = useTranslations('dashboard');
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -22,7 +25,7 @@ export function MetricCard({ title, value, change, icon: Icon, description }: Me
         <div className="text-2xl font-bold text-gray-900">{value}</div>
         {change !== undefined && (
           <p className={`text-xs mt-1 ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {change >= 0 ? '+' : ''}{change}% from last month
+            {change >= 0 ? '+' : ''}{change}% {t('fromLastMonth')}
           </p>
         )}
         {description && (

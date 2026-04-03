@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   X,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 type Transaction = {
   id: string;
@@ -74,6 +75,9 @@ const transactionStyles: Record<string, { icon: any; color: string; bg: string }
 };
 
 export default function MemberDetailPage() {
+  const t = useTranslations('members');
+  const tCommon = useTranslations('common');
+
   const params = useParams();
   const id = params.id as string;
 
@@ -217,7 +221,7 @@ export default function MemberDetailPage() {
       <div className="p-6 lg:p-8 flex items-center justify-center min-h-96">
         <div className="text-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-purple border-t-transparent mx-auto" />
-          <p className="mt-4 text-sm text-gray-500">Loading member...</p>
+          <p className="mt-4 text-sm text-gray-500">{t('loadingMember')}</p>
         </div>
       </div>
     );
@@ -228,10 +232,10 @@ export default function MemberDetailPage() {
       <div className="p-6 lg:p-8">
         <Link href="/members" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6">
           <ArrowLeft className="h-5 w-5" />
-          Back to Members
+          {t('backToMembers')}
         </Link>
         <div className="bg-red-50 rounded-xl p-6 text-center">
-          <p className="text-red-700">{pageError ?? 'Member not found'}</p>
+          <p className="text-red-700">{pageError ?? t('memberNotFound')}</p>
         </div>
       </div>
     );
@@ -248,7 +252,7 @@ export default function MemberDetailPage() {
     <div className="p-6 lg:p-8">
       <Link href="/members" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6">
         <ArrowLeft className="h-5 w-5" />
-        Back to Members
+        {t('backToMembers')}
       </Link>
 
       {actionError && (
@@ -286,7 +290,7 @@ export default function MemberDetailPage() {
               )}
               <div className="flex items-center gap-3 text-gray-600">
                 <Calendar className="h-5 w-5" />
-                <span>Member since {new Date(member.created_at).toLocaleDateString()}</span>
+                <span>{t('memberSince', { date: new Date(member.created_at).toLocaleDateString() })}</span>
               </div>
             </div>
 
@@ -305,27 +309,27 @@ export default function MemberDetailPage() {
                 className="text-sm text-brand-purple hover:text-brand-purple-700"
               >
                 <Edit className="inline h-4 w-4 mr-1" />
-                Edit
+                {tCommon('edit')}
               </button>
             </div>
           </div>
 
           {/* Points Card */}
           <div className="bg-white rounded-xl border p-6">
-            <h2 className="text-sm font-medium text-gray-500">Points Balance</h2>
+            <h2 className="text-sm font-medium text-gray-500">{t('pointsBalance')}</h2>
             <p className="text-4xl font-bold text-brand-purple mt-2">
               {member.points_balance.toLocaleString()}
             </p>
             <p className="text-sm text-gray-500 mt-1">
-              {member.points_lifetime.toLocaleString()} lifetime points
+              {t('lifetimePoints', { count: member.points_lifetime.toLocaleString() })}
             </p>
 
             {nextTier && (
               <div className="mt-6">
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-600">Progress to {nextTier}</span>
+                  <span className="text-gray-600">{t('progressTo', { tier: nextTier })}</span>
                   <span className="font-medium">
-                    {tierThresholds[nextTier] - member.points_lifetime} pts to go
+                    {t('ptsToGo', { count: tierThresholds[nextTier] - member.points_lifetime })}
                   </span>
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -340,10 +344,10 @@ export default function MemberDetailPage() {
             <div className="mt-6 grid grid-cols-2 gap-4 text-center">
               <div className="p-3 bg-gray-50 rounded-lg">
                 <p className="text-2xl font-bold text-gray-900">{member.visits_total}</p>
-                <p className="text-sm text-gray-500">Total Visits</p>
+                <p className="text-sm text-gray-500">{t('totalVisits')}</p>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-500">Last Visit</p>
+                <p className="text-sm text-gray-500">{t('lastVisit')}</p>
                 <p className="text-lg font-medium text-gray-900">
                   {member.last_visit_at ? new Date(member.last_visit_at).toLocaleDateString() : '—'}
                 </p>
@@ -353,7 +357,7 @@ export default function MemberDetailPage() {
 
           {/* Quick Actions */}
           <div className="bg-white rounded-xl border p-6">
-            <h2 className="text-sm font-medium text-gray-500 mb-4">Quick Actions</h2>
+            <h2 className="text-sm font-medium text-gray-500 mb-4">{t('quickActions')}</h2>
             <div className="space-y-3">
               <button
                 onClick={() => setIsVisitModalOpen(true)}
@@ -361,7 +365,7 @@ export default function MemberDetailPage() {
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Plus className="h-5 w-5" />
-                Register Visit
+                {t('registerVisit')}
               </button>
               <button
                 onClick={() => setIsAdjustmentModalOpen(true)}
@@ -369,7 +373,7 @@ export default function MemberDetailPage() {
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Edit className="h-5 w-5" />
-                Add Adjustment
+                {t('addAdjustment')}
               </button>
               {member.status !== 'blocked' ? (
                 <button
@@ -378,7 +382,7 @@ export default function MemberDetailPage() {
                   className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 disabled:opacity-50"
                 >
                   <Ban className="h-5 w-5" />
-                  Block Member
+                  {t('blockMember')}
                 </button>
               ) : (
                 <button
@@ -387,7 +391,7 @@ export default function MemberDetailPage() {
                   className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-green-300 text-green-600 rounded-lg hover:bg-green-50 disabled:opacity-50"
                 >
                   <CheckCircle className="h-5 w-5" />
-                  Unblock Member
+                  {t('unblockMember')}
                 </button>
               )}
             </div>
@@ -398,7 +402,7 @@ export default function MemberDetailPage() {
         <div className="lg:col-span-2">
           <div className="bg-white rounded-xl border">
             <div className="px-6 py-4 border-b">
-              <h2 className="text-lg font-semibold text-gray-900">Transaction History</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t('transactionHistory')}</h2>
             </div>
             <div className="divide-y">
               {member.transactions.map((tx) => {
@@ -419,7 +423,7 @@ export default function MemberDetailPage() {
                       <p className={`font-bold ${tx.points > 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {tx.points > 0 ? '+' : ''}{tx.points.toLocaleString()}
                       </p>
-                      <p className="text-sm text-gray-500">Balance: {tx.balance_after.toLocaleString()}</p>
+                      <p className="text-sm text-gray-500">{t('balanceAfter', { value: tx.balance_after.toLocaleString() })}</p>
                     </div>
                   </div>
                 );
@@ -428,7 +432,7 @@ export default function MemberDetailPage() {
             {member.transactions.length === 0 && (
               <div className="px-6 py-12 text-center">
                 <Gift className="mx-auto h-12 w-12 text-gray-300" />
-                <p className="mt-4 text-gray-500">No transactions yet</p>
+                <p className="mt-4 text-gray-500">{t('noTransactions')}</p>
               </div>
             )}
           </div>
@@ -440,17 +444,17 @@ export default function MemberDetailPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setIsVisitModalOpen(false)} />
           <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 m-4">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Register Visit</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('visitModalTitle')}</h2>
             {actionError && <p className="mb-3 text-sm text-red-600">{actionError}</p>}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Amount ($)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('purchaseAmount')}</label>
                 <input
                   type="number"
                   value={visitAmount}
                   onChange={(e) => setVisitAmount(e.target.value)}
                   className="w-full px-3 py-2 border rounded-lg"
-                  placeholder="0.00"
+                  placeholder={t('purchaseAmountPlaceholder')}
                   min="0"
                   step="0.01"
                   autoFocus
@@ -458,7 +462,7 @@ export default function MemberDetailPage() {
               </div>
               <div className="p-4 bg-gray-50 rounded-lg">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Points to earn</span>
+                  <span className="text-gray-600">{t('pointsToEarn')}</span>
                   <span className="font-bold text-green-600">
                     +{visitAmount ? Math.floor(parseFloat(visitAmount)) : 0}
                   </span>
@@ -466,14 +470,14 @@ export default function MemberDetailPage() {
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setIsVisitModalOpen(false)} className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">
-                  Cancel
+                  {tCommon('cancel')}
                 </button>
                 <button
                   onClick={handleRegisterVisit}
                   disabled={!visitAmount || actionLoading}
                   className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
                 >
-                  {actionLoading ? 'Processing...' : 'Register'}
+                  {actionLoading ? tCommon('processing') : tCommon('register')}
                 </button>
               </div>
             </div>
@@ -486,24 +490,24 @@ export default function MemberDetailPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setIsAdjustmentModalOpen(false)} />
           <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 m-4">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Add Adjustment</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('adjustmentModalTitle')}</h2>
             {actionError && <p className="mb-3 text-sm text-red-600">{actionError}</p>}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('adjustmentType')}</label>
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="radio" checked={adjustmentType === 'add'} onChange={() => setAdjustmentType('add')} className="text-brand-purple" />
-                    <span>Add Points</span>
+                    <span>{t('addPoints')}</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="radio" checked={adjustmentType === 'subtract'} onChange={() => setAdjustmentType('subtract')} className="text-brand-purple" />
-                    <span>Subtract Points</span>
+                    <span>{t('subtractPoints')}</span>
                   </label>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Points</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('adjustmentPoints')}</label>
                 <input
                   type="number"
                   value={adjustmentPoints}
@@ -514,30 +518,30 @@ export default function MemberDetailPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('adjustmentReason')}</label>
                 <select
                   value={adjustmentReason}
                   onChange={(e) => setAdjustmentReason(e.target.value)}
                   className="w-full px-3 py-2 border rounded-lg"
                 >
-                  <option value="">Select a reason</option>
-                  <option value="correction">Correction</option>
-                  <option value="refund">Refund</option>
-                  <option value="bonus">Special Bonus</option>
-                  <option value="complaint">Service Complaint</option>
-                  <option value="other">Other</option>
+                  <option value="">{t('selectReason')}</option>
+                  <option value="correction">{t('reasonCorrection')}</option>
+                  <option value="refund">{t('reasonRefund')}</option>
+                  <option value="bonus">{t('reasonBonus')}</option>
+                  <option value="complaint">{t('reasonComplaint')}</option>
+                  <option value="other">{t('reasonOther')}</option>
                 </select>
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setIsAdjustmentModalOpen(false)} className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">
-                  Cancel
+                  {tCommon('cancel')}
                 </button>
                 <button
                   onClick={handleAdjustment}
                   disabled={!adjustmentPoints || !adjustmentReason || actionLoading}
                   className="flex-1 px-4 py-2 bg-brand-purple text-white rounded-lg hover:bg-brand-purple-700 disabled:opacity-50"
                 >
-                  {actionLoading ? 'Processing...' : 'Apply'}
+                  {actionLoading ? tCommon('processing') : tCommon('apply')}
                 </button>
               </div>
             </div>
@@ -550,11 +554,11 @@ export default function MemberDetailPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setIsEditModalOpen(false)} />
           <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 m-4">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Edit Member</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('editMemberTitle')}</h2>
             {actionError && <p className="mb-3 text-sm text-red-600">{actionError}</p>}
             <form onSubmit={handleEdit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('name')} <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   required
@@ -564,7 +568,7 @@ export default function MemberDetailPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('email')} <span className="text-red-500">*</span></label>
                 <input
                   type="email"
                   required
@@ -574,25 +578,25 @@ export default function MemberDetailPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('phone')}</label>
                 <input
                   type="tel"
                   value={editForm.phone}
                   onChange={(e) => setEditForm(p => ({ ...p, phone: e.target.value }))}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple"
-                  placeholder="+1 234 567 8900"
+                  placeholder={t('phonePlaceholder')}
                 />
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setIsEditModalOpen(false)} disabled={actionLoading} className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50">
-                  Cancel
+                  {tCommon('cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading}
                   className="flex-1 px-4 py-2 bg-brand-purple text-white rounded-lg hover:bg-brand-purple-700 disabled:opacity-50"
                 >
-                  {actionLoading ? 'Saving...' : 'Save Changes'}
+                  {actionLoading ? tCommon('saving') : t('saveChanges')}
                 </button>
               </div>
             </form>

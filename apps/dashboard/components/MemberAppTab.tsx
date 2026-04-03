@@ -3,11 +3,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Copy, Check, Download, ExternalLink, Loader2, QrCode } from 'lucide-react';
 import QRCode from 'qrcode';
+import { useTranslations } from 'next-intl';
 
 const MEMBER_APP_URL =
   process.env.NEXT_PUBLIC_MEMBER_APP_URL ?? 'https://member.loyalbase.dev';
 
 export function MemberAppTab() {
+  const t = useTranslations('memberApp');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [slug, setSlug] = useState<string | null>(null);
   const [appName, setAppName] = useState<string>('');
@@ -23,13 +25,13 @@ export function MemberAppTab() {
       .then((r) => r.json())
       .then((data) => {
         if (data.error) {
-          setError('No se pudo cargar la información del tenant.');
+          setError(t('loadError'));
         } else {
           setSlug(data.slug);
           setAppName(data.appName);
         }
       })
-      .catch(() => setError('Error de red. Intentá de nuevo.'))
+      .catch(() => setError(t('networkError')))
       .finally(() => setLoading(false));
   }, []);
 
@@ -81,7 +83,7 @@ export function MemberAppTab() {
       <div className="bg-white rounded-xl border p-6 flex items-center justify-center min-h-[300px]">
         <div className="flex flex-col items-center gap-3 text-gray-400">
           <Loader2 className="h-8 w-8 animate-spin" />
-          <p className="text-sm">Cargando...</p>
+          <p className="text-sm">{t('loading')}</p>
         </div>
       </div>
     );
@@ -101,9 +103,9 @@ export function MemberAppTab() {
     <div className="space-y-6">
       {/* Header card */}
       <div className="bg-white rounded-xl border p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-1">App de Miembros</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-1">{t('title')}</h2>
         <p className="text-sm text-gray-500 mb-6">
-          Compartí este link o código QR para que tus clientes se unan al programa de lealtad.
+          {t('subtitle')}
         </p>
 
         <div className="flex flex-col sm:flex-row gap-8 items-start">
@@ -118,13 +120,13 @@ export function MemberAppTab() {
               className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
             >
               <Download className="h-4 w-4" />
-              Descargar PNG
+              {t('downloadPng')}
             </button>
           </div>
 
           {/* URL + info */}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-700 mb-2">Link de acceso</p>
+            <p className="text-sm font-medium text-gray-700 mb-2">{t('accessLink')}</p>
 
             {/* URL display */}
             <div className="flex items-center gap-2 mb-4">
@@ -133,18 +135,18 @@ export function MemberAppTab() {
               </div>
               <button
                 onClick={handleCopy}
-                title="Copiar link"
+                title={t('copyTitle')}
                 className="shrink-0 flex items-center gap-1.5 px-3 py-2.5 bg-brand-purple text-white rounded-lg text-sm font-medium hover:bg-brand-purple-700 transition-colors"
               >
                 {copied ? (
                   <>
                     <Check className="h-4 w-4" />
-                    <span className="hidden sm:inline">Copiado</span>
+                    <span className="hidden sm:inline">{t('copied')}</span>
                   </>
                 ) : (
                   <>
                     <Copy className="h-4 w-4" />
-                    <span className="hidden sm:inline">Copiar</span>
+                    <span className="hidden sm:inline">{t('copyLink')}</span>
                   </>
                 )}
               </button>
@@ -157,28 +159,28 @@ export function MemberAppTab() {
               className="inline-flex items-center gap-1.5 text-sm text-brand-purple hover:text-brand-purple-700 font-medium"
             >
               <ExternalLink className="h-3.5 w-3.5" />
-              Abrir app de miembros
+              {t('openApp')}
             </a>
 
             {/* How to use */}
             <div className="mt-6 p-4 bg-gray-50 rounded-xl">
-              <p className="text-sm font-medium text-gray-800 mb-3">¿Cómo usarlo?</p>
+              <p className="text-sm font-medium text-gray-800 mb-3">{t('howToUse')}</p>
               <ol className="space-y-2 text-sm text-gray-600">
                 <li className="flex gap-2">
                   <span className="shrink-0 w-5 h-5 rounded-full bg-brand-purple-100 text-brand-purple-700 text-xs font-semibold flex items-center justify-center">1</span>
-                  Imprimí el QR o mostralo en tu negocio.
+                  {t('step1')}
                 </li>
                 <li className="flex gap-2">
                   <span className="shrink-0 w-5 h-5 rounded-full bg-brand-purple-100 text-brand-purple-700 text-xs font-semibold flex items-center justify-center">2</span>
-                  Tus clientes escanean el QR con la cámara del celular.
+                  {t('step2')}
                 </li>
                 <li className="flex gap-2">
                   <span className="shrink-0 w-5 h-5 rounded-full bg-brand-purple-100 text-brand-purple-700 text-xs font-semibold flex items-center justify-center">3</span>
-                  Ingresan su email y reciben un link mágico para acceder.
+                  {t('step3')}
                 </li>
                 <li className="flex gap-2">
                   <span className="shrink-0 w-5 h-5 rounded-full bg-brand-purple-100 text-brand-purple-700 text-xs font-semibold flex items-center justify-center">4</span>
-                  ¡Listo! El cliente queda registrado y puede acumular puntos.
+                  {t('step4')}
                 </li>
               </ol>
             </div>
@@ -190,12 +192,10 @@ export function MemberAppTab() {
       <div className="bg-white rounded-xl border p-6">
         <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
           <QrCode className="h-4 w-4 text-brand-purple" />
-          Consejo para imprimir
+          {t('printTip')}
         </h3>
         <p className="text-sm text-gray-600">
-          Descargá el QR en PNG de alta resolución y agregalo a tus materiales de marketing,
-          cartelería o tarjetas de presentación. Recomendamos imprimirlo a no menos de 4×4 cm
-          para asegurar que los celulares puedan escanearlo correctamente.
+          {t('printTipDesc')}
         </p>
       </div>
     </div>

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { planHasFeature, getUpgradePlan, PLAN_CONFIGS } from '@/lib/plans/features';
 import type { Plan, Feature } from '@/lib/plans/features';
+import { useTranslations } from 'next-intl';
 
 interface FeatureGateProps {
   plan: Plan;
@@ -19,6 +20,7 @@ export function FeatureGate({
   fallback,
   silent = false,
 }: FeatureGateProps) {
+  const t = useTranslations('upgrade');
   const hasAccess = planHasFeature(plan, feature);
 
   if (hasAccess) return <>{children}</>;
@@ -51,9 +53,9 @@ export function FeatureGate({
 
         <div className="text-center px-4">
           <p className="text-white font-semibold text-sm mb-1">
-            {upgradeName ? `Available on ${upgradeName} plan` : 'Premium feature'}
+            {upgradeName ? t('availableOn', { plan: upgradeName }) : t('premiumFeature')}
           </p>
-          <p className="text-white/50 text-xs">Upgrade to unlock this feature</p>
+          <p className="text-white/50 text-xs">{t('upgradeToUnlock')}</p>
         </div>
 
         {upgradePlan && (
@@ -61,7 +63,7 @@ export function FeatureGate({
             href="/settings?tab=billing"
             className="px-4 py-2 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-[#7c3aed] to-[#2563eb] hover:opacity-90 transition-opacity"
           >
-            Upgrade to {upgradeName} →
+            {t('upgradeTo', { name: upgradeName })}
           </Link>
         )}
       </div>

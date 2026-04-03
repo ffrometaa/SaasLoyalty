@@ -6,6 +6,7 @@ import { Search, ChevronLeft, ChevronRight, UserPlus, CheckCircle } from 'lucide
 import { LimitWarningBanner } from '../../../components/dashboard/LimitWarningBanner';
 import { canAddMember } from '../../../lib/plans/features';
 import type { Plan } from '../../../lib/plans/features';
+import { useTranslations } from 'next-intl';
 
 const tierColors = {
   bronze: 'bg-amber-100 text-amber-800',
@@ -32,6 +33,9 @@ type Member = {
 };
 
 export default function MembersPage() {
+  const t = useTranslations('members');
+  const tCommon = useTranslations('common');
+
   const [members, setMembers] = useState<Member[]>([]);
   const [totalMembers, setTotalMembers] = useState(0);
   const [tenantPlan, setTenantPlan] = useState<Plan>('starter');
@@ -86,11 +90,11 @@ export default function MembersPage() {
 
   // Debounce search
   useEffect(() => {
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       setCurrentPage(1);
       fetchMembers();
     }, 400);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [searchQuery]);
 
   const handleAddMember = async (e: React.FormEvent) => {
@@ -131,9 +135,9 @@ export default function MembersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Members</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
           <p className="text-gray-600 mt-1">
-            {totalMembers} member{totalMembers !== 1 ? 's' : ''} in your loyalty program
+            {t('subtitle', { count: totalMembers, plural: totalMembers !== 1 ? 's' : '' })}
           </p>
         </div>
         <button
@@ -142,7 +146,7 @@ export default function MembersPage() {
           className="inline-flex items-center gap-2 px-4 py-2 bg-brand-purple text-white rounded-lg hover:bg-brand-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <UserPlus className="h-5 w-5" />
-          Add Member
+          {t('addMember')}
         </button>
       </div>
 
@@ -156,7 +160,7 @@ export default function MembersPage() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Search by name, email, or code..."
+            placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
@@ -168,21 +172,21 @@ export default function MembersPage() {
             onChange={(e) => { setTierFilter(e.target.value); setCurrentPage(1); }}
             className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
           >
-            <option value="">All Tiers</option>
-            <option value="bronze">Bronze</option>
-            <option value="silver">Silver</option>
-            <option value="gold">Gold</option>
-            <option value="platinum">Platinum</option>
+            <option value="">{t('allTiers')}</option>
+            <option value="bronze">{t('bronze')}</option>
+            <option value="silver">{t('silver')}</option>
+            <option value="gold">{t('gold')}</option>
+            <option value="platinum">{t('platinum')}</option>
           </select>
           <select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
             className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
           >
-            <option value="">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="blocked">Blocked</option>
+            <option value="">{t('allStatus')}</option>
+            <option value="active">{t('active')}</option>
+            <option value="inactive">{t('inactive')}</option>
+            <option value="blocked">{t('blocked')}</option>
           </select>
         </div>
       </div>
@@ -192,20 +196,20 @@ export default function MembersPage() {
         {pageLoading ? (
           <div className="px-6 py-16 text-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-purple border-t-transparent mx-auto" />
-            <p className="mt-4 text-sm text-gray-500">Loading members...</p>
+            <p className="mt-4 text-sm text-gray-500">{t('loadingList')}</p>
           </div>
         ) : (
           <>
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Points</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tier</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Visit</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('name')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('memberCode')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('points')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('tier')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('status')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('lastVisit')}</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('actions')}</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -241,7 +245,7 @@ export default function MembersPage() {
                         href={`/members/${member.id}`}
                         className="text-sm text-brand-purple hover:text-brand-purple-700"
                       >
-                        View
+                        {t('viewMember')}
                       </Link>
                     </td>
                   </tr>
@@ -251,7 +255,7 @@ export default function MembersPage() {
 
             {members.length === 0 && (
               <div className="px-6 py-12 text-center">
-                <p className="text-gray-500">No members found matching your criteria.</p>
+                <p className="text-gray-500">{t('noMembersFound')}</p>
               </div>
             )}
 
@@ -259,7 +263,7 @@ export default function MembersPage() {
             {totalPages > 1 && (
               <div className="px-6 py-4 flex items-center justify-between border-t">
                 <p className="text-sm text-gray-500">
-                  Showing {((currentPage - 1) * itemsPerPage) + 1}–{Math.min(currentPage * itemsPerPage, totalMembers)} of {totalMembers}
+                  {t('showing', { from: ((currentPage - 1) * itemsPerPage) + 1, to: Math.min(currentPage * itemsPerPage, totalMembers), total: totalMembers })}
                 </p>
                 <div className="flex items-center gap-2">
                   <button
@@ -269,7 +273,7 @@ export default function MembersPage() {
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </button>
-                  <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
+                  <span className="text-sm text-gray-600">{t('pageOf', { current: currentPage, total: totalPages })}</span>
                   <button
                     onClick={() => setCurrentPage(p => p + 1)}
                     disabled={currentPage >= totalPages}
@@ -294,12 +298,12 @@ export default function MembersPage() {
                 <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-green-100">
                   <CheckCircle className="h-6 w-6 text-green-600" />
                 </div>
-                <h3 className="mt-4 text-lg font-medium text-gray-900">Member added!</h3>
-                <p className="mt-2 text-sm text-gray-500">The new member has been added to your program.</p>
+                <h3 className="mt-4 text-lg font-medium text-gray-900">{t('added')}</h3>
+                <p className="mt-2 text-sm text-gray-500">{t('addedDesc')}</p>
               </div>
             ) : (
               <>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Add New Member</h2>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('addMemberTitle')}</h2>
 
                 {error && (
                   <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>
@@ -308,7 +312,7 @@ export default function MembersPage() {
                 <form onSubmit={handleAddMember} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Name <span className="text-red-500">*</span>
+                      {t('name')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -316,12 +320,12 @@ export default function MembersPage() {
                       value={newMember.name}
                       onChange={(e) => setNewMember(prev => ({ ...prev, name: e.target.value }))}
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
-                      placeholder="Customer name"
+                      placeholder={t('namePlaceholder')}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email <span className="text-red-500">*</span>
+                      {t('email')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="email"
@@ -329,17 +333,17 @@ export default function MembersPage() {
                       value={newMember.email}
                       onChange={(e) => setNewMember(prev => ({ ...prev, email: e.target.value }))}
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
-                      placeholder="customer@email.com"
+                      placeholder={t('emailPlaceholder')}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone (optional)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('phone')}</label>
                     <input
                       type="tel"
                       value={newMember.phone}
                       onChange={(e) => setNewMember(prev => ({ ...prev, phone: e.target.value }))}
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
-                      placeholder="+1 234 567 8900"
+                      placeholder={t('phonePlaceholder')}
                     />
                   </div>
                   <div className="flex gap-3 pt-4">
@@ -349,14 +353,14 @@ export default function MembersPage() {
                       disabled={loading}
                       className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
                     >
-                      Cancel
+                      {tCommon('cancel')}
                     </button>
                     <button
                       type="submit"
                       disabled={loading}
                       className="flex-1 px-4 py-2 bg-brand-purple text-white rounded-lg hover:bg-brand-purple-700 disabled:opacity-50"
                     >
-                      {loading ? 'Adding...' : 'Add Member'}
+                      {loading ? t('adding') : t('addMember')}
                     </button>
                   </div>
                 </form>

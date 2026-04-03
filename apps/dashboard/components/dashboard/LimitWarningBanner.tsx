@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { PLAN_CONFIGS, getUpgradePlan } from '@/lib/plans/features';
 import type { Plan } from '@/lib/plans/features';
+import { useTranslations } from 'next-intl';
 
 interface LimitWarningBannerProps {
   plan: Plan;
@@ -17,6 +18,7 @@ export function LimitWarningBanner({
   current,
   warningThreshold = 80,
 }: LimitWarningBannerProps) {
+  const t = useTranslations('limits');
   const config = PLAN_CONFIGS[plan];
   const max = type === 'members' ? config.maxMembers : config.maxCampaignsPerMonth;
 
@@ -30,7 +32,7 @@ export function LimitWarningBanner({
 
   const upgradePlan = getUpgradePlan(plan);
   const upgradeName = upgradePlan ? PLAN_CONFIGS[upgradePlan].name : null;
-  const label = type === 'members' ? 'members' : 'campaigns this month';
+  const label = type === 'members' ? t('members') : t('campaignsThisMonth');
 
   return (
     <div
@@ -65,9 +67,9 @@ export function LimitWarningBanner({
         </svg>
         <span>
           {isAtLimit
-            ? `You've reached your limit of ${max} ${label}.`
-            : `You've used ${current} of ${max} ${label} (${percentage}%).`}
-          {isAtLimit && ' You cannot add more until you upgrade.'}
+            ? t('reachedLimit', { max, label })
+            : t('usedOf', { current, max, label, percentage })}
+          {isAtLimit && ' ' + t('cannotAdd')}
         </span>
       </div>
       {upgradePlan && (
@@ -75,7 +77,7 @@ export function LimitWarningBanner({
           href="/settings?tab=billing"
           className="whitespace-nowrap font-semibold underline underline-offset-4 hover:opacity-80 transition-opacity flex-shrink-0"
         >
-          Upgrade to {upgradeName}
+          {t('upgradeTo', { name: upgradeName })}
         </Link>
       )}
     </div>
