@@ -111,7 +111,7 @@ export function PricingPreview() {
         </div>
 
         {/* Plans */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
           {PLANS.map((plan, i) => (
             <div
               key={plan.name}
@@ -126,7 +126,7 @@ export function PricingPreview() {
                 transform: 'translateY(30px)',
                 transition: 'opacity 0.6s ease, transform 0.6s ease, box-shadow 0.2s',
               }}
-              className={plan.highlight ? 'gradient-border hover:-translate-y-1.5' : 'hover:-translate-y-1'}
+              className={plan.highlight ? 'gradient-border hover:-translate-y-1.5 flex flex-col h-full' : 'hover:-translate-y-1 flex flex-col h-full'}
             >
               {plan.highlight && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
@@ -154,7 +154,7 @@ export function PricingPreview() {
                 )}
               </div>
 
-              <ul className="space-y-3 mb-8">
+              <ul className="space-y-3 mb-8 flex-1">
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-sm text-white/65">
                     <svg className="w-4 h-4 mt-0.5 shrink-0 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
