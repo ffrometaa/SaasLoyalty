@@ -88,7 +88,12 @@ export async function middleware(request: NextRequest) {
 
   // Redirect authenticated users away from auth pages → external dashboard app
   // Skip RSC prefetch requests: cross-origin redirect on RSC fetch violates CORS
-  const isRscRequest = request.headers.get('RSC') === '1' || request.nextUrl.searchParams.has('_rsc');
+  // Note: Next.js 14 strips _rsc from request.nextUrl, so we must parse request.url directly
+  const rawUrl = new URL(request.url);
+  const isRscRequest =
+    request.headers.get('RSC') === '1' ||
+    request.headers.get('Next-Router-Prefetch') === '1' ||
+    rawUrl.searchParams.has('_rsc');
   if (session && isAuthRoute && !isRscRequest) {
     const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://dashboard.loyalbase.dev';
     return NextResponse.redirect(dashboardUrl);
