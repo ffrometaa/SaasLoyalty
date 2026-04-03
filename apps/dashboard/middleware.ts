@@ -29,7 +29,11 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Public routes
-  if (pathname.startsWith('/login') || pathname.startsWith('/api/auth')) {
+  if (
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/api/invite')
+  ) {
     return supabaseResponse;
   }
 

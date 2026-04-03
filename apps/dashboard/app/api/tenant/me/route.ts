@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { getTenantForUser } from '../../../../lib/tenant';
 
 export async function GET() {
   try {
@@ -10,17 +11,13 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: tenant } = await supabase
-      .from('tenants')
-      .select('business_name, plan')
-      .eq('auth_user_id', session.user.id)
-      .is('deleted_at', null)
-      .single();
+    const result = await getTenantForUser(supabase, session.user.id);
 
     return NextResponse.json({
       email: session.user.email ?? '',
-      businessName: tenant?.business_name ?? '',
-      plan: tenant?.plan ?? 'starter',
+      businessName: result?.tenant?.business_name ?? '',
+      plan: result?.tenant?.plan ?? 'starter',
+      role: result?.role ?? null,
     });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

@@ -14,6 +14,10 @@ import {
   ExternalLink,
   FileText,
   Globe,
+  Users,
+  UserPlus,
+  X,
+  Shield,
 } from 'lucide-react';
 import { MemberAppTab } from '../../../components/MemberAppTab';
 
@@ -31,9 +35,18 @@ type Invoice = {
 };
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<'profile' | 'branding' | 'member-app' | 'billing' | 'language' | 'danger'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'branding' | 'member-app' | 'billing' | 'language' | 'team' | 'danger'>('profile');
   const [saved, setSaved] = useState(false);
   const [settingsLoading, setSettingsLoading] = useState(true);
+
+  // Team state
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [teamInvites, setTeamInvites] = useState<any[]>([]);
+  const [teamLoading, setTeamLoading] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [inviteSuccess, setInviteSuccess] = useState(false);
 
   // Billing state
   const [portalLoading, setPortalLoading] = useState(false);
@@ -105,16 +118,64 @@ export default function SettingsPage() {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'billing') {
-      loadInvoices();
-    }
+    if (activeTab === 'billing') loadInvoices();
+    if (activeTab === 'team') loadTeam();
   }, [activeTab]);
+
+  const loadTeam = async () => {
+    setTeamLoading(true);
+    try {
+      const [membersRes, invitesRes] = await Promise.all([
+        fetch('/api/team/members'),
+        fetch('/api/team/invites'),
+      ]);
+      if (membersRes.ok) setTeamMembers((await membersRes.json()).members ?? []);
+      if (invitesRes.ok) setTeamInvites((await invitesRes.json()).invites ?? []);
+    } finally {
+      setTeamLoading(false);
+    }
+  };
+
+  const handleSendInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setInviteLoading(true);
+    setInviteError(null);
+    try {
+      const res = await fetch('/api/team/invites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inviteEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setInviteSuccess(true);
+      setInviteEmail('');
+      setTimeout(() => setInviteSuccess(false), 3000);
+      loadTeam();
+    } catch (err: any) {
+      setInviteError(err.message);
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+
+  const handleRevokeInvite = async (id: string) => {
+    await fetch(`/api/team/invites/${id}`, { method: 'DELETE' });
+    loadTeam();
+  };
+
+  const handleRemoveMember = async (id: string) => {
+    if (!confirm('Remove this team member? They will lose access immediately.')) return;
+    await fetch(`/api/team/members/${id}`, { method: 'DELETE' });
+    loadTeam();
+  };
 
   const tabs = [
     { id: 'profile', label: 'Business Profile', icon: Building2 },
     { id: 'branding', label: 'Branding', icon: Palette },
     { id: 'member-app', label: 'App de Miembros', icon: QrCode },
     { id: 'billing', label: 'Plan & Billing', icon: CreditCard },
+    { id: 'team', label: 'Team', icon: Users },
     { id: 'language', label: 'Language / Idioma', icon: Globe },
     { id: 'danger', label: 'Danger Zone', icon: AlertTriangle },
   ];
@@ -751,6 +812,123 @@ export default function SettingsPage() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Team Tab */}
+          {activeTab === 'team' && (
+            <div className="space-y-6">
+              {/* Invite form */}
+              <div className="bg-white rounded-xl border p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-9 w-9 rounded-lg bg-brand-purple-100 flex items-center justify-center">
+                    <UserPlus className="h-5 w-5 text-brand-purple" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-semibold text-gray-900">Invite Team Member</h2>
+                    <p className="text-xs text-gray-500">They'll receive an email to join your dashboard</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSendInvite} className="flex gap-3">
+                  <input
+                    type="email"
+                    required
+                    value={inviteEmail}
+                    onChange={e => setInviteEmail(e.target.value)}
+                    placeholder="colleague@email.com"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple text-sm"
+                  />
+                  <button
+                    type="submit"
+                    disabled={inviteLoading}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-brand-purple text-white rounded-lg text-sm font-medium hover:bg-brand-purple-700 transition-colors disabled:opacity-50"
+                  >
+                    {inviteLoading ? 'Sending…' : 'Send Invite'}
+                  </button>
+                </form>
+
+                {inviteError && <p className="text-sm text-red-600 mt-2">{inviteError}</p>}
+                {inviteSuccess && (
+                  <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
+                    <Check className="h-4 w-4" /> Invitation sent successfully
+                  </p>
+                )}
+              </div>
+
+              {/* Current team members */}
+              <div className="bg-white rounded-xl border p-6">
+                <h3 className="text-base font-semibold text-gray-900 mb-4">Team Members</h3>
+
+                {teamLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-purple border-t-transparent" />
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100">
+                    {teamMembers.map(member => (
+                      <div key={member.id} className="flex items-center justify-between py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="h-9 w-9 rounded-full bg-brand-purple-100 flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs font-semibold text-brand-purple">
+                              {(member.email ?? '?').slice(0, 2).toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {member.email ?? '—'}
+                              {member.isCurrentUser && <span className="ml-2 text-xs text-gray-400">(you)</span>}
+                            </p>
+                            <p className="text-xs text-gray-500 capitalize">{member.role}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {member.role === 'owner' && (
+                            <div className="flex items-center gap-1 px-2 py-1 bg-brand-purple-50 rounded-full">
+                              <Shield className="h-3 w-3 text-brand-purple" />
+                              <span className="text-xs text-brand-purple font-medium">Owner</span>
+                            </div>
+                          )}
+                          {member.canRemove && (
+                            <button
+                              onClick={() => handleRemoveMember(member.id)}
+                              className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors"
+                              title="Remove member"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Pending invitations */}
+              {teamInvites.length > 0 && (
+                <div className="bg-white rounded-xl border p-6">
+                  <h3 className="text-base font-semibold text-gray-900 mb-4">Pending Invitations</h3>
+                  <div className="divide-y divide-gray-100">
+                    {teamInvites.map(invite => (
+                      <div key={invite.id} className="flex items-center justify-between py-3">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{invite.email}</p>
+                          <p className="text-xs text-gray-500">
+                            Sent {new Date(invite.created_at).toLocaleDateString()} · Expires {new Date(invite.expires_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleRevokeInvite(invite.id)}
+                          className="text-xs text-red-500 hover:text-red-700 font-medium"
+                        >
+                          Revoke
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
