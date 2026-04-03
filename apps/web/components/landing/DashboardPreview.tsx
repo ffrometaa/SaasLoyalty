@@ -152,28 +152,30 @@ export function DashboardPreview() {
                   Visits by Day
                 </div>
                 <div style={{ height: 180 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={VISIT_DATA} barSize={24}>
-                      <XAxis
-                        dataKey="day"
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }}
-                      />
-                      <YAxis hide />
-                      <Tooltip
-                        cursor={{ fill: 'rgba(124,58,237,0.08)' }}
-                        contentStyle={{
-                          background: '#111118',
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          borderRadius: '8px',
-                          color: '#fff',
-                          fontSize: 12,
-                        }}
-                      />
-                      <Bar dataKey="visits" fill="#7c3aed" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  {active && (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={VISIT_DATA} barSize={24}>
+                        <XAxis
+                          dataKey="day"
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }}
+                        />
+                        <YAxis hide />
+                        <Tooltip
+                          cursor={{ fill: 'rgba(124,58,237,0.08)' }}
+                          contentStyle={{
+                            background: '#111118',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: '8px',
+                            color: '#fff',
+                            fontSize: 12,
+                          }}
+                        />
+                        <Bar dataKey="visits" fill="#7c3aed" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
               </div>
             </div>
