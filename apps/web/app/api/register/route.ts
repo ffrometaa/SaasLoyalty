@@ -16,10 +16,10 @@ const PRICE_IDS = {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { businessName, businessType, slug, email, plan = 'starter' } = body;
+    const { businessName, businessType, slug, email, userId, plan = 'starter' } = body;
 
     // Validate input
-    if (!businessName || !businessType || !slug || !email) {
+    if (!businessName || !businessType || !slug || !email || !userId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -59,9 +59,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Create tenant record now so the slug is reserved and the webhook can update it
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+
+    const { error: tenantError } = await supabase
+      .from('tenants')
+      .insert({
+        auth_user_id: userId,
+        business_name: businessName,
+        business_type: businessType,
+        slug,
+        plan,
+        plan_status: 'trialing',
+        trial_ends_at: trialEndsAt.toISOString(),
+      });
+
+    if (tenantError) {
+      console.error('Failed to create tenant:', tenantError);
+      return NextResponse.json(
+        { error: 'Failed to create business profile' },
+        { status: 500 }
+      );
+    }
+
     // Create Stripe Checkout Session
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    
+    const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://dashboard.loyalbase.dev';
+
     const session = await stripe.checkout.sessions.create({
       customer_email: email,
       mode: 'subscription',
@@ -89,7 +114,7 @@ export async function POST(request: NextRequest) {
         business_type: businessType,
         plan: plan,
       },
-      success_url: `${baseUrl}/dashboard?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${dashboardUrl}?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/register?cancelled=true`,
     });
 
