@@ -14,6 +14,13 @@ const BUSINESS_TYPES = [
   'Other',
 ];
 
+interface FieldErrors {
+  business_name?: string;
+  business_type?: string;
+  owner_name?: string;
+  email?: string;
+}
+
 export default function ContactPage() {
   const [form, setForm] = useState({
     business_name: '',
@@ -26,40 +33,78 @@ export default function ContactPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   function update(key: string, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
+    // Clear field error on change
+    setFieldErrors((e) => ({ ...e, [key]: undefined }));
+  }
+
+  function validateForm(): boolean {
+    const errors: FieldErrors = {};
+
+    if (!form.business_name.trim()) {
+      errors.business_name = 'Business name is required';
+    }
+    if (!form.business_type) {
+      errors.business_type = 'Please select a business type';
+    }
+    if (!form.owner_name.trim()) {
+      errors.owner_name = 'Your name is required';
+    }
+    if (!form.email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      errors.email = 'Please enter a valid email address';
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
 
-    if (!form.business_name || !form.business_type || !form.owner_name || !form.email) {
-      setError('Please fill in all required fields.');
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
     try {
       const supabase = getSupabaseClient();
-      const { error: dbError } = await supabase.from('demo_requests').insert({
-        business_name: form.business_name,
+      const { error: dbError } = await supabase.from('demo_requests').insert([{
+        business_name: form.business_name.trim(),
         business_type: form.business_type,
-        owner_name: form.owner_name,
-        email: form.email,
-        phone: form.phone || null,
-        message: form.message || null,
-      });
+        owner_name: form.owner_name.trim(),
+        email: form.email.trim().toLowerCase(),
+        phone: form.phone.trim() || null,
+        message: form.message.trim() || null,
+        status: 'new',
+      }]);
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error('Supabase error:', dbError);
+        throw dbError;
+      }
+
       setSuccess(true);
-    } catch {
+    } catch (err) {
+      console.error('Form submission error:', err);
       setError('Something went wrong. Please try again or email us at support@loyaltyos.com');
     } finally {
       setLoading(false);
     }
   }
+
+  const inputBase = "w-full px-4 py-3 rounded-xl text-sm text-white outline-none transition-colors";
+  const inputStyle = {
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.1)',
+  };
+  const inputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+    (e.currentTarget.style.borderColor = 'rgba(124,58,237,0.6)');
+  const inputBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>, hasError?: boolean) =>
+    (e.currentTarget.style.borderColor = hasError ? 'rgba(225,29,72,0.6)' : 'rgba(255,255,255,0.1)');
 
   return (
     <>
@@ -101,94 +146,103 @@ export default function ContactPage() {
           ) : (
             <form
               onSubmit={handleSubmit}
+              noValidate
               className="space-y-5 p-8 rounded-2xl"
               style={{ background: '#111118', border: '1px solid rgba(255,255,255,0.07)' }}
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-sm font-medium text-white/60 mb-1.5">
-                    Business Name <span className="text-brand-red">*</span>
+                    Business Name <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="text"
                     value={form.business_name}
                     onChange={(e) => update('business_name', e.target.value)}
                     placeholder="Serenity Spa"
-                    required
-                    className="w-full px-4 py-3 rounded-xl text-sm text-white outline-none transition-colors"
+                    className={inputBase}
                     style={{
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.1)',
+                      ...inputStyle,
+                      borderColor: fieldErrors.business_name ? 'rgba(225,29,72,0.6)' : 'rgba(255,255,255,0.1)',
                     }}
-                    onFocus={(e) => (e.currentTarget.style.borderColor = 'rgba(124,58,237,0.6)')}
-                    onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
+                    onFocus={inputFocus}
+                    onBlur={(e) => inputBlur(e, !!fieldErrors.business_name)}
                   />
+                  {fieldErrors.business_name && (
+                    <p className="mt-1.5 text-xs text-red-400">{fieldErrors.business_name}</p>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-white/60 mb-1.5">
-                    Business Type <span className="text-brand-red">*</span>
+                    Business Type <span className="text-red-400">*</span>
                   </label>
                   <select
                     value={form.business_type}
                     onChange={(e) => update('business_type', e.target.value)}
-                    required
-                    className="w-full px-4 py-3 rounded-xl text-sm text-white outline-none transition-colors appearance-none"
+                    className={`${inputBase} appearance-none`}
                     style={{
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.1)',
+                      ...inputStyle,
+                      borderColor: fieldErrors.business_type ? 'rgba(225,29,72,0.6)' : 'rgba(255,255,255,0.1)',
                       color: form.business_type ? '#fff' : 'rgba(255,255,255,0.3)',
                     }}
-                    onFocus={(e) => (e.currentTarget.style.borderColor = 'rgba(124,58,237,0.6)')}
-                    onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
+                    onFocus={inputFocus}
+                    onBlur={(e) => inputBlur(e, !!fieldErrors.business_type)}
                   >
                     <option value="" disabled style={{ background: '#111118' }}>Select type...</option>
                     {BUSINESS_TYPES.map((t) => (
                       <option key={t} value={t} style={{ background: '#111118' }}>{t}</option>
                     ))}
                   </select>
+                  {fieldErrors.business_type && (
+                    <p className="mt-1.5 text-xs text-red-400">{fieldErrors.business_type}</p>
+                  )}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-sm font-medium text-white/60 mb-1.5">
-                    Your Name <span className="text-brand-red">*</span>
+                    Your Name <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="text"
                     value={form.owner_name}
                     onChange={(e) => update('owner_name', e.target.value)}
                     placeholder="Maria Lopez"
-                    required
-                    className="w-full px-4 py-3 rounded-xl text-sm text-white outline-none transition-colors"
+                    className={inputBase}
                     style={{
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.1)',
+                      ...inputStyle,
+                      borderColor: fieldErrors.owner_name ? 'rgba(225,29,72,0.6)' : 'rgba(255,255,255,0.1)',
                     }}
-                    onFocus={(e) => (e.currentTarget.style.borderColor = 'rgba(124,58,237,0.6)')}
-                    onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
+                    onFocus={inputFocus}
+                    onBlur={(e) => inputBlur(e, !!fieldErrors.owner_name)}
                   />
+                  {fieldErrors.owner_name && (
+                    <p className="mt-1.5 text-xs text-red-400">{fieldErrors.owner_name}</p>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-white/60 mb-1.5">
-                    Email <span className="text-brand-red">*</span>
+                    Email <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="email"
                     value={form.email}
                     onChange={(e) => update('email', e.target.value)}
                     placeholder="you@yourbusiness.com"
-                    required
-                    className="w-full px-4 py-3 rounded-xl text-sm text-white outline-none transition-colors"
+                    className={inputBase}
                     style={{
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.1)',
+                      ...inputStyle,
+                      borderColor: fieldErrors.email ? 'rgba(225,29,72,0.6)' : 'rgba(255,255,255,0.1)',
                     }}
-                    onFocus={(e) => (e.currentTarget.style.borderColor = 'rgba(124,58,237,0.6)')}
-                    onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
+                    onFocus={inputFocus}
+                    onBlur={(e) => inputBlur(e, !!fieldErrors.email)}
                   />
+                  {fieldErrors.email && (
+                    <p className="mt-1.5 text-xs text-red-400">{fieldErrors.email}</p>
+                  )}
                 </div>
               </div>
 
@@ -199,13 +253,10 @@ export default function ContactPage() {
                   value={form.phone}
                   onChange={(e) => update('phone', e.target.value)}
                   placeholder="+1 (555) 000-0000"
-                  className="w-full px-4 py-3 rounded-xl text-sm text-white outline-none transition-colors"
-                  style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                  }}
-                  onFocus={(e) => (e.currentTarget.style.borderColor = 'rgba(124,58,237,0.6)')}
-                  onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
+                  className={inputBase}
+                  style={inputStyle}
+                  onFocus={inputFocus}
+                  onBlur={(e) => inputBlur(e)}
                 />
               </div>
 
@@ -216,13 +267,10 @@ export default function ContactPage() {
                   onChange={(e) => update('message', e.target.value)}
                   placeholder="Tell us about your business and what you are looking for..."
                   rows={4}
-                  className="w-full px-4 py-3 rounded-xl text-sm text-white outline-none transition-colors resize-none"
-                  style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                  }}
-                  onFocus={(e) => (e.currentTarget.style.borderColor = 'rgba(124,58,237,0.6)')}
-                  onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
+                  className={`${inputBase} resize-none`}
+                  style={inputStyle}
+                  onFocus={inputFocus}
+                  onBlur={(e) => inputBlur(e)}
                 />
               </div>
 
