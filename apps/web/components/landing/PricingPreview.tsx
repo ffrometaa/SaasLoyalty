@@ -106,23 +106,23 @@ export function PricingPreview() {
         {/* Toggle */}
         <div
           data-stagger
-          className="flex items-center justify-center gap-3 mb-12"
+          className="flex flex-wrap items-center justify-center gap-3 w-full mb-12"
           style={{ opacity: 0, transform: 'translateY(20px)', transition: 'opacity 0.5s, transform 0.5s' }}
         >
-          <span className={`text-sm font-medium ${!annual ? 'text-white' : 'text-white/40'}`}>Monthly</span>
+          <span className={`text-sm font-medium leading-none ${!annual ? 'text-white' : 'text-white/40'}`}>Monthly</span>
           <button
             onClick={() => setAnnual(!annual)}
-            className="relative w-12 h-6 rounded-full transition-colors duration-200"
+            className="relative inline-flex items-center h-7 w-14 rounded-full flex-shrink-0 transition-colors duration-300 focus:outline-none"
             style={{ background: annual ? '#7c3aed' : 'rgba(255,255,255,0.15)' }}
           >
             <span
-              className="absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200"
-              style={{ transform: annual ? 'translateX(26px)' : 'translateX(2px)' }}
+              className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-300"
+              style={{ transform: annual ? 'translateX(30px) translateY(-50%)' : 'translateX(2px) translateY(-50%)' }}
             />
           </button>
-          <span className={`text-sm font-medium ${annual ? 'text-white' : 'text-white/40'}`}>Annual</span>
+          <span className={`text-sm font-medium leading-none ${annual ? 'text-white' : 'text-white/40'}`}>Annual</span>
           {annual && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 bg-emerald-400/10 text-emerald-400 border border-emerald-400/40">
               Save 17%
             </span>
           )}
