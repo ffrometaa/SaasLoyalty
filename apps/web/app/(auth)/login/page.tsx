@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { getSupabaseClient } from '@loyalty-os/lib';
 
 export default function LoginPage() {
+  const t = useTranslations('auth.login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -31,26 +33,22 @@ export default function LoginPage() {
     <div className="auth-container">
       <div className="auth-card">
         <div className="text-center">
-          <h2 className="auth-title">Sign in to LoyaltyOS</h2>
+          <h2 className="auth-title">{t('title')}</h2>
           <p className="auth-subtitle">
-            Or{' '}
+            {t('subtitle')}{' '}
             <Link href="/register" className="auth-link">
-              create a new account
+              {t('subtitleLink')}
             </Link>
           </p>
         </div>
 
         {error && (
-          <div className="auth-alert auth-alert-error mt-4">
-            {error}
-          </div>
+          <div className="auth-alert auth-alert-error mt-4">{error}</div>
         )}
 
         <form className="auth-form mt-8" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="email" className="auth-label">
-              Email address
-            </label>
+            <label htmlFor="email" className="auth-label">{t('emailLabel')}</label>
             <div className="mt-2">
               <input
                 id="email"
@@ -61,15 +59,13 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="auth-input"
-                placeholder="you@business.com"
+                placeholder={t('emailPlaceholder')}
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="password" className="auth-label">
-              Password
-            </label>
+            <label htmlFor="password" className="auth-label">{t('passwordLabel')}</label>
             <div className="mt-2">
               <input
                 id="password"
@@ -86,16 +82,12 @@ export default function LoginPage() {
 
           <div className="flex items-center justify-end">
             <Link href="/forgot-password" className="auth-link text-sm">
-              Forgot password?
+              {t('forgotPassword')}
             </Link>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="auth-button"
-          >
-            {loading ? 'Signing in...' : 'Sign in'}
+          <button type="submit" disabled={loading} className="auth-button">
+            {loading ? t('submitting') : t('submit')}
           </button>
         </form>
       </div>
