@@ -78,19 +78,18 @@ export async function middleware(request: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: { session } } = await (supabase.auth as any).getSession();
 
-  // Protected routes
-  const protectedRoutes = ['/dashboard', '/settings', '/members', '/rewards', '/campaigns', '/analytics'];
+  // Protected routes (these don't exist in apps/web — dashboard is a separate app)
+  const protectedRoutes: string[] = [];
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
   // Auth routes (redirect if already logged in)
   const authRoutes = ['/login', '/register', '/forgot-password'];
   const isAuthRoute = authRoutes.includes(pathname);
 
-  // Redirect authenticated users away from auth pages
+  // Redirect authenticated users away from auth pages → external dashboard app
   if (session && isAuthRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
+    const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://dashboard.loyalbase.dev';
+    return NextResponse.redirect(dashboardUrl);
   }
 
   // Redirect unauthenticated users to login
