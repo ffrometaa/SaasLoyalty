@@ -6,14 +6,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <span className="text-xs font-semibold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
+            <span className="text-xs font-semibold uppercase tracking-widest text-brand-purple bg-brand-purple-50 px-2 py-1 rounded">
               Super Admin
             </span>
             <nav className="flex items-center gap-6">
-              <Link href="/admin" className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
+              <Link href="/admin" className="text-sm font-medium text-gray-700 hover:text-brand-purple transition-colors">
                 Overview
               </Link>
-              <Link href="/admin/tenants" className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors">
+              <Link href="/admin/tenants" className="text-sm font-medium text-gray-700 hover:text-brand-purple transition-colors">
                 Tenants
               </Link>
             </nav>

@@ -134,7 +134,7 @@ export function MemberAppTab() {
               <button
                 onClick={handleCopy}
                 title="Copiar link"
-                className="shrink-0 flex items-center gap-1.5 px-3 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                className="shrink-0 flex items-center gap-1.5 px-3 py-2.5 bg-brand-purple text-white rounded-lg text-sm font-medium hover:bg-brand-purple-700 transition-colors"
               >
                 {copied ? (
                   <>
@@ -154,7 +154,7 @@ export function MemberAppTab() {
               href={joinUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+              className="inline-flex items-center gap-1.5 text-sm text-brand-purple hover:text-brand-purple-700 font-medium"
             >
               <ExternalLink className="h-3.5 w-3.5" />
               Abrir app de miembros
@@ -165,19 +165,19 @@ export function MemberAppTab() {
               <p className="text-sm font-medium text-gray-800 mb-3">¿Cómo usarlo?</p>
               <ol className="space-y-2 text-sm text-gray-600">
                 <li className="flex gap-2">
-                  <span className="shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold flex items-center justify-center">1</span>
+                  <span className="shrink-0 w-5 h-5 rounded-full bg-brand-purple-100 text-brand-purple-700 text-xs font-semibold flex items-center justify-center">1</span>
                   Imprimí el QR o mostralo en tu negocio.
                 </li>
                 <li className="flex gap-2">
-                  <span className="shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold flex items-center justify-center">2</span>
+                  <span className="shrink-0 w-5 h-5 rounded-full bg-brand-purple-100 text-brand-purple-700 text-xs font-semibold flex items-center justify-center">2</span>
                   Tus clientes escanean el QR con la cámara del celular.
                 </li>
                 <li className="flex gap-2">
-                  <span className="shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold flex items-center justify-center">3</span>
+                  <span className="shrink-0 w-5 h-5 rounded-full bg-brand-purple-100 text-brand-purple-700 text-xs font-semibold flex items-center justify-center">3</span>
                   Ingresan su email y reciben un link mágico para acceder.
                 </li>
                 <li className="flex gap-2">
-                  <span className="shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold flex items-center justify-center">4</span>
+                  <span className="shrink-0 w-5 h-5 rounded-full bg-brand-purple-100 text-brand-purple-700 text-xs font-semibold flex items-center justify-center">4</span>
                   ¡Listo! El cliente queda registrado y puede acumular puntos.
                 </li>
               </ol>
@@ -189,7 +189,7 @@ export function MemberAppTab() {
       {/* Print tip */}
       <div className="bg-white rounded-xl border p-6">
         <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-          <QrCode className="h-4 w-4 text-indigo-500" />
+          <QrCode className="h-4 w-4 text-brand-purple" />
           Consejo para imprimir
         </h3>
         <p className="text-sm text-gray-600">

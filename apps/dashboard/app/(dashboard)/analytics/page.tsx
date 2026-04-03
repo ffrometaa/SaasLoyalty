@@ -88,7 +88,7 @@ export default function AnalyticsPage() {
               onClick={() => setDateRange(range)}
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                 dateRange === range
-                  ? 'bg-indigo-600 text-white'
+                  ? 'bg-brand-purple text-white'
                   : 'bg-white text-gray-600 border hover:bg-gray-50'
               }`}
             >
@@ -248,7 +248,7 @@ export default function AnalyticsPage() {
                   <tr key={product.name} className="border-b last:border-0">
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
-                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 font-bold text-sm">
+                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-brand-purple-100 text-brand-purple font-bold text-sm">
                           {index + 1}
                         </span>
                         <span className="font-medium text-gray-900">{product.name}</span>

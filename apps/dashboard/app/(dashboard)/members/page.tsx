@@ -110,7 +110,7 @@ export default function MembersPage() {
         <button
           onClick={() => !atMemberLimit && setIsAddModalOpen(true)}
           disabled={atMemberLimit}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-brand-purple text-white rounded-lg hover:bg-brand-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <UserPlus className="h-5 w-5" />
           Add Member
@@ -131,14 +131,14 @@ export default function MembersPage() {
             placeholder="Search by name, email, or code..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
           />
         </div>
         <div className="flex gap-3 w-full sm:w-auto">
           <select 
             value={tierFilter}
             onChange={(e) => setTierFilter(e.target.value)}
-            className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
           >
             <option value="">All Tiers</option>
             <option value="bronze">Bronze</option>
@@ -149,7 +149,7 @@ export default function MembersPage() {
           <select 
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
           >
             <option value="">All Status</option>
             <option value="active">Active</option>
@@ -177,7 +177,7 @@ export default function MembersPage() {
             {filteredMembers.map((member) => (
               <tr key={member.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <Link href={`/members/${member.id}`} className="block hover:text-indigo-600">
+                  <Link href={`/members/${member.id}`} className="block hover:text-brand-purple">
                     <p className="font-medium text-gray-900">{member.name}</p>
                     <p className="text-sm text-gray-500">{member.email}</p>
                   </Link>
@@ -204,7 +204,7 @@ export default function MembersPage() {
                 <td className="px-6 py-4 whitespace-nowrap text-right">
                   <Link 
                     href={`/members/${member.id}`}
-                    className="text-sm text-indigo-600 hover:text-indigo-700"
+                    className="text-sm text-brand-purple hover:text-brand-purple-700"
                   >
                     View
                   </Link>
@@ -280,7 +280,7 @@ export default function MembersPage() {
                       required
                       value={newMember.name}
                       onChange={(e) => setNewMember(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
                       placeholder="Customer name"
                     />
                   </div>
@@ -293,7 +293,7 @@ export default function MembersPage() {
                       required
                       value={newMember.email}
                       onChange={(e) => setNewMember(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
                       placeholder="customer@email.com"
                     />
                   </div>
@@ -303,7 +303,7 @@ export default function MembersPage() {
                       type="tel"
                       value={newMember.phone}
                       onChange={(e) => setNewMember(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
                       placeholder="+1 234 567 8900"
                     />
                   </div>
@@ -319,7 +319,7 @@ export default function MembersPage() {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                      className="flex-1 px-4 py-2 bg-brand-purple text-white rounded-lg hover:bg-brand-purple-700 disabled:opacity-50"
                     >
                       {loading ? 'Adding...' : 'Add Member'}
                     </button>

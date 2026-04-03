@@ -96,7 +96,7 @@ export default function SettingsPage() {
                   onClick={() => setActiveTab(tab.id as typeof activeTab)}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                     activeTab === tab.id
-                      ? 'bg-indigo-50 text-indigo-600'
+                      ? 'bg-brand-purple-50 text-brand-purple'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
@@ -146,7 +146,7 @@ export default function SettingsPage() {
                       type="text"
                       value={profile.businessName}
                       onChange={(e) => setProfile({ ...profile, businessName: e.target.value })}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
                     />
                   </div>
                 </div>
@@ -180,7 +180,7 @@ export default function SettingsPage() {
                       type="tel"
                       value={profile.phone}
                       onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
                     />
                   </div>
                 </div>
@@ -196,7 +196,7 @@ export default function SettingsPage() {
                       value={profile.address}
                       onChange={(e) => setProfile({ ...profile, address: e.target.value })}
                       rows={3}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
                     />
                   </div>
                 </div>
@@ -205,7 +205,7 @@ export default function SettingsPage() {
                   <p className="text-sm text-gray-500">Last updated: March 15, 2026</p>
                   <button
                     onClick={handleSaveProfile}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-brand-purple text-white rounded-lg text-sm font-medium hover:bg-brand-purple-700 transition-colors"
                   >
                     {saved ? (
                       <>
@@ -303,7 +303,7 @@ export default function SettingsPage() {
                 <div className="pt-4 border-t">
                   <button
                     onClick={() => alert('Branding customization coming soon!')}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                    className="px-4 py-2 bg-brand-purple text-white rounded-lg text-sm font-medium hover:bg-brand-purple-700 transition-colors"
                   >
                     Apply Branding
                   </button>
@@ -322,22 +322,22 @@ export default function SettingsPage() {
                     <h2 className="text-lg font-semibold text-gray-900">Current Plan</h2>
                     <p className="text-gray-600 mt-1">Manage your subscription</p>
                   </div>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-sm font-medium">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-brand-purple-100 text-brand-purple-700 text-sm font-medium">
                     {currentPlan.name} Plan
                   </span>
                 </div>
 
-                <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-6 text-white mb-6">
+                <div className="bg-gradient-to-r from-brand-purple to-purple-600 rounded-xl p-6 text-white mb-6">
                   <div className="flex items-end justify-between">
                     <div>
-                      <p className="text-indigo-100 text-sm">Monthly subscription</p>
+                      <p className="text-brand-purple-100 text-sm">Monthly subscription</p>
                       <div className="flex items-baseline gap-1 mt-2">
                         <span className="text-4xl font-bold">{currentPlan.price}</span>
-                        <span className="text-indigo-200">/month</span>
+                        <span className="text-purple-200">/month</span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-indigo-100 text-sm">Next billing</p>
+                      <p className="text-brand-purple-100 text-sm">Next billing</p>
                       <p className="font-medium mt-1">{currentPlan.nextBilling}</p>
                     </div>
                   </div>
@@ -380,7 +380,7 @@ export default function SettingsPage() {
                       <span className="text-sm text-gray-500">248 / Unlimited</span>
                     </div>
                     <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-indigo-600 rounded-full" style={{ width: '25%' }} />
+                      <div className="h-full bg-brand-purple rounded-full" style={{ width: '25%' }} />
                     </div>
                   </div>
                   <div>

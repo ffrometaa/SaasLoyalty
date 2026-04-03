@@ -57,6 +57,6 @@ describe('Sidebar', () => {
     render(<Sidebar />);
     
     const activeItem = screen.getByRole('link', { name: /members/i });
-    expect(activeItem.className).toContain('bg-indigo-50');
+    expect(activeItem.className).toContain('bg-brand-purple-50');
   });
 });

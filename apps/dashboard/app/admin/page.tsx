@@ -11,7 +11,7 @@ const STATUS_BADGE: Record<string, string> = {
 
 const PLAN_BADGE: Record<string, string> = {
   starter: 'bg-gray-100 text-gray-700',
-  pro: 'bg-indigo-100 text-indigo-700',
+  pro: 'bg-brand-purple-100 text-brand-purple-700',
   scale: 'bg-purple-100 text-purple-700',
 };
 

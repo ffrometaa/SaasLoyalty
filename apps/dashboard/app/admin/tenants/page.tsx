@@ -11,7 +11,7 @@ const STATUS_BADGE: Record<string, string> = {
 
 const PLAN_BADGE: Record<string, string> = {
   starter: 'bg-gray-100 text-gray-700',
-  pro: 'bg-indigo-100 text-indigo-700',
+  pro: 'bg-brand-purple-100 text-brand-purple-700',
   scale: 'bg-purple-100 text-purple-700',
 };
 
@@ -64,7 +64,7 @@ export default function AdminTenantsPage() {
           placeholder="Search businesses..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64"
+          className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple w-64"
         />
       </div>
 

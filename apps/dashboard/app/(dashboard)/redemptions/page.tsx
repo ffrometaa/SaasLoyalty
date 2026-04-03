@@ -89,7 +89,7 @@ export default function RedemptionsPage() {
                 onClick={() => setMode('manual')}
                 className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
                   mode === 'manual'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-brand-purple text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -102,7 +102,7 @@ export default function RedemptionsPage() {
                 onClick={() => setMode('scan')}
                 className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
                   mode === 'scan'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-brand-purple text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -124,14 +124,14 @@ export default function RedemptionsPage() {
                     value={code}
                     onChange={(e) => setCode(e.target.value.toUpperCase())}
                     placeholder="Enter code (e.g., RDM-ABC123)"
-                    className="w-full px-4 py-3 text-lg border rounded-lg font-mono text-center tracking-wider focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-4 py-3 text-lg border rounded-lg font-mono text-center tracking-wider focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
                     onKeyDown={(e) => e.key === 'Enter' && handleProcess()}
                   />
                 </div>
                 <button
                   onClick={handleProcess}
                   disabled={!code.trim() || loading}
-                  className="w-full py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="w-full py-3 bg-brand-purple text-white rounded-lg font-medium hover:bg-brand-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">

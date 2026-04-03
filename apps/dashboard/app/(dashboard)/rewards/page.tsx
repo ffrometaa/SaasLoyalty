@@ -77,7 +77,7 @@ export default function RewardsPage() {
         </div>
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-brand-purple text-white rounded-lg hover:bg-brand-purple-700 transition-colors"
         >
           <Plus className="h-5 w-5" />
           Create Reward
@@ -90,7 +90,7 @@ export default function RewardsPage() {
           onClick={() => setFilter('all')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             filter === 'all' 
-              ? 'bg-indigo-100 text-indigo-700' 
+              ? 'bg-brand-purple-100 text-brand-purple-700' 
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
@@ -130,9 +130,9 @@ export default function RewardsPage() {
             <div className="p-6">
               <div className="flex items-start justify-between">
                 <div className={`p-3 rounded-lg ${
-                  reward.isActive ? 'bg-indigo-100' : 'bg-gray-100'
+                  reward.isActive ? 'bg-brand-purple-100' : 'bg-gray-100'
                 }`}>
-                  <Gift className={`h-6 w-6 ${reward.isActive ? 'text-indigo-600' : 'text-gray-400'}`} />
+                  <Gift className={`h-6 w-6 ${reward.isActive ? 'text-brand-purple' : 'text-gray-400'}`} />
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -159,7 +159,7 @@ export default function RewardsPage() {
               <p className="mt-1 text-sm text-gray-500 line-clamp-2">{reward.description}</p>
               
               <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-indigo-600">{reward.pointsRequired.toLocaleString()}</span>
+                <span className="text-2xl font-bold text-brand-purple">{reward.pointsRequired.toLocaleString()}</span>
                 <span className="text-gray-500">points</span>
               </div>
               
@@ -191,7 +191,7 @@ export default function RewardsPage() {
           {filter === 'all' && (
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-brand-purple text-white rounded-lg hover:bg-brand-purple-700"
             >
               <Plus className="h-5 w-5" />
               Create Reward
@@ -270,7 +270,7 @@ function RewardModal({
               required
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple" 
               placeholder="e.g., Free Massage"
             />
           </div>
@@ -280,7 +280,7 @@ function RewardModal({
             <textarea 
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple" 
               rows={3}
               placeholder="Describe the reward..."
             />
@@ -294,7 +294,7 @@ function RewardModal({
               min="1"
               value={formData.pointsRequired}
               onChange={(e) => setFormData(prev => ({ ...prev, pointsRequired: e.target.value }))}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple" 
               placeholder="e.g., 5000"
             />
           </div>
@@ -307,7 +307,7 @@ function RewardModal({
                 min="1"
                 value={formData.maxRedemptions}
                 onChange={(e) => setFormData(prev => ({ ...prev, maxRedemptions: e.target.value }))}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple" 
                 placeholder="Unlimited"
               />
               <p className="text-xs text-gray-500 mt-1">Leave empty for unlimited</p>
@@ -319,7 +319,7 @@ function RewardModal({
                 type="date" 
                 value={formData.validUntil}
                 onChange={(e) => setFormData(prev => ({ ...prev, validUntil: e.target.value }))}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple" 
               />
             </div>
           </div>
@@ -329,7 +329,7 @@ function RewardModal({
               type="button"
               onClick={() => setFormData(prev => ({ ...prev, isActive: !prev.isActive }))}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                formData.isActive ? 'bg-indigo-600' : 'bg-gray-200'
+                formData.isActive ? 'bg-brand-purple' : 'bg-gray-200'
               }`}
             >
               <span
@@ -355,7 +355,7 @@ function RewardModal({
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-brand-purple text-white rounded-lg hover:bg-brand-purple-700 disabled:opacity-50"
             >
               {loading ? 'Saving...' : reward ? 'Save Changes' : 'Create Reward'}
             </button>

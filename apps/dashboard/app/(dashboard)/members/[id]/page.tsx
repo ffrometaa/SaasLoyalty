@@ -72,7 +72,7 @@ const nextTier = {
 const transactionIcons = {
   earn: { icon: Plus, color: 'text-green-600', bg: 'bg-green-100' },
   redeem: { icon: Minus, color: 'text-red-600', bg: 'bg-red-100' },
-  bonus: { icon: Gift, color: 'text-indigo-600', bg: 'bg-indigo-100' },
+  bonus: { icon: Gift, color: 'text-brand-purple', bg: 'bg-brand-purple-100' },
   expire: { icon: AlertTriangle, color: 'text-orange-600', bg: 'bg-orange-100' },
   refund: { icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-100' },
   adjustment: { icon: Edit, color: 'text-blue-600', bg: 'bg-blue-100' },
@@ -173,7 +173,7 @@ export default function MemberDetailPage() {
                   {member.status === 'blocked' && <Ban className="inline h-3 w-3 mr-1" />}
                   {member.status}
                 </span>
-                <button className="text-sm text-indigo-600 hover:text-indigo-700">
+                <button className="text-sm text-brand-purple hover:text-brand-purple-700">
                   <Edit className="inline h-4 w-4 mr-1" />
                   Edit
                 </button>
@@ -184,7 +184,7 @@ export default function MemberDetailPage() {
           {/* Points Card */}
           <div className="bg-white rounded-xl border p-6">
             <h2 className="text-sm font-medium text-gray-500">Points Balance</h2>
-            <p className="text-4xl font-bold text-indigo-600 mt-2">
+            <p className="text-4xl font-bold text-brand-purple mt-2">
               {member.points.toLocaleString()}
             </p>
             <p className="text-sm text-gray-500 mt-1">
@@ -202,7 +202,7 @@ export default function MemberDetailPage() {
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-indigo-600 rounded-full transition-all"
+                    className="h-full bg-brand-purple rounded-full transition-all"
                     style={{ width: `${Math.min(progressToNext, 100)}%` }}
                   />
                 </div>
@@ -370,7 +370,7 @@ export default function MemberDetailPage() {
                       name="adjustmentType"
                       checked={adjustmentType === 'add'}
                       onChange={() => setAdjustmentType('add')}
-                      className="text-indigo-600"
+                      className="text-brand-purple"
                     />
                     <span>Add Points</span>
                   </label>
@@ -380,7 +380,7 @@ export default function MemberDetailPage() {
                       name="adjustmentType"
                       checked={adjustmentType === 'subtract'}
                       onChange={() => setAdjustmentType('subtract')}
-                      className="text-indigo-600"
+                      className="text-brand-purple"
                     />
                     <span>Subtract Points</span>
                   </label>
@@ -423,7 +423,7 @@ export default function MemberDetailPage() {
                 <button
                   onClick={handleAdjustment}
                   disabled={!adjustmentPoints || !adjustmentReason || loading}
-                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-brand-purple text-white rounded-lg hover:bg-brand-purple-700 disabled:opacity-50"
                 >
                   {loading ? 'Processing...' : 'Apply'}
                 </button>

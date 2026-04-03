@@ -46,10 +46,10 @@ export default function DashboardPage() {
       <div className="mb-8">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
         <div className="grid gap-4 md:grid-cols-3">
-          <button className="p-4 bg-white rounded-lg border hover:border-indigo-500 hover:shadow-md transition-all text-left">
+          <button className="p-4 bg-white rounded-lg border hover:border-brand-purple hover:shadow-md transition-all text-left">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-100 rounded-lg">
-                <Users className="h-5 w-5 text-indigo-600" />
+              <div className="p-2 bg-brand-purple-100 rounded-lg">
+                <Users className="h-5 w-5 text-brand-purple" />
               </div>
               <div>
                 <p className="font-medium text-gray-900">Add Member</p>
@@ -57,7 +57,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </button>
-          <button className="p-4 bg-white rounded-lg border hover:border-indigo-500 hover:shadow-md transition-all text-left">
+          <button className="p-4 bg-white rounded-lg border hover:border-brand-purple hover:shadow-md transition-all text-left">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-lg">
                 <Gift className="h-5 w-5 text-green-600" />
@@ -68,7 +68,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </button>
-          <button className="p-4 bg-white rounded-lg border hover:border-indigo-500 hover:shadow-md transition-all text-left">
+          <button className="p-4 bg-white rounded-lg border hover:border-brand-purple hover:shadow-md transition-all text-left">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-amber-100 rounded-lg">
                 <TrendingUp className="h-5 w-5 text-amber-600" />
@@ -102,8 +102,8 @@ export default function DashboardPage() {
           </div>
           <div className="px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                <Gift className="h-5 w-5 text-indigo-600" />
+              <div className="h-10 w-10 rounded-full bg-brand-purple-100 flex items-center justify-center">
+                <Gift className="h-5 w-5 text-brand-purple" />
               </div>
               <div>
                 <p className="font-medium text-gray-900">Carlos Rodriguez</p>
