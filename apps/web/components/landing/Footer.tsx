@@ -1,6 +1,9 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 
-export function Footer() {
+export async function Footer() {
+  const t = await getTranslations('footer');
+
   return (
     <footer
       className="px-6 py-16"
@@ -15,24 +18,24 @@ export function Footer() {
           <div>
             <div className="font-display font-black text-2xl gradient-text mb-3">LoyaltyOS</div>
             <p className="text-white/40 text-sm leading-relaxed mb-4">
-              Turn every visit into a reason to come back.
+              {t('tagline')}
             </p>
-            <p className="text-white/25 text-xs">© 2026 LoyaltyOS, LLC. West Palm Beach, FL</p>
+            <p className="text-white/25 text-xs">{t('copyright')}</p>
           </div>
 
           {/* Col 2 */}
           <div>
             <div className="text-[10px] font-bold tracking-[0.2em] text-white/30 uppercase mb-5">
-              Product
+              {t('productLabel')}
             </div>
             <nav className="flex flex-col gap-3">
               {[
-                { href: '/', label: 'Home' },
-                { href: '/pricing', label: 'Pricing' },
-                { href: '/about', label: 'About' },
-                { href: '/contact', label: 'Contact' },
-                { href: '/login', label: 'Sign In' },
-                { href: '/register', label: 'Start Free Trial' },
+                { href: '/', label: t('home') },
+                { href: '/pricing', label: t('pricing') },
+                { href: '/about', label: t('about') },
+                { href: '/contact', label: t('contact') },
+                { href: '/login', label: t('signIn') },
+                { href: '/register', label: t('startTrial') },
               ].map((link) => (
                 <Link
                   key={link.href}
@@ -48,14 +51,14 @@ export function Footer() {
           {/* Col 3 */}
           <div>
             <div className="text-[10px] font-bold tracking-[0.2em] text-white/30 uppercase mb-5">
-              Legal
+              {t('legalLabel')}
             </div>
             <nav className="flex flex-col gap-3 mb-6">
               <Link href="/terms" className="text-sm text-white/45 hover:text-white transition-colors">
-                Terms of Service
+                {t('terms')}
               </Link>
               <Link href="/privacy" className="text-sm text-white/45 hover:text-white transition-colors">
-                Privacy Policy
+                {t('privacy')}
               </Link>
             </nav>
             <div className="space-y-2">

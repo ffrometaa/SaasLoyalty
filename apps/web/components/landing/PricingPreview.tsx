@@ -2,57 +2,39 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-
-const PLANS = [
-  {
-    name: 'Starter',
-    monthly: 79,
-    annual: 66,
-    subtitle: 'For businesses getting started',
-    features: [
-      'Up to 500 members',
-      '2 campaigns per month',
-      'Basic analytics dashboard',
-      'Logo white-label',
-      'Email support',
-    ],
-    highlight: false,
-  },
-  {
-    name: 'Pro',
-    monthly: 199,
-    annual: 166,
-    subtitle: 'For growing local businesses',
-    features: [
-      'Up to 2,000 members',
-      '10 campaigns per month',
-      'Full analytics + heatmap',
-      'Logo + custom domain',
-      'Booking integrations',
-      'Priority chat support',
-    ],
-    highlight: true,
-  },
-  {
-    name: 'Scale',
-    monthly: 399,
-    annual: 332,
-    subtitle: 'For multi-location businesses',
-    features: [
-      'Unlimited members',
-      'Unlimited campaigns',
-      'Full analytics + export',
-      'Full brand white-label',
-      'Dedicated account manager',
-      'API access',
-    ],
-    highlight: false,
-  },
-];
+import { useTranslations } from 'next-intl';
 
 export function PricingPreview() {
+  const t = useTranslations('pricing');
   const [annual, setAnnual] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+
+  const PLANS = [
+    {
+      name: t('plan0_name'),
+      monthly: 79,
+      annual: 66,
+      subtitle: t('plan0_subtitle'),
+      features: [t('plan0_f0'), t('plan0_f1'), t('plan0_f2'), t('plan0_f3'), t('plan0_f4')],
+      highlight: false,
+    },
+    {
+      name: t('plan1_name'),
+      monthly: 199,
+      annual: 166,
+      subtitle: t('plan1_subtitle'),
+      features: [t('plan1_f0'), t('plan1_f1'), t('plan1_f2'), t('plan1_f3'), t('plan1_f4'), t('plan1_f5')],
+      highlight: true,
+    },
+    {
+      name: t('plan2_name'),
+      monthly: 399,
+      annual: 332,
+      subtitle: t('plan2_subtitle'),
+      features: [t('plan2_f0'), t('plan2_f1'), t('plan2_f2'), t('plan2_f3'), t('plan2_f4'), t('plan2_f5')],
+      highlight: false,
+    },
+  ];
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -83,7 +65,7 @@ export function PricingPreview() {
           style={{ opacity: 0, transform: 'translateY(20px)', transition: 'opacity 0.5s, transform 0.5s' }}
         >
           <span className="text-[11px] font-semibold tracking-[0.2em] text-white/40 uppercase">
-            Pricing
+            {t('label')}
           </span>
         </div>
         <div
@@ -92,7 +74,7 @@ export function PricingPreview() {
           style={{ opacity: 0, transform: 'translateY(20px)', transition: 'opacity 0.6s, transform 0.6s' }}
         >
           <h2 className="font-display font-black text-white" style={{ fontSize: 'clamp(28px, 4vw, 52px)' }}>
-            Simple pricing, serious results
+            {t('heading')}
           </h2>
         </div>
         <div
@@ -100,7 +82,7 @@ export function PricingPreview() {
           className="text-center mb-10"
           style={{ opacity: 0, transform: 'translateY(20px)', transition: 'opacity 0.6s, transform 0.6s' }}
         >
-          <p className="text-white/50 text-lg">Start free for 14 days. No credit card required.</p>
+          <p className="text-white/50 text-lg">{t('subheading')}</p>
         </div>
 
         {/* Toggle */}
@@ -109,7 +91,7 @@ export function PricingPreview() {
           className="flex flex-wrap items-center justify-center gap-3 w-full mb-12"
           style={{ opacity: 0, transform: 'translateY(20px)', transition: 'opacity 0.5s, transform 0.5s' }}
         >
-          <span className={`text-sm font-medium leading-none ${!annual ? 'text-white' : 'text-white/40'}`}>Monthly</span>
+          <span className={`text-sm font-medium leading-none ${!annual ? 'text-white' : 'text-white/40'}`}>{t('monthly')}</span>
           <button
             onClick={() => setAnnual(!annual)}
             className="relative inline-flex items-center h-7 w-14 rounded-full flex-shrink-0 transition-colors duration-300 focus:outline-none"
@@ -120,10 +102,10 @@ export function PricingPreview() {
               style={{ transform: annual ? 'translateX(30px) translateY(-50%)' : 'translateX(2px) translateY(-50%)' }}
             />
           </button>
-          <span className={`text-sm font-medium leading-none ${annual ? 'text-white' : 'text-white/40'}`}>Annual</span>
+          <span className={`text-sm font-medium leading-none ${annual ? 'text-white' : 'text-white/40'}`}>{t('annual')}</span>
           {annual && (
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 bg-emerald-400/10 text-emerald-400 border border-emerald-400/40">
-              Save 17%
+              {t('save')}
             </span>
           )}
         </div>
@@ -152,7 +134,7 @@ export function PricingPreview() {
                     className="px-4 py-1 rounded-full text-xs font-bold text-white whitespace-nowrap"
                     style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)' }}
                   >
-                    Most Popular
+                    {t('mostPopular')}
                   </span>
                 </div>
               )}
@@ -166,9 +148,9 @@ export function PricingPreview() {
                 <span className="font-display font-black text-white text-4xl">
                   ${annual ? plan.annual : plan.monthly}
                 </span>
-                <span className="text-white/40 text-sm">/mo</span>
+                <span className="text-white/40 text-sm">{t('perMonth')}</span>
                 {annual && (
-                  <div className="text-white/30 text-xs mt-1">billed annually</div>
+                  <div className="text-white/30 text-xs mt-1">{t('billedAnnually')}</div>
                 )}
               </div>
 
@@ -200,14 +182,14 @@ export function PricingPreview() {
                       }
                 }
               >
-                Start free trial
+                {t('startTrial')}
               </Link>
             </div>
           ))}
         </div>
 
         <div className="text-center mt-8 text-white/30 text-sm">
-          All plans include a 14-day free trial. No credit card required. Cancel anytime.
+          {t('footer')}
         </div>
       </div>
     </section>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
-import { requireMemberSlot } from '../../lib/plans/guardFeature';
+import { requireMemberSlot } from '../../../lib/plans/guardFeature';
 
 // GET /api/members - List members
 export async function GET(request: NextRequest) {

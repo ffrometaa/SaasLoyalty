@@ -1,52 +1,28 @@
 'use client';
 
 import { useState } from 'react';
-
-const FAQS = [
-  {
-    q: 'Do my customers need to download an app?',
-    a: 'No. LoyaltyOS is a Progressive Web App (PWA). Customers access it directly from their browser and can add it to their home screen in one tap — no App Store required, no friction for your customers.',
-  },
-  {
-    q: 'Does it work with my existing booking system?',
-    a: 'Yes. LoyaltyOS integrates with Square, Vagaro, Acuity, Fresha, and Calendly. If your system isn\'t listed, customers can still earn points manually via QR scan at point of service.',
-  },
-  {
-    q: 'What does "white-label" mean exactly?',
-    a: "Your customers see your business name, your logo, and your colors — not LoyaltyOS. It looks and feels like a loyalty app you built yourself, at a fraction of the cost.",
-  },
-  {
-    q: 'How quickly can I get started?',
-    a: 'Most businesses are fully live within 24 to 48 hours. We handle the entire setup — you just share a QR code with your first customer.',
-  },
-  {
-    q: 'Is my customer data secure?',
-    a: 'Yes. We use bank-level encryption in transit and at rest, database-level isolation between all business accounts, and we never sell or share your customer data under any circumstances.',
-  },
-  {
-    q: 'Can I cancel anytime?',
-    a: 'Yes. Cancel from your dashboard at any time. No long-term contracts, no cancellation fees. Your data remains available for export for 90 days after cancellation.',
-  },
-  {
-    q: 'What happens when my free trial ends?',
-    a: "You'll receive an email reminder 3 days before your trial ends. If you don't add a payment method, your account is paused — not deleted. Your data stays safe for 30 days.",
-  },
-];
+import { useTranslations } from 'next-intl';
 
 export function FAQ() {
+  const t = useTranslations('faq');
   const [open, setOpen] = useState<number | null>(null);
+
+  const FAQS = Array.from({ length: 7 }, (_, i) => ({
+    q: t(`item${i}_q` as Parameters<typeof t>[0]),
+    a: t(`item${i}_a` as Parameters<typeof t>[0]),
+  }));
 
   return (
     <section className="py-24 px-6" style={{ background: '#0a0a0f' }}>
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-4">
           <span className="text-[11px] font-semibold tracking-[0.2em] text-white/40 uppercase">
-            FAQ
+            {t('label')}
           </span>
         </div>
         <div className="text-center mb-16">
           <h2 className="font-display font-black text-white" style={{ fontSize: 'clamp(28px, 4vw, 52px)' }}>
-            Frequently asked questions
+            {t('heading')}
           </h2>
         </div>
 

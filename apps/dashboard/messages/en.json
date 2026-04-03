@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "overview": "Overview",
+    "members": "Members",
+    "rewards": "Rewards",
+    "campaigns": "Campaigns",
+    "analytics": "Analytics",
+    "settings": "Settings",
+    "logout": "Log out"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "save": "Save changes",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "view": "View",
+    "back": "Back",
+    "confirm": "Confirm",
+    "noResults": "No results found matching your criteria."
+  },
+  "members": {
+    "title": "Members",
+    "subtitle": "{count} member{plural} in your loyalty program",
+    "addMember": "Add Member",
+    "addMemberTitle": "Add New Member",
+    "name": "Name",
+    "namePlaceholder": "Customer name",
+    "nameRequired": "Name",
+    "email": "Email",
+    "emailPlaceholder": "customer@email.com",
+    "phone": "Phone (optional)",
+    "phonePlaceholder": "+1 234 567 8900",
+    "memberCode": "Code",
+    "points": "Points",
+    "tier": "Tier",
+    "status": "Status",
+    "lastVisit": "Last Visit",
+    "actions": "Actions",
+    "adding": "Adding...",
+    "added": "Member added!",
+    "addedDesc": "The new member has been added to your program.",
+    "searchPlaceholder": "Search by name, email, or code...",
+    "allTiers": "All Tiers",
+    "allStatus": "All Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "blocked": "Blocked",
+    "bronze": "Bronze",
+    "silver": "Silver",
+    "gold": "Gold",
+    "platinum": "Platinum",
+    "page": "Page",
+    "showing": "Showing {from} to {to} of {total} results",
+    "limitReached": "Member limit reached. Upgrade your plan to add more members."
+  },
+  "analytics": {
+    "title": "Analytics",
+    "subtitle": "Insights for your loyalty program",
+    "upgradeHeatmap": "Upgrade to Pro to unlock visit heatmap",
+    "upgradeExport": "Upgrade to Scale to export data"
+  },
+  "campaigns": {
+    "title": "Campaigns",
+    "subtitle": "Manage your marketing campaigns"
+  },
+  "rewards": {
+    "title": "Rewards",
+    "subtitle": "Configure your rewards catalog"
+  },
+  "settings": {
+    "title": "Settings",
+    "billing": "Billing",
+    "profile": "Profile",
+    "notifications": "Notifications"
+  },
+  "upgrade": {
+    "title": "Upgrade your plan",
+    "subtitle": "Unlock more features",
+    "cta": "Upgrade Now",
+    "availableOn": "Available on {plan} plan"
+  },
+  "langSwitch": {
+    "en": "EN",
+    "es": "ES"
+  }
+}

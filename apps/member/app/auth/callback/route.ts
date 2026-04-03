@@ -23,7 +23,8 @@ export async function GET(request: NextRequest) {
   const supabase = await createServerSupabaseClient();
 
   // Exchange code for session
-  const { data: sessionData, error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: sessionData, error: sessionError } = await (supabase.auth as any).exchangeCodeForSession(code);
 
   if (sessionError || !sessionData.user) {
     console.error('Auth callback error:', sessionError);

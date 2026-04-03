@@ -1,6 +1,9 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 
-export function FinalCTA() {
+export async function FinalCTA() {
+  const t = await getTranslations('finalCta');
+
   return (
     <section
       className="relative py-32 px-6 overflow-hidden text-center"
@@ -35,10 +38,10 @@ export function FinalCTA() {
           className="font-display font-black text-white mb-5"
           style={{ fontSize: 'clamp(28px, 5vw, 56px)' }}
         >
-          Your next loyal customer is already in your store.
+          {t('heading')}
         </h2>
         <p className="text-white/55 text-lg mb-10">
-          Start your 14-day free trial today. No credit card required.
+          {t('subheading')}
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
@@ -52,7 +55,7 @@ export function FinalCTA() {
               textAlign: 'center',
             }}
           >
-            Start Free Trial
+            {t('ctaStart')}
           </Link>
           <Link
             href="/contact"
@@ -64,12 +67,12 @@ export function FinalCTA() {
               textAlign: 'center',
             }}
           >
-            Book a Demo
+            {t('ctaDemo')}
           </Link>
         </div>
 
         <p className="text-white/30 text-sm">
-          ✓ No credit card required &nbsp;·&nbsp; ✓ Live in 48 hours &nbsp;·&nbsp; ✓ Cancel anytime
+          {t('guarantee')}
         </p>
       </div>
     </section>

@@ -1,0 +1,92 @@
+{
+  "nav": {
+    "overview": "Resumen",
+    "members": "Miembros",
+    "rewards": "Recompensas",
+    "campaigns": "Campañas",
+    "analytics": "Analíticas",
+    "settings": "Configuración",
+    "logout": "Cerrar sesión"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "save": "Guardar cambios",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "add": "Agregar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "view": "Ver",
+    "back": "Volver",
+    "confirm": "Confirmar",
+    "noResults": "No se encontraron resultados con estos criterios."
+  },
+  "members": {
+    "title": "Miembros",
+    "subtitle": "{count} miembro{plural} en tu programa de fidelización",
+    "addMember": "Agregar Miembro",
+    "addMemberTitle": "Agregar Nuevo Miembro",
+    "name": "Nombre",
+    "namePlaceholder": "Nombre del cliente",
+    "nameRequired": "Nombre",
+    "email": "Email",
+    "emailPlaceholder": "cliente@email.com",
+    "phone": "Teléfono (opcional)",
+    "phonePlaceholder": "+54 11 0000-0000",
+    "memberCode": "Código",
+    "points": "Puntos",
+    "tier": "Nivel",
+    "status": "Estado",
+    "lastVisit": "Última Visita",
+    "actions": "Acciones",
+    "adding": "Agregando...",
+    "added": "¡Miembro agregado!",
+    "addedDesc": "El nuevo miembro fue agregado a tu programa.",
+    "searchPlaceholder": "Buscar por nombre, email o código...",
+    "allTiers": "Todos los Niveles",
+    "allStatus": "Todos los Estados",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "blocked": "Bloqueado",
+    "bronze": "Bronze",
+    "silver": "Silver",
+    "gold": "Gold",
+    "platinum": "Platinum",
+    "page": "Página",
+    "showing": "Mostrando {from} a {to} de {total} resultados",
+    "limitReached": "Límite de miembros alcanzado. Actualizá tu plan para agregar más miembros."
+  },
+  "analytics": {
+    "title": "Analíticas",
+    "subtitle": "Estadísticas de tu programa de fidelización",
+    "upgradeHeatmap": "Actualizá a Pro para desbloquear el mapa de calor de visitas",
+    "upgradeExport": "Actualizá a Scale para exportar datos"
+  },
+  "campaigns": {
+    "title": "Campañas",
+    "subtitle": "Gestioná tus campañas de marketing"
+  },
+  "rewards": {
+    "title": "Recompensas",
+    "subtitle": "Configurá tu catálogo de recompensas"
+  },
+  "settings": {
+    "title": "Configuración",
+    "billing": "Facturación",
+    "profile": "Perfil",
+    "notifications": "Notificaciones"
+  },
+  "upgrade": {
+    "title": "Actualizá tu plan",
+    "subtitle": "Desbloqueá más funciones",
+    "cta": "Actualizar Ahora",
+    "availableOn": "Disponible en el plan {plan}"
+  },
+  "langSwitch": {
+    "en": "EN",
+    "es": "ES"
+  }
+}

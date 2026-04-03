@@ -1,18 +1,11 @@
-export function SocialProofBar() {
-  const items = [
-    'Spas',
-    'Restaurants',
-    'Gyms',
-    'Retail Shops',
-    'Wellness Studios',
-    'Salons',
-    'Hotels',
-    'Cafés',
-    'Barbershops',
-    'Yoga Studios',
-  ];
+'use client';
 
-  const content = [...items, ...items]; // duplicate for seamless loop
+import { useTranslations } from 'next-intl';
+
+export function SocialProofBar() {
+  const t = useTranslations('socialProof');
+  const items = t.raw('items') as string[];
+  const content = [...items, ...items];
 
   return (
     <div

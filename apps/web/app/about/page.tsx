@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { Navbar } from '@/components/landing/Navbar';
 import { FinalCTA } from '@/components/landing/FinalCTA';
 import { Footer } from '@/components/landing/Footer';
@@ -8,7 +9,21 @@ export const metadata: Metadata = {
   description: 'We built LoyaltyOS because local businesses deserve the same retention tools used by global brands.',
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const t = await getTranslations('aboutPage');
+
+  const STATS = [
+    { num: t('stat0_num'), label: t('stat0_label') },
+    { num: t('stat1_num'), label: t('stat1_label') },
+    { num: t('stat2_num'), label: t('stat2_label') },
+  ];
+
+  const VALUES = [
+    { title: t('value0_title'), body: t('value0_body') },
+    { title: t('value1_title'), body: t('value1_body') },
+    { title: t('value2_title'), body: t('value2_body') },
+  ];
+
   return (
     <>
       <Navbar />
@@ -17,14 +32,13 @@ export default function AboutPage() {
         <section className="py-24 px-6 text-center" style={{ background: '#0a0a0f' }}>
           <div className="max-w-3xl mx-auto">
             <span className="text-[11px] font-semibold tracking-[0.2em] text-white/40 uppercase block mb-4">
-              About
+              {t('label')}
             </span>
             <h1 className="font-display font-black text-white mb-5" style={{ fontSize: 'clamp(36px, 5vw, 72px)' }}>
-              Built for the businesses that build communities
+              {t('heroHeading')}
             </h1>
             <p className="text-white/55 text-xl leading-relaxed">
-              Local businesses are the backbone of every neighborhood. We built LoyaltyOS because they deserve the
-              same retention tools used by global brands — without the $100K price tag.
+              {t('heroSubheading')}
             </p>
           </div>
         </section>
@@ -34,26 +48,20 @@ export default function AboutPage() {
           <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center">
             <div>
               <span className="text-[11px] font-semibold tracking-[0.2em] text-white/40 uppercase block mb-4">
-                Our Mission
+                {t('missionLabel')}
               </span>
               <h2 className="font-display font-black text-white text-3xl mb-5">
-                Level the playing field for local businesses
+                {t('missionHeading')}
               </h2>
               <p className="text-white/55 leading-relaxed mb-4">
-                Starbucks has a $10M loyalty engineering team. Sephora has a dedicated retention science division.
-                Your local spa? A spreadsheet and a prayer.
+                {t('missionP1')}
               </p>
               <p className="text-white/55 leading-relaxed">
-                LoyaltyOS changes that. We pack enterprise-grade loyalty infrastructure into a platform that any
-                business owner can set up in a day — no technical knowledge required.
+                {t('missionP2')}
               </p>
             </div>
             <div className="space-y-4">
-              {[
-                { num: '14+', label: 'Businesses using LoyaltyOS' },
-                { num: '48h', label: 'Average setup time' },
-                { num: '40%', label: 'Avg. customer reactivation rate' },
-              ].map((stat) => (
+              {STATS.map((stat) => (
                 <div
                   key={stat.num}
                   style={{
@@ -76,25 +84,12 @@ export default function AboutPage() {
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <span className="text-[11px] font-semibold tracking-[0.2em] text-white/40 uppercase block mb-4">
-                What We Believe
+                {t('valuesLabel')}
               </span>
-              <h2 className="font-display font-black text-white text-3xl">Our principles</h2>
+              <h2 className="font-display font-black text-white text-3xl">{t('valuesHeading')}</h2>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
-              {[
-                {
-                  title: 'Simplicity wins',
-                  body: "Business owners shouldn't need a developer to run a loyalty program. If it's not simple, it won't be used.",
-                },
-                {
-                  title: 'Your brand, not ours',
-                  body: "Your customers should never know LoyaltyOS exists. Every touchpoint should feel like it came from you.",
-                },
-                {
-                  title: 'Data belongs to you',
-                  body: 'Every customer record, every transaction, every email — it\'s yours. We are custodians, not owners.',
-                },
-              ].map((v) => (
+              {VALUES.map((v) => (
                 <div
                   key={v.title}
                   style={{

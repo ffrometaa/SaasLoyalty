@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Cormorant_Garamond, Jost } from 'next/font/google';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages, getLocale } from 'next-intl/server';
 import './globals.css';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
 
@@ -39,9 +41,12 @@ export const viewport: Viewport = {
   themeColor: '#3a4332',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="es" className={`${cormorant.variable} ${jost.variable}`}>
+    <html lang={locale} className={`${cormorant.variable} ${jost.variable}`}>
       <head>
         <link
           rel="preconnect"
@@ -52,8 +57,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className="min-h-screen"
         style={{ fontFamily: "var(--font-jost, 'Jost', sans-serif)" }}
       >
-        <OfflineIndicator />
-        {children}
+        <NextIntlClientProvider messages={messages}>
+          <OfflineIndicator />
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

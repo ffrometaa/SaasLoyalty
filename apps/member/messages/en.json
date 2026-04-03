@@ -1,0 +1,39 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "points": "points",
+    "visits": "visits"
+  },
+  "home": {
+    "greeting": "Hello",
+    "points": "Your points",
+    "tier": "Tier",
+    "nextReward": "Next reward",
+    "history": "Visit history",
+    "noHistory": "No visits recorded yet.",
+    "scan": "Scan QR",
+    "rewards": "My Rewards"
+  },
+  "rewards": {
+    "title": "Rewards",
+    "available": "Available",
+    "redeem": "Redeem",
+    "redeemed": "Redeemed",
+    "notEnough": "Not enough points",
+    "pointsRequired": "Points required"
+  },
+  "profile": {
+    "title": "My Profile",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "memberSince": "Member since",
+    "totalPoints": "Total points",
+    "totalVisits": "Total visits"
+  },
+  "langSwitch": {
+    "en": "EN",
+    "es": "ES"
+  }
+}

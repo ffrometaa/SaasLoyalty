@@ -2,9 +2,11 @@
 
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { ParticleField } from './ParticleField';
 
 export function HeroSection() {
+  const t = useTranslations('hero');
   const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,7 +56,6 @@ export function HeroSection() {
 
       {/* Content */}
       <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
-        {/* TURN EVERY VISIT */}
         <div
           data-hero-anim
           className="font-display font-black text-white uppercase leading-none tracking-tighter"
@@ -64,10 +65,9 @@ export function HeroSection() {
             animation: 'fadeUp 0.7s ease',
           }}
         >
-          TURN EVERY VISIT
+          {t('line1')}
         </div>
 
-        {/* LoyaltyOS gradient */}
         <div
           data-hero-anim
           className="font-display font-black leading-none tracking-tighter gradient-text"
@@ -81,7 +81,6 @@ export function HeroSection() {
           LoyaltyOS
         </div>
 
-        {/* Subtext */}
         <p
           data-hero-anim
           className="mt-6 text-white/70 leading-relaxed max-w-xl mx-auto"
@@ -91,11 +90,9 @@ export function HeroSection() {
             animation: 'fadeUp 0.7s ease',
           }}
         >
-          LoyaltyOS gives local businesses the same retention tools used by global brands —
-          fully branded, automated, and ready in days
+          {t('description')}
         </p>
 
-        {/* CTA Buttons */}
         <div
           data-hero-anim
           className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
@@ -111,7 +108,7 @@ export function HeroSection() {
               textAlign: 'center',
             }}
           >
-            Pricing
+            {t('ctaPricing')}
           </Link>
           <Link
             href="/contact"
@@ -123,7 +120,7 @@ export function HeroSection() {
               textAlign: 'center',
             }}
           >
-            Request a Demo
+            {t('ctaDemo')}
           </Link>
         </div>
       </div>
@@ -148,9 +145,9 @@ export function HeroSection() {
             />
           </svg>
           <div>
-            <div className="text-[9px] tracking-widest text-white/30 uppercase">System Status</div>
+            <div className="text-[9px] tracking-widest text-white/30 uppercase">{t('statusLabel')}</div>
             <div className="text-[10px] font-bold tracking-widest text-white/50 uppercase">
-              Horizon Stable
+              {t('statusValue')}
             </div>
           </div>
         </div>
@@ -169,9 +166,9 @@ export function HeroSection() {
             />
           </svg>
           <div>
-            <div className="text-[9px] tracking-widest text-white/30 uppercase">Orbital Sector</div>
+            <div className="text-[9px] tracking-widest text-white/30 uppercase">{t('sectorLabel')}</div>
             <div className="text-[10px] font-bold tracking-widest text-white/50 uppercase">
-              M87* Sector 4
+              {t('sectorValue')}
             </div>
           </div>
         </div>
@@ -188,7 +185,7 @@ export function HeroSection() {
         >
           14
         </div>
-        <div className="text-[9px] tracking-widest text-white/30 uppercase">Businesses Trust Us</div>
+        <div className="text-[9px] tracking-widest text-white/30 uppercase">{t('trustLabel')}</div>
       </div>
 
       <style>{`

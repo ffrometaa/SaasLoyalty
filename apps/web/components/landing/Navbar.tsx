@@ -2,17 +2,20 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-
-const LINKS = [
-  { href: '/#features', label: 'HOME' },
-  { href: '/pricing', label: 'PRICING' },
-  { href: '/about', label: 'ABOUT' },
-  { href: '/contact', label: 'CONTACT' },
-];
+import { useTranslations } from 'next-intl';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 export function Navbar() {
+  const t = useTranslations('nav');
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const LINKS = [
+    { href: '/#features', label: t('home') },
+    { href: '/pricing', label: t('pricing') },
+    { href: '/about', label: t('about') },
+    { href: '/contact', label: t('contact') },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -57,6 +60,8 @@ export function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+
             {/* SIGN IN pill — always visible */}
             <Link
               href="/login"
@@ -66,14 +71,14 @@ export function Navbar() {
                 boxShadow: '0 0 20px rgba(225,29,72,0.35)',
               }}
             >
-              SIGN IN
+              {t('signIn')}
             </Link>
 
             {/* Mobile hamburger */}
             <button
               className="md:hidden flex flex-col gap-1.5 p-1"
               onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Toggle menu"
+              aria-label={t('toggleMenu')}
             >
               <span
                 className={`block w-5 h-0.5 bg-white transition-all duration-200 origin-center ${menuOpen ? 'rotate-45 translate-y-2' : ''}`}
