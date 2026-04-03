@@ -1,15 +1,15 @@
 {
-  "name": "LoyaltyOS Member",
-  "short_name": "Rewards",
-  "description": "View your loyalty points and redeem rewards",
+  "name": "Mis Puntos — LoyaltyOS",
+  "short_name": "Mis Puntos",
+  "description": "Tu programa de recompensas personalizado",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#ffffff",
-  "theme_color": "#6366f1",
+  "background_color": "#faf8f4",
+  "theme_color": "#3a4332",
   "categories": ["shopping", "lifestyle"],
-  "lang": "en",
+  "lang": "es",
   "icons": [
     {
       "src": "/icons/icon-192.svg",
@@ -32,18 +32,17 @@
   ],
   "shortcuts": [
     {
-      "name": "My Rewards",
-      "short_name": "Rewards",
+      "name": "Mis Recompensas",
+      "short_name": "Recompensas",
       "url": "/rewards",
-      "description": "View available rewards"
+      "description": "Ver recompensas disponibles"
     },
     {
-      "name": "History",
-      "short_name": "History",
+      "name": "Historial",
+      "short_name": "Historial",
       "url": "/history",
-      "description": "View transaction history"
+      "description": "Ver historial de puntos"
     }
   ],
-  "screenshots": [],
   "prefer_related_applications": false
 }

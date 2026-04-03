@@ -1,0 +1,45 @@
+import { NextResponse } from 'next/server';
+import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
+
+export async function GET() {
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { data: { session } } = await (supabase.auth as any).getSession();
+    const user = session?.user;
+
+    if (!user || user.email !== process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const admin = createServiceRoleClient();
+
+    const { data: tenants, error } = await admin
+      .from('tenants')
+      .select('id, business_name, business_type, slug, plan, plan_status, stripe_customer_id, trial_ends_at, max_members, created_at')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    // Enrich each tenant with member count
+    const enriched = await Promise.all(
+      (tenants || []).map(async (tenant: any) => {
+        const { count: memberCount } = await admin
+          .from('members')
+          .select('*', { count: 'exact', head: true })
+          .eq('tenant_id', tenant.id);
+        const { count: activeMembers } = await admin
+          .from('members')
+          .select('*', { count: 'exact', head: true })
+          .eq('tenant_id', tenant.id)
+          .eq('status', 'active');
+        return { ...tenant, member_count: memberCount || 0, active_members: activeMembers || 0 };
+      })
+    );
+
+    return NextResponse.json({ tenants: enriched });
+  } catch (error) {
+    console.error('Admin tenants error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

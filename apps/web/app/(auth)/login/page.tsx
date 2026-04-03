@@ -31,8 +31,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push('/dashboard');
-    router.refresh();
+    window.location.href = 'https://dashboard.loyalbase.dev';
   };
 
   const handleMagicLink = async (e: React.FormEvent) => {
@@ -44,7 +43,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/callback`,
       },
     });
 

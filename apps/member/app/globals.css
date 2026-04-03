@@ -2,68 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --primary: 238.7 83.5% 66.7%;
-    --primary-foreground: 210 40% 98%;
-  }
+:root {
+  /* Spa design palette */
+  --sage: #7d8c6e;
+  --sage-light: #eef0eb;
+  --sage-dark: #4a5440;
+  --clay: #c4a882;
+  --clay-light: #f7f2ec;
+  --clay-dark: #8a6e4e;
+  --cream: #faf8f4;
+  --text: #2c2c2a;
+  --muted: #8a887f;
+  --border: #e8e4dc;
+  --gold: #c9a84c;
+  --gold-light: #fdf6e3;
+
+  /* Brand tokens — overridden per tenant by BrandTheme */
+  --brand-primary: var(--sage-dark);
+  --brand-secondary: var(--clay);
+  --brand-primary-dark: #3a4332;
+  --brand-primary-light: var(--sage-light);
 }
 
-/* PWA Animations */
-@keyframes slide-up {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slide-down {
-  from {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out;
-}
-
-.animate-slide-down {
-  animation: slide-down 0.3s ease-out;
-}
-
-/* Safe area padding for iOS */
-@supports (padding-top: env(safe-area-inset-top)) {
-  .safe-area-top {
-    padding-top: env(safe-area-inset-top);
-  }
-  .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-}
-
-/* Prevent overscroll bounce on iOS */
-body {
-  overscroll-behavior-y: none;
-}
-
-/* PWA standalone mode adjustments */
-@media (display-mode: standalone) {
-  body {
-    -webkit-user-select: none;
-    user-select: none;
-  }
-}
-
-/* Tap highlight color */
 * {
+  box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
 }
+
+body {
+  font-family: 'Jost', sans-serif;
+  background: var(--cream);
+  overscroll-behavior-y: none;
+  color: var(--text);
+}
+
+/* Scrollbar hide */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* PWA Safe area */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .safe-top  { padding-top: env(safe-area-inset-top); }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .pb-safe   { padding-bottom: calc(env(safe-area-inset-bottom) + 5rem); }
+}
+
+/* PWA standalone */
+@media (display-mode: standalone) {
+  body { -webkit-user-select: none; user-select: none; }
+}
+
+/* Animations */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes bar-fill {
+  from { width: 0%; }
+}
+@keyframes fade-in-scale {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.animate-count-up     { animation: count-up 0.4s ease-out both; }
+.animate-bar-fill     { animation: bar-fill 1s ease-out both; }
+.animate-fade-in-scale { animation: fade-in-scale 0.4s 0.2s ease-out both; }
+.animate-slide-up     { animation: slide-up 0.3s ease-out; }
+
+/* Card tap */
+.card-tap:active { transform: scale(0.97); transition: transform 0.1s; }

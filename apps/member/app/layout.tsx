@@ -1,20 +1,33 @@
 import type { Metadata, Viewport } from 'next';
+import { Cormorant_Garamond, Jost } from 'next/font/google';
 import './globals.css';
-import { InstallPrompt } from '@/components/InstallPrompt';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
 
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['300', '400', '500'],
+  style: ['normal', 'italic'],
+  variable: '--font-cormorant',
+  display: 'swap',
+});
+
+const jost = Jost({
+  subsets: ['latin'],
+  weight: ['300', '400', '500'],
+  variable: '--font-jost',
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
-  title: 'My Rewards - LoyaltyOS',
-  description: 'View your loyalty points and redeem rewards',
+  title: 'Mis Puntos',
+  description: 'Tu programa de recompensas',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
-    title: 'LoyaltyOS',
+    statusBarStyle: 'black-translucent',
+    title: 'Mis Puntos',
   },
-  formatDetection: {
-    telephone: false,
-  },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
@@ -22,21 +35,25 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#6366f1',
   viewportFit: 'cover',
+  themeColor: '#3a4332',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-gray-50 safe-area-top safe-area-bottom">
+    <html lang="es" className={`${cormorant.variable} ${jost.variable}`}>
+      <head>
+        <link
+          rel="preconnect"
+          href="https://fonts.googleapis.com"
+        />
+      </head>
+      <body
+        className="min-h-screen"
+        style={{ fontFamily: "var(--font-jost, 'Jost', sans-serif)" }}
+      >
         <OfflineIndicator />
         {children}
-        <InstallPrompt />
       </body>
     </html>
   );

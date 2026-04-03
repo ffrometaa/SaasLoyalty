@@ -1,21 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { 
-  Building2, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Palette, 
-  CreditCard, 
+import {
+  Building2,
+  Mail,
+  Phone,
+  MapPin,
+  Palette,
+  CreditCard,
   AlertTriangle,
   Download,
   Trash2,
-  Check
+  Check,
+  QrCode,
 } from 'lucide-react';
+import { MemberAppTab } from '../../../components/MemberAppTab';
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<'profile' | 'branding' | 'billing' | 'danger'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'branding' | 'member-app' | 'billing' | 'danger'>('profile');
   const [saved, setSaved] = useState(false);
 
   // Form states
@@ -34,6 +36,7 @@ export default function SettingsPage() {
   const tabs = [
     { id: 'profile', label: 'Business Profile', icon: Building2 },
     { id: 'branding', label: 'Branding', icon: Palette },
+    { id: 'member-app', label: 'App de Miembros', icon: QrCode },
     { id: 'billing', label: 'Plan & Billing', icon: CreditCard },
     { id: 'danger', label: 'Danger Zone', icon: AlertTriangle },
   ];
@@ -217,6 +220,9 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
+
+          {/* Member App Tab */}
+          {activeTab === 'member-app' && <MemberAppTab />}
 
           {/* Branding Tab */}
           {activeTab === 'branding' && (

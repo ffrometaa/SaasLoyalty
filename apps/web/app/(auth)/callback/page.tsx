@@ -16,11 +16,11 @@ function AuthCallbackContent() {
       
       // Get the code from URL
       const code = searchParams.get('code');
-      const next = searchParams.get('next') ?? '/dashboard';
+      const next = searchParams.get('next') ?? 'https://dashboard.loyalbase.dev';
 
       if (code) {
         const { error } = await (supabase.auth as any).exchangeCodeForSession(code);
-        
+
         if (error) {
           setError(error.message);
           setLoading(false);
@@ -28,20 +28,18 @@ function AuthCallbackContent() {
         }
 
         // Redirect to dashboard or specified page
-        router.push(next);
-        router.refresh();
+        window.location.href = next;
       } else {
         // No code, try to get session directly
         const { data: { session }, error: sessionError } = await (supabase.auth as any).getSession();
-        
+
         if (sessionError || !session) {
           setError('Invalid or expired link');
           setLoading(false);
           return;
         }
 
-        router.push(next);
-        router.refresh();
+        window.location.href = next;
       }
     };
 
