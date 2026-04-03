@@ -2,19 +2,19 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  Home, 
-  Users, 
-  Gift, 
-  BarChart3, 
-  Megaphone, 
+import {
+  Home,
+  Users,
+  Gift,
+  BarChart3,
+  Megaphone,
   Settings,
   LogOut,
   Menu,
   X,
   QrCode
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getSupabaseClient } from '@loyalty-os/lib';
 
 const navigation = [
@@ -27,15 +27,33 @@ const navigation = [
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
+const planLabels: Record<string, string> = {
+  starter: 'Starter Plan',
+  pro: 'Pro Plan',
+  scale: 'Scale Plan',
+};
+
 export function Sidebar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userInfo, setUserInfo] = useState<{ email: string; businessName: string; plan: string } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/tenant/me')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setUserInfo(data); })
+      .catch(() => {});
+  }, []);
 
   const handleLogout = async () => {
     const supabase = getSupabaseClient();
     await supabase.auth.signOut();
     window.location.href = 'https://loyalbase.dev/login';
   };
+
+  const initials = userInfo?.email
+    ? userInfo.email.slice(0, 2).toUpperCase()
+    : '··';
 
   return (
     <>
@@ -56,7 +74,7 @@ export function Sidebar() {
 
       {/* Mobile sidebar overlay */}
       {mobileMenuOpen && (
-        <div 
+        <div
           className="lg:hidden fixed inset-0 bg-black/50 z-40"
           onClick={() => setMobileMenuOpen(false)}
         />
@@ -85,7 +103,7 @@ export function Sidebar() {
           {navigation.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             const Icon = item.icon;
-            
+
             return (
               <Link
                 key={item.name}
@@ -109,14 +127,18 @@ export function Sidebar() {
         {/* User section */}
         <div className="p-4 border-t">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-              <span className="text-sm font-medium text-gray-600">JD</span>
+            <div className="h-10 w-10 rounded-full bg-brand-purple-100 flex items-center justify-center flex-shrink-0">
+              <span className="text-sm font-semibold text-brand-purple">{initials}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">John Doe</p>
-              <p className="text-xs text-gray-500 truncate">Starter Plan</p>
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {userInfo?.businessName || userInfo?.email || '—'}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {userInfo ? (planLabels[userInfo.plan] ?? userInfo.plan) : '—'}
+              </p>
             </div>
-            <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-gray-600">
+            <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-gray-600" title="Sign out">
               <LogOut className="h-5 w-5" />
             </button>
           </div>

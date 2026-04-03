@@ -1,9 +1,12 @@
 'use client';
 
 import { Users, Gift, TrendingUp, Calendar } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { MetricCard } from '../../components/MetricCard';
 
 export default function DashboardPage() {
+  const router = useRouter();
+
   return (
     <div className="p-6 lg:p-8">
       {/* Header */}
@@ -46,7 +49,7 @@ export default function DashboardPage() {
       <div className="mb-8">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
         <div className="grid gap-4 md:grid-cols-3">
-          <button className="p-4 bg-white rounded-lg border hover:border-brand-purple hover:shadow-md transition-all text-left">
+          <button onClick={() => router.push('/members')} className="p-4 bg-white rounded-lg border hover:border-brand-purple hover:shadow-md transition-all text-left">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-brand-purple-100 rounded-lg">
                 <Users className="h-5 w-5 text-brand-purple" />
@@ -57,7 +60,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </button>
-          <button className="p-4 bg-white rounded-lg border hover:border-brand-purple hover:shadow-md transition-all text-left">
+          <button onClick={() => router.push('/rewards')} className="p-4 bg-white rounded-lg border hover:border-brand-purple hover:shadow-md transition-all text-left">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-lg">
                 <Gift className="h-5 w-5 text-green-600" />
@@ -68,7 +71,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </button>
-          <button className="p-4 bg-white rounded-lg border hover:border-brand-purple hover:shadow-md transition-all text-left">
+          <button onClick={() => router.push('/redemptions')} className="p-4 bg-white rounded-lg border hover:border-brand-purple hover:shadow-md transition-all text-left">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-amber-100 rounded-lg">
                 <TrendingUp className="h-5 w-5 text-amber-600" />

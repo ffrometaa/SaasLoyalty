@@ -85,15 +85,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get tenant ID from session (would be set by middleware)
-    // For now, we'll get it from the request header
-    const tenantId = request.headers.get('x-tenant-id');
-    if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant context required' },
-        { status: 401 }
-      );
+    // Get tenant from session
+    const { data: { session } } = await (supabase.auth as any).getSession();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const { data: tenant } = await supabase
+      .from('tenants')
+      .select('id, slug')
+      .eq('auth_user_id', session.user.id)
+      .is('deleted_at', null)
+      .single();
+
+    if (!tenant) {
+      return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
+    }
+
+    const tenantId = tenant.id;
 
     // Enforce plan member limit (server-side guard)
     try {
@@ -101,20 +110,6 @@ export async function POST(request: NextRequest) {
     } catch (limitError: unknown) {
       const message = limitError instanceof Error ? limitError.message : 'Member limit reached';
       return NextResponse.json({ error: message }, { status: 403 });
-    }
-
-    // Get tenant slug for member code generation
-    const { data: tenant } = await supabase
-      .from('tenants')
-      .select('slug')
-      .eq('id', tenantId)
-      .single();
-
-    if (!tenant) {
-      return NextResponse.json(
-        { error: 'Tenant not found' },
-        { status: 404 }
-      );
     }
 
     // Generate unique member code

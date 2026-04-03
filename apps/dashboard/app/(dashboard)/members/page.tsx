@@ -1,23 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, ChevronLeft, ChevronRight, UserPlus, CheckCircle } from 'lucide-react';
 import { LimitWarningBanner } from '../../../components/dashboard/LimitWarningBanner';
 import { canAddMember } from '../../../lib/plans/features';
 import type { Plan } from '../../../lib/plans/features';
-
-// TODO: replace with real tenant plan from session/context
-const TENANT_PLAN: Plan = 'starter';
-const MOCK_MEMBER_COUNT = 5;
-
-const mockMembers = [
-  { id: '1', name: 'Maria Garcia', email: 'maria@email.com', memberCode: 'SPA-00284', points: 1250, tier: 'silver', status: 'active', lastVisit: '2024-03-15' },
-  { id: '2', name: 'Carlos Rodriguez', email: 'carlos@email.com', memberCode: 'SPA-00156', points: 4200, tier: 'gold', status: 'active', lastVisit: '2024-03-14' },
-  { id: '3', name: 'Ana Martinez', email: 'ana@email.com', memberCode: 'SPA-00312', points: 450, tier: 'bronze', status: 'active', lastVisit: '2024-03-10' },
-  { id: '4', name: 'Juan Lopez', email: 'juan@email.com', memberCode: 'SPA-00098', points: 8900, tier: 'platinum', status: 'active', lastVisit: '2024-03-12' },
-  { id: '5', name: 'Laura Sanchez', email: 'laura@email.com', memberCode: 'SPA-00201', points: 2100, tier: 'silver', status: 'inactive', lastVisit: '2024-02-20' },
-];
 
 const tierColors = {
   bronze: 'bg-amber-100 text-amber-800',
@@ -32,7 +20,23 @@ const statusColors = {
   blocked: 'bg-red-100 text-red-800',
 };
 
+type Member = {
+  id: string;
+  name: string;
+  email: string;
+  member_code: string;
+  points_balance: number;
+  tier: string;
+  status: string;
+  last_visit_at: string | null;
+};
+
 export default function MembersPage() {
+  const [members, setMembers] = useState<Member[]>([]);
+  const [totalMembers, setTotalMembers] = useState(0);
+  const [tenantPlan, setTenantPlan] = useState<Plan>('starter');
+  const [pageLoading, setPageLoading] = useState(true);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [tierFilter, setTierFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -41,27 +45,53 @@ export default function MembersPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  
-  // Form state
-  const [newMember, setNewMember] = useState({
-    name: '',
-    email: '',
-    phone: '',
-  });
 
-  const itemsPerPage = 10;
-  
-  const filteredMembers = mockMembers.filter(member => {
-    const matchesSearch = 
-      member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.memberCode.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesTier = !tierFilter || member.tier === tierFilter;
-    const matchesStatus = !statusFilter || member.status === statusFilter;
-    
-    return matchesSearch && matchesTier && matchesStatus;
-  });
+  const [newMember, setNewMember] = useState({ name: '', email: '', phone: '' });
+
+  const itemsPerPage = 20;
+
+  const fetchMembers = async () => {
+    setPageLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: String(currentPage),
+        limit: String(itemsPerPage),
+      });
+      if (searchQuery) params.set('search', searchQuery);
+      if (tierFilter) params.set('tier', tierFilter);
+      if (statusFilter) params.set('status', statusFilter);
+
+      const [membersRes, tenantRes] = await Promise.all([
+        fetch(`/api/members?${params}`),
+        fetch('/api/tenant/me'),
+      ]);
+
+      if (membersRes.ok) {
+        const data = await membersRes.json();
+        setMembers(data.members ?? []);
+        setTotalMembers(data.pagination?.total ?? 0);
+      }
+      if (tenantRes.ok) {
+        const data = await tenantRes.json();
+        setTenantPlan(data.plan ?? 'starter');
+      }
+    } finally {
+      setPageLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMembers();
+  }, [currentPage, tierFilter, statusFilter]);
+
+  // Debounce search
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setCurrentPage(1);
+      fetchMembers();
+    }, 400);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,18 +106,16 @@ export default function MembersPage() {
       });
 
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create member');
-      }
+      if (!response.ok) throw new Error(data.error || 'Failed to create member');
 
       setSuccess(true);
       setNewMember({ name: '', email: '', phone: '' });
-      
+
       setTimeout(() => {
         setSuccess(false);
         setIsAddModalOpen(false);
-      }, 2000);
+        fetchMembers();
+      }, 1500);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -95,7 +123,8 @@ export default function MembersPage() {
     }
   };
 
-  const atMemberLimit = !canAddMember(TENANT_PLAN, MOCK_MEMBER_COUNT);
+  const atMemberLimit = !canAddMember(tenantPlan, totalMembers);
+  const totalPages = Math.ceil(totalMembers / itemsPerPage);
 
   return (
     <div className="p-6 lg:p-8">
@@ -104,7 +133,7 @@ export default function MembersPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Members</h1>
           <p className="text-gray-600 mt-1">
-            {filteredMembers.length} member{filteredMembers.length !== 1 ? 's' : ''} in your loyalty program
+            {totalMembers} member{totalMembers !== 1 ? 's' : ''} in your loyalty program
           </p>
         </div>
         <button
@@ -117,9 +146,8 @@ export default function MembersPage() {
         </button>
       </div>
 
-      {/* Limit warning */}
       <div className="mb-6">
-        <LimitWarningBanner plan={TENANT_PLAN} type="members" current={MOCK_MEMBER_COUNT} />
+        <LimitWarningBanner plan={tenantPlan} type="members" current={totalMembers} />
       </div>
 
       {/* Search and Filters */}
@@ -135,9 +163,9 @@ export default function MembersPage() {
           />
         </div>
         <div className="flex gap-3 w-full sm:w-auto">
-          <select 
+          <select
             value={tierFilter}
-            onChange={(e) => setTierFilter(e.target.value)}
+            onChange={(e) => { setTierFilter(e.target.value); setCurrentPage(1); }}
             className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
           >
             <option value="">All Tiers</option>
@@ -146,9 +174,9 @@ export default function MembersPage() {
             <option value="gold">Gold</option>
             <option value="platinum">Platinum</option>
           </select>
-          <select 
+          <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
             className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
           >
             <option value="">All Status</option>
@@ -161,89 +189,98 @@ export default function MembersPage() {
 
       {/* Members Table */}
       <div className="bg-white rounded-lg border overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Points</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tier</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Visit</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {filteredMembers.map((member) => (
-              <tr key={member.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <Link href={`/members/${member.id}`} className="block hover:text-brand-purple">
-                    <p className="font-medium text-gray-900">{member.name}</p>
-                    <p className="text-sm text-gray-500">{member.email}</p>
-                  </Link>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="text-sm text-gray-600 font-mono">{member.memberCode}</span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="font-medium text-gray-900">{member.points.toLocaleString()}</span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${tierColors[member.tier as keyof typeof tierColors]}`}>
-                    {member.tier}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${statusColors[member.status as keyof typeof statusColors]}`}>
-                    {member.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {member.lastVisit}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right">
-                  <Link 
-                    href={`/members/${member.id}`}
-                    className="text-sm text-brand-purple hover:text-brand-purple-700"
+        {pageLoading ? (
+          <div className="px-6 py-16 text-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-purple border-t-transparent mx-auto" />
+            <p className="mt-4 text-sm text-gray-500">Loading members...</p>
+          </div>
+        ) : (
+          <>
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Points</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tier</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Visit</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {members.map((member) => (
+                  <tr key={member.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Link href={`/members/${member.id}`} className="block hover:text-brand-purple">
+                        <p className="font-medium text-gray-900">{member.name}</p>
+                        <p className="text-sm text-gray-500">{member.email}</p>
+                      </Link>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm text-gray-600 font-mono">{member.member_code}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="font-medium text-gray-900">{member.points_balance.toLocaleString()}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${tierColors[member.tier as keyof typeof tierColors] ?? 'bg-gray-100 text-gray-800'}`}>
+                        {member.tier}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full capitalize ${statusColors[member.status as keyof typeof statusColors] ?? 'bg-gray-100 text-gray-800'}`}>
+                        {member.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {member.last_visit_at ? new Date(member.last_visit_at).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <Link
+                        href={`/members/${member.id}`}
+                        className="text-sm text-brand-purple hover:text-brand-purple-700"
+                      >
+                        View
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {members.length === 0 && (
+              <div className="px-6 py-12 text-center">
+                <p className="text-gray-500">No members found matching your criteria.</p>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="px-6 py-4 flex items-center justify-between border-t">
+                <p className="text-sm text-gray-500">
+                  Showing {((currentPage - 1) * itemsPerPage) + 1}–{Math.min(currentPage * itemsPerPage, totalMembers)} of {totalMembers}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="p-2 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    View
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {filteredMembers.length === 0 && (
-          <div className="px-6 py-12 text-center">
-            <p className="text-gray-500">No members found matching your criteria.</p>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {filteredMembers.length > 0 && (
-          <div className="px-6 py-4 flex items-center justify-between border-t">
-            <p className="text-sm text-gray-500">
-              Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredMembers.length)} of {filteredMembers.length} results
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="p-2 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <span className="text-sm text-gray-600">Page {currentPage}</span>
-              <button
-                onClick={() => setCurrentPage(p => p + 1)}
-                disabled={currentPage * itemsPerPage >= filteredMembers.length}
-                className="p-2 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
+                  <button
+                    onClick={() => setCurrentPage(p => p + 1)}
+                    disabled={currentPage >= totalPages}
+                    className="p-2 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -263,11 +300,9 @@ export default function MembersPage() {
             ) : (
               <>
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Add New Member</h2>
-                
+
                 {error && (
-                  <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
-                    {error}
-                  </div>
+                  <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>
                 )}
 
                 <form onSubmit={handleAddMember} className="space-y-4">

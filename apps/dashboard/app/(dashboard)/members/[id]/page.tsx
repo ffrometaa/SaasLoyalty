@@ -1,147 +1,275 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { 
-  ArrowLeft, 
-  Mail, 
-  Phone, 
-  Calendar, 
+import {
+  ArrowLeft,
+  Mail,
+  Phone,
+  Calendar,
   Gift,
   Plus,
   Minus,
   Edit,
   Ban,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  X,
 } from 'lucide-react';
 
-const mockMember = {
-  id: '1',
-  name: 'Maria Garcia',
-  email: 'maria@email.com',
-  phone: '+1 234 567 8900',
-  memberCode: 'SPA-00284',
-  points: 1250,
-  pointsLifetime: 1250,
-  tier: 'silver',
-  status: 'active',
-  visitsTotal: 12,
-  lastVisit: '2024-03-15',
-  acceptsEmail: true,
-  acceptsPush: false,
-  createdAt: '2024-01-10',
-  transactions: [
-    { id: '1', type: 'earn', points: 150, balance_after: 1250, description: 'Purchase: $150.00', created_at: '2024-03-15' },
-    { id: '2', type: 'redeem', points: -500, balance_after: 1100, description: 'Redeemed: 10% Off', created_at: '2024-03-01' },
-    { id: '3', type: 'earn', points: 200, balance_after: 1600, description: 'Purchase: $200.00', created_at: '2024-02-28' },
-    { id: '4', type: 'earn', points: 100, balance_after: 1400, description: 'Purchase: $100.00', created_at: '2024-02-15' },
-    { id: '5', type: 'bonus', points: 300, balance_after: 1300, description: 'Referral bonus', created_at: '2024-02-01' },
-  ],
+type Transaction = {
+  id: string;
+  type: string;
+  points: number;
+  balance_after: number;
+  description: string;
+  created_at: string;
+};
+
+type Member = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  member_code: string;
+  points_balance: number;
+  points_lifetime: number;
+  tier: string;
+  status: string;
+  visits_total: number;
+  last_visit_at: string | null;
+  accepts_email: boolean;
+  accepts_push: boolean;
+  created_at: string;
+  transactions: Transaction[];
 };
 
 const tierColors = {
-  bronze: { bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-amber-300' },
-  silver: { bg: 'bg-gray-100', text: 'text-gray-800', border: 'border-gray-300' },
-  gold: { bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-400' },
-  platinum: { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-300' },
+  bronze: { bg: 'bg-amber-100', text: 'text-amber-800' },
+  silver: { bg: 'bg-gray-100', text: 'text-gray-800' },
+  gold: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
+  platinum: { bg: 'bg-purple-100', text: 'text-purple-800' },
 };
 
-const tierEmojis = {
-  bronze: '🥉',
-  silver: '🥈',
-  gold: '🥇',
-  platinum: '💎',
+const tierEmojis: Record<string, string> = {
+  bronze: '🥉', silver: '🥈', gold: '🥇', platinum: '💎',
 };
 
-const tierThresholds = {
-  bronze: 0,
-  silver: 1000,
-  gold: 5000,
-  platinum: 10000,
+const tierThresholds: Record<string, number> = {
+  bronze: 0, silver: 1000, gold: 5000, platinum: 10000,
 };
 
-const nextTier = {
-  bronze: 'silver',
-  silver: 'gold',
-  gold: 'platinum',
-  platinum: null,
+const nextTierMap: Record<string, string | null> = {
+  bronze: 'silver', silver: 'gold', gold: 'platinum', platinum: null,
 };
 
-const transactionIcons = {
+const transactionStyles: Record<string, { icon: any; color: string; bg: string }> = {
   earn: { icon: Plus, color: 'text-green-600', bg: 'bg-green-100' },
   redeem: { icon: Minus, color: 'text-red-600', bg: 'bg-red-100' },
   bonus: { icon: Gift, color: 'text-brand-purple', bg: 'bg-brand-purple-100' },
   expire: { icon: AlertTriangle, color: 'text-orange-600', bg: 'bg-orange-100' },
-  refund: { icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-100' },
   adjustment: { icon: Edit, color: 'text-blue-600', bg: 'bg-blue-100' },
+  refund: { icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-100' },
 };
 
 export default function MemberDetailPage() {
   const params = useParams();
+  const id = params.id as string;
+
+  const [member, setMember] = useState<Member | null>(null);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [pageError, setPageError] = useState<string | null>(null);
+
   const [isVisitModalOpen, setIsVisitModalOpen] = useState(false);
   const [isAdjustmentModalOpen, setIsAdjustmentModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   const [visitAmount, setVisitAmount] = useState('');
   const [adjustmentPoints, setAdjustmentPoints] = useState('');
   const [adjustmentType, setAdjustmentType] = useState<'add' | 'subtract'>('add');
   const [adjustmentReason, setAdjustmentReason] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', email: '', phone: '' });
 
-  const member = mockMember; // In real app, fetch from API
-  const tierStyle = tierColors[member.tier as keyof typeof tierColors];
-  const nextTierValue = nextTier[member.tier as keyof typeof nextTier];
-  const progressToNext = nextTierValue
-    ? ((member.pointsLifetime - tierThresholds[member.tier as keyof typeof tierThresholds]) / 
-       (tierThresholds[nextTierValue as keyof typeof tierThresholds] - tierThresholds[member.tier as keyof typeof tierThresholds])) * 100
-    : 100;
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const fetchMember = async () => {
+    try {
+      const res = await fetch(`/api/members/${id}`);
+      if (!res.ok) throw new Error('Member not found');
+      const data = await res.json();
+      const m: Member = {
+        ...data.member,
+        transactions: [...(data.member.transactions ?? [])].sort(
+          (a: Transaction, b: Transaction) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        ),
+      };
+      setMember(m);
+      setEditForm({ name: m.name, email: m.email, phone: m.phone ?? '' });
+    } catch (err: any) {
+      setPageError(err.message);
+    } finally {
+      setPageLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchMember(); }, [id]);
 
   const handleRegisterVisit = async () => {
-    setLoading(true);
-    // TODO: Call API
-    console.log('Registering visit:', visitAmount);
-    setTimeout(() => {
-      setLoading(false);
+    if (!visitAmount) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/members/${id}/visit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: parseFloat(visitAmount) }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to register visit');
       setIsVisitModalOpen(false);
       setVisitAmount('');
-    }, 1000);
+      await fetchMember();
+    } catch (err: any) {
+      setActionError(err.message);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleAdjustment = async () => {
-    setLoading(true);
-    // TODO: Call API
-    console.log('Adjustment:', { adjustmentType, adjustmentPoints, adjustmentReason });
-    setTimeout(() => {
-      setLoading(false);
+    if (!adjustmentPoints || !adjustmentReason) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/members/${id}/adjustment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: adjustmentType,
+          points: parseInt(adjustmentPoints),
+          reason: adjustmentReason,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to apply adjustment');
       setIsAdjustmentModalOpen(false);
       setAdjustmentPoints('');
       setAdjustmentReason('');
-    }, 1000);
+      await fetchMember();
+    } catch (err: any) {
+      setActionError(err.message);
+    } finally {
+      setActionLoading(false);
+    }
   };
+
+  const handleToggleBlock = async () => {
+    if (!member) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const newStatus = member.status === 'blocked' ? 'active' : 'blocked';
+      const res = await fetch(`/api/members/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update member');
+      await fetchMember();
+    } catch (err: any) {
+      setActionError(err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/members/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editForm.name,
+          email: editForm.email,
+          phone: editForm.phone || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update member');
+      setIsEditModalOpen(false);
+      await fetchMember();
+    } catch (err: any) {
+      setActionError(err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  if (pageLoading) {
+    return (
+      <div className="p-6 lg:p-8 flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-purple border-t-transparent mx-auto" />
+          <p className="mt-4 text-sm text-gray-500">Loading member...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (pageError || !member) {
+    return (
+      <div className="p-6 lg:p-8">
+        <Link href="/members" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6">
+          <ArrowLeft className="h-5 w-5" />
+          Back to Members
+        </Link>
+        <div className="bg-red-50 rounded-xl p-6 text-center">
+          <p className="text-red-700">{pageError ?? 'Member not found'}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const tierStyle = tierColors[member.tier as keyof typeof tierColors] ?? tierColors.bronze;
+  const nextTier = nextTierMap[member.tier];
+  const progressToNext = nextTier
+    ? ((member.points_lifetime - tierThresholds[member.tier]) /
+       (tierThresholds[nextTier] - tierThresholds[member.tier])) * 100
+    : 100;
 
   return (
     <div className="p-6 lg:p-8">
-      {/* Back button */}
-      <Link 
-        href="/members" 
-        className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
-      >
+      <Link href="/members" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6">
         <ArrowLeft className="h-5 w-5" />
         Back to Members
       </Link>
 
+      {actionError && (
+        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm flex items-center justify-between">
+          {actionError}
+          <button onClick={() => setActionError(null)}><X className="h-4 w-4" /></button>
+        </div>
+      )}
+
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left column - Member info */}
+        {/* Left column */}
         <div className="lg:col-span-1 space-y-6">
           {/* Profile Card */}
           <div className="bg-white rounded-xl border p-6">
             <div className="flex items-start justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{member.name}</h1>
-                <p className="text-gray-500 mt-1">{member.memberCode}</p>
+                <p className="text-gray-500 mt-1">{member.member_code}</p>
               </div>
               <span className={`px-3 py-1 text-sm font-medium rounded-full capitalize ${tierStyle.bg} ${tierStyle.text}`}>
-                {tierEmojis[member.tier as keyof typeof tierEmojis]} {member.tier}
+                {tierEmojis[member.tier] ?? ''} {member.tier}
               </span>
             </div>
 
@@ -158,26 +286,27 @@ export default function MemberDetailPage() {
               )}
               <div className="flex items-center gap-3 text-gray-600">
                 <Calendar className="h-5 w-5" />
-                <span>Member since {member.createdAt}</span>
+                <span>Member since {new Date(member.created_at).toLocaleDateString()}</span>
               </div>
             </div>
 
-            <div className="mt-6 pt-6 border-t">
-              <div className="flex items-center justify-between">
-                <span className={`px-2 py-1 text-xs font-medium rounded ${
-                  member.status === 'active' ? 'bg-green-100 text-green-800' :
-                  member.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-red-100 text-red-800'
-                }`}>
-                  {member.status === 'active' && <CheckCircle className="inline h-3 w-3 mr-1" />}
-                  {member.status === 'blocked' && <Ban className="inline h-3 w-3 mr-1" />}
-                  {member.status}
-                </span>
-                <button className="text-sm text-brand-purple hover:text-brand-purple-700">
-                  <Edit className="inline h-4 w-4 mr-1" />
-                  Edit
-                </button>
-              </div>
+            <div className="mt-6 pt-6 border-t flex items-center justify-between">
+              <span className={`px-2 py-1 text-xs font-medium rounded ${
+                member.status === 'active' ? 'bg-green-100 text-green-800' :
+                member.status === 'inactive' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-red-100 text-red-800'
+              }`}>
+                {member.status === 'active' && <CheckCircle className="inline h-3 w-3 mr-1" />}
+                {member.status === 'blocked' && <Ban className="inline h-3 w-3 mr-1" />}
+                {member.status}
+              </span>
+              <button
+                onClick={() => setIsEditModalOpen(true)}
+                className="text-sm text-brand-purple hover:text-brand-purple-700"
+              >
+                <Edit className="inline h-4 w-4 mr-1" />
+                Edit
+              </button>
             </div>
           </div>
 
@@ -185,23 +314,22 @@ export default function MemberDetailPage() {
           <div className="bg-white rounded-xl border p-6">
             <h2 className="text-sm font-medium text-gray-500">Points Balance</h2>
             <p className="text-4xl font-bold text-brand-purple mt-2">
-              {member.points.toLocaleString()}
+              {member.points_balance.toLocaleString()}
             </p>
             <p className="text-sm text-gray-500 mt-1">
-              {member.pointsLifetime.toLocaleString()} lifetime points
+              {member.points_lifetime.toLocaleString()} lifetime points
             </p>
 
-            {/* Tier Progress */}
-            {nextTierValue && (
+            {nextTier && (
               <div className="mt-6">
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-600">Progress to {nextTierValue}</span>
+                  <span className="text-gray-600">Progress to {nextTier}</span>
                   <span className="font-medium">
-                    {tierThresholds[nextTierValue as keyof typeof tierThresholds] - member.pointsLifetime} pts to go
+                    {tierThresholds[nextTier] - member.points_lifetime} pts to go
                   </span>
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className="h-full bg-brand-purple rounded-full transition-all"
                     style={{ width: `${Math.min(progressToNext, 100)}%` }}
                   />
@@ -211,12 +339,14 @@ export default function MemberDetailPage() {
 
             <div className="mt-6 grid grid-cols-2 gap-4 text-center">
               <div className="p-3 bg-gray-50 rounded-lg">
-                <p className="text-2xl font-bold text-gray-900">{member.visitsTotal}</p>
+                <p className="text-2xl font-bold text-gray-900">{member.visits_total}</p>
                 <p className="text-sm text-gray-500">Total Visits</p>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
                 <p className="text-sm text-gray-500">Last Visit</p>
-                <p className="text-lg font-medium text-gray-900">{member.lastVisit}</p>
+                <p className="text-lg font-medium text-gray-900">
+                  {member.last_visit_at ? new Date(member.last_visit_at).toLocaleDateString() : '—'}
+                </p>
               </div>
             </div>
           </div>
@@ -227,25 +357,35 @@ export default function MemberDetailPage() {
             <div className="space-y-3">
               <button
                 onClick={() => setIsVisitModalOpen(true)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                disabled={member.status === 'blocked' || actionLoading}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Plus className="h-5 w-5" />
                 Register Visit
               </button>
               <button
                 onClick={() => setIsAdjustmentModalOpen(true)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                disabled={member.status === 'blocked' || actionLoading}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Edit className="h-5 w-5" />
                 Add Adjustment
               </button>
-              {member.status === 'active' ? (
-                <button className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50">
+              {member.status !== 'blocked' ? (
+                <button
+                  onClick={handleToggleBlock}
+                  disabled={actionLoading}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 disabled:opacity-50"
+                >
                   <Ban className="h-5 w-5" />
                   Block Member
                 </button>
               ) : (
-                <button className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-green-300 text-green-600 rounded-lg hover:bg-green-50">
+                <button
+                  onClick={handleToggleBlock}
+                  disabled={actionLoading}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-green-300 text-green-600 rounded-lg hover:bg-green-50 disabled:opacity-50"
+                >
                   <CheckCircle className="h-5 w-5" />
                   Unblock Member
                 </button>
@@ -262,33 +402,29 @@ export default function MemberDetailPage() {
             </div>
             <div className="divide-y">
               {member.transactions.map((tx) => {
-                const txStyle = transactionIcons[tx.type as keyof typeof transactionIcons] || transactionIcons.earn;
-                const Icon = txStyle.icon;
-                
+                const style = transactionStyles[tx.type] ?? transactionStyles.earn;
+                const Icon = style.icon;
                 return (
                   <div key={tx.id} className="px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className={`p-2 rounded-full ${txStyle.bg}`}>
-                        <Icon className={`h-5 w-5 ${txStyle.color}`} />
+                      <div className={`p-2 rounded-full ${style.bg}`}>
+                        <Icon className={`h-5 w-5 ${style.color}`} />
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">{tx.description}</p>
-                        <p className="text-sm text-gray-500">{tx.created_at}</p>
+                        <p className="text-sm text-gray-500">{new Date(tx.created_at).toLocaleDateString()}</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className={`font-bold ${tx.points > 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {tx.points > 0 ? '+' : ''}{tx.points.toLocaleString()}
                       </p>
-                      <p className="text-sm text-gray-500">
-                        Balance: {tx.balance_after.toLocaleString()}
-                      </p>
+                      <p className="text-sm text-gray-500">Balance: {tx.balance_after.toLocaleString()}</p>
                     </div>
                   </div>
                 );
               })}
             </div>
-            
             {member.transactions.length === 0 && (
               <div className="px-6 py-12 text-center">
                 <Gift className="mx-auto h-12 w-12 text-gray-300" />
@@ -305,11 +441,10 @@ export default function MemberDetailPage() {
           <div className="absolute inset-0 bg-black/50" onClick={() => setIsVisitModalOpen(false)} />
           <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 m-4">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Register Visit</h2>
+            {actionError && <p className="mb-3 text-sm text-red-600">{actionError}</p>}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Purchase Amount ($)
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Amount ($)</label>
                 <input
                   type="number"
                   value={visitAmount}
@@ -323,30 +458,22 @@ export default function MemberDetailPage() {
               </div>
               <div className="p-4 bg-gray-50 rounded-lg">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Points per dollar</span>
-                  <span className="font-medium">1</span>
-                </div>
-                <div className="flex justify-between text-sm mt-2">
                   <span className="text-gray-600">Points to earn</span>
                   <span className="font-bold text-green-600">
-                    +{visitAmount ? Math.floor(parseFloat(visitAmount) * 1) : 0}
+                    +{visitAmount ? Math.floor(parseFloat(visitAmount)) : 0}
                   </span>
                 </div>
               </div>
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setIsVisitModalOpen(false)}
-                  className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50"
-                >
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setIsVisitModalOpen(false)} className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">
                   Cancel
                 </button>
                 <button
                   onClick={handleRegisterVisit}
-                  disabled={!visitAmount || loading}
+                  disabled={!visitAmount || actionLoading}
                   className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
                 >
-                  {loading ? 'Processing...' : 'Register'}
+                  {actionLoading ? 'Processing...' : 'Register'}
                 </button>
               </div>
             </div>
@@ -360,28 +487,17 @@ export default function MemberDetailPage() {
           <div className="absolute inset-0 bg-black/50" onClick={() => setIsAdjustmentModalOpen(false)} />
           <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 m-4">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Add Adjustment</h2>
+            {actionError && <p className="mb-3 text-sm text-red-600">{actionError}</p>}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
                 <div className="flex gap-4">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="adjustmentType"
-                      checked={adjustmentType === 'add'}
-                      onChange={() => setAdjustmentType('add')}
-                      className="text-brand-purple"
-                    />
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" checked={adjustmentType === 'add'} onChange={() => setAdjustmentType('add')} className="text-brand-purple" />
                     <span>Add Points</span>
                   </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="adjustmentType"
-                      checked={adjustmentType === 'subtract'}
-                      onChange={() => setAdjustmentType('subtract')}
-                      className="text-brand-purple"
-                    />
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" checked={adjustmentType === 'subtract'} onChange={() => setAdjustmentType('subtract')} className="text-brand-purple" />
                     <span>Subtract Points</span>
                   </label>
                 </div>
@@ -394,7 +510,7 @@ export default function MemberDetailPage() {
                   onChange={(e) => setAdjustmentPoints(e.target.value)}
                   className="w-full px-3 py-2 border rounded-lg"
                   placeholder="0"
-                  min="0"
+                  min="1"
                 />
               </div>
               <div>
@@ -412,23 +528,74 @@ export default function MemberDetailPage() {
                   <option value="other">Other</option>
                 </select>
               </div>
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setIsAdjustmentModalOpen(false)}
-                  className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50"
-                >
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setIsAdjustmentModalOpen(false)} className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">
                   Cancel
                 </button>
                 <button
                   onClick={handleAdjustment}
-                  disabled={!adjustmentPoints || !adjustmentReason || loading}
+                  disabled={!adjustmentPoints || !adjustmentReason || actionLoading}
                   className="flex-1 px-4 py-2 bg-brand-purple text-white rounded-lg hover:bg-brand-purple-700 disabled:opacity-50"
                 >
-                  {loading ? 'Processing...' : 'Apply'}
+                  {actionLoading ? 'Processing...' : 'Apply'}
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Member Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setIsEditModalOpen(false)} />
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 m-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Edit Member</h2>
+            {actionError && <p className="mb-3 text-sm text-red-600">{actionError}</p>}
+            <form onSubmit={handleEdit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={editForm.name}
+                  onChange={(e) => setEditForm(p => ({ ...p, name: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                <input
+                  type="email"
+                  required
+                  value={editForm.email}
+                  onChange={(e) => setEditForm(p => ({ ...p, email: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <input
+                  type="tel"
+                  value={editForm.phone}
+                  onChange={(e) => setEditForm(p => ({ ...p, phone: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple"
+                  placeholder="+1 234 567 8900"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setIsEditModalOpen(false)} disabled={actionLoading} className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50">
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={actionLoading}
+                  className="flex-1 px-4 py-2 bg-brand-purple text-white rounded-lg hover:bg-brand-purple-700 disabled:opacity-50"
+                >
+                  {actionLoading ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
