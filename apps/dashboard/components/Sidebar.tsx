@@ -15,6 +15,7 @@ import {
   QrCode
 } from 'lucide-react';
 import { useState } from 'react';
+import { getSupabaseClient } from '@loyalty-os/lib';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -29,6 +30,12 @@ const navigation = [
 export function Sidebar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleLogout = async () => {
+    const supabase = getSupabaseClient();
+    await supabase.auth.signOut();
+    window.location.href = 'https://loyalbase.dev/login';
+  };
 
   return (
     <>
@@ -109,7 +116,7 @@ export function Sidebar() {
               <p className="text-sm font-medium text-gray-900 truncate">John Doe</p>
               <p className="text-xs text-gray-500 truncate">Starter Plan</p>
             </div>
-            <button className="p-2 text-gray-400 hover:text-gray-600">
+            <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-gray-600">
               <LogOut className="h-5 w-5" />
             </button>
           </div>
