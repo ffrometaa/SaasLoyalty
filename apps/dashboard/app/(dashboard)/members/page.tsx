@@ -2,8 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, Plus, MoreVertical, ChevronLeft, ChevronRight, UserPlus, CheckCircle } from 'lucide-react';
-import { getSupabaseClient } from '@loyalty-os/lib';
+import { Search, ChevronLeft, ChevronRight, UserPlus, CheckCircle } from 'lucide-react';
+import { LimitWarningBanner } from '../../../components/dashboard/LimitWarningBanner';
+import { canAddMember } from '../../../lib/plans/features';
+import type { Plan } from '../../../lib/plans/features';
+
+// TODO: replace with real tenant plan from session/context
+const TENANT_PLAN: Plan = 'starter';
+const MOCK_MEMBER_COUNT = 5;
 
 const mockMembers = [
   { id: '1', name: 'Maria Garcia', email: 'maria@email.com', memberCode: 'SPA-00284', points: 1250, tier: 'silver', status: 'active', lastVisit: '2024-03-15' },
@@ -89,10 +95,12 @@ export default function MembersPage() {
     }
   };
 
+  const atMemberLimit = !canAddMember(TENANT_PLAN, MOCK_MEMBER_COUNT);
+
   return (
     <div className="p-6 lg:p-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Members</h1>
           <p className="text-gray-600 mt-1">
@@ -100,16 +108,22 @@ export default function MembersPage() {
           </p>
         </div>
         <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          onClick={() => !atMemberLimit && setIsAddModalOpen(true)}
+          disabled={atMemberLimit}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <UserPlus className="h-5 w-5" />
           Add Member
         </button>
       </div>
 
+      {/* Limit warning */}
+      <div className="mb-6">
+        <LimitWarningBanner plan={TENANT_PLAN} type="members" current={MOCK_MEMBER_COUNT} />
+      </div>
+
       {/* Search and Filters */}
-      <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-2">
         <div className="relative flex-1 w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input

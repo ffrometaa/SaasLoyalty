@@ -1,7 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, TrendingUp, TrendingDown, Minus, Calendar, Gift, Percent, Clock } from 'lucide-react';
+import { Users, TrendingUp, TrendingDown, Minus, Calendar, Gift, Percent, Clock, Download } from 'lucide-react';
+import { FeatureGate } from '../../../components/dashboard/FeatureGate';
+import type { Plan } from '../../../lib/plans/features';
+
+// TODO: replace with real tenant plan from session/context
+const TENANT_PLAN: Plan = 'starter';
 
 export default function AnalyticsPage() {
   const [dateRange, setDateRange] = useState<'week' | 'month' | 'year'>('month');
@@ -76,7 +81,7 @@ export default function AnalyticsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
           <p className="text-gray-600 mt-1">Track your loyalty program performance</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           {(['week', 'month', 'year'] as const).map((range) => (
             <button
               key={range}
@@ -90,6 +95,13 @@ export default function AnalyticsPage() {
               {range.charAt(0).toUpperCase() + range.slice(1)}
             </button>
           ))}
+          {/* Export — Scale only */}
+          <FeatureGate plan={TENANT_PLAN} feature="analytics_export" silent>
+            <button className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-white border hover:bg-gray-50 text-gray-600">
+              <Download className="h-4 w-4" />
+              Export
+            </button>
+          </FeatureGate>
         </div>
       </div>
 
@@ -179,42 +191,44 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        {/* Visits Heatmap */}
-        <div className="bg-white rounded-xl border p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Peak Hours</h2>
-          <div className="overflow-x-auto">
-            <div className="min-w-[500px]">
-              {/* Hour labels */}
-              <div className="flex mb-2">
-                <div className="w-12" />
-                {hours.map((hour) => (
-                  <div key={hour} className="flex-1 text-center text-xs text-gray-500">
-                    {hour}:00
+        {/* Visits Heatmap — Pro/Scale only */}
+        <FeatureGate plan={TENANT_PLAN} feature="analytics_heatmap">
+          <div className="bg-white rounded-xl border p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Peak Hours</h2>
+            <div className="overflow-x-auto">
+              <div className="min-w-[500px]">
+                {/* Hour labels */}
+                <div className="flex mb-2">
+                  <div className="w-12" />
+                  {hours.map((hour) => (
+                    <div key={hour} className="flex-1 text-center text-xs text-gray-500">
+                      {hour}:00
+                    </div>
+                  ))}
+                </div>
+                {/* Heatmap grid */}
+                {days.map((day, dayIndex) => (
+                  <div key={day} className="flex items-center mb-1">
+                    <div className="w-12 text-sm text-gray-600">{day}</div>
+                    {heatmapData[dayIndex].map((intensity, hourIndex) => (
+                      <div
+                        key={hourIndex}
+                        className="flex-1 h-6 rounded-sm mx-0.5"
+                        style={{
+                          backgroundColor: `rgba(99, 102, 241, ${intensity / 100})`,
+                        }}
+                        title={`${intensity.toFixed(0)}% of daily visits`}
+                      />
+                    ))}
                   </div>
                 ))}
               </div>
-              {/* Heatmap grid */}
-              {days.map((day, dayIndex) => (
-                <div key={day} className="flex items-center mb-1">
-                  <div className="w-12 text-sm text-gray-600">{day}</div>
-                  {heatmapData[dayIndex].map((intensity, hourIndex) => (
-                    <div
-                      key={hourIndex}
-                      className="flex-1 h-6 rounded-sm mx-0.5"
-                      style={{
-                        backgroundColor: `rgba(99, 102, 241, ${intensity / 100})`,
-                      }}
-                      title={`${intensity.toFixed(0)}% of daily visits`}
-                    />
-                  ))}
-                </div>
-              ))}
             </div>
+            <p className="text-xs text-gray-500 mt-4 text-center">
+              Darker colors indicate higher visit frequency
+            </p>
           </div>
-          <p className="text-xs text-gray-500 mt-4 text-center">
-            Darker colors indicate higher visit frequency
-          </p>
-        </div>
+        </FeatureGate>
 
         {/* Top Products */}
         <div className="bg-white rounded-xl border p-6 lg:col-span-2">

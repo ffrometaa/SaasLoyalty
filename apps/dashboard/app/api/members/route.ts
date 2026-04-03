@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { requireMemberSlot } from '../../lib/plans/guardFeature';
 
 // GET /api/members - List members
 export async function GET(request: NextRequest) {
@@ -92,6 +93,14 @@ export async function POST(request: NextRequest) {
         { error: 'Tenant context required' },
         { status: 401 }
       );
+    }
+
+    // Enforce plan member limit (server-side guard)
+    try {
+      await requireMemberSlot(tenantId);
+    } catch (limitError: unknown) {
+      const message = limitError instanceof Error ? limitError.message : 'Member limit reached';
+      return NextResponse.json({ error: message }, { status: 403 });
     }
 
     // Get tenant slug for member code generation
