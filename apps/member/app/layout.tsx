@@ -48,10 +48,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={locale} className={`${cormorant.variable} ${jost.variable}`}>
       <head>
-        <link
-          rel="preconnect"
-          href="https://fonts.googleapis.com"
-        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body
         className="min-h-screen"
