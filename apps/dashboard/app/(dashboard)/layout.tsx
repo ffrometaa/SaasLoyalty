@@ -18,7 +18,7 @@ export default function DashboardLayout({
       <Sidebar />
       <div className="lg:pl-64 flex flex-col min-h-screen">
         <SuperAdminBanner />
-        <main className="flex-1">
+        <main className="flex-1 pt-16 lg:pt-0">
           {children}
         </main>
       </div>

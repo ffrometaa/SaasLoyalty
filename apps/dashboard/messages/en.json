@@ -432,7 +432,14 @@
     "activate": "Activate",
     "archive": "Archive",
     "upgradeRequired": "Gamification is an Enterprise feature",
-    "upgradeDesc": "Upgrade to Enterprise to create challenges and badges that keep members coming back."
+    "upgradeDesc": "Upgrade to Enterprise to create challenges and badges that keep members coming back.",
+    "comingSoonBadge": "Coming Soon",
+    "comingSoonTitle": "Gamification is coming to your plan!",
+    "comingSoonDesc": "We're building something incredible. Very soon you'll receive an exclusive invitation to a live demo of our gamification platform — designed to keep your customers coming back again and again.",
+    "comingSoonFeature1": "Custom challenges and missions",
+    "comingSoonFeature2": "Exclusive badges and rewards",
+    "comingSoonFeature3": "Leaderboards and rankings",
+    "comingSoonCta": "Explore higher plans →"
   },
   "langSwitch": {
     "en": "EN",

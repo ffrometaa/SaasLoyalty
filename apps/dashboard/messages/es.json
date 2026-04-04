@@ -432,7 +432,14 @@
     "activate": "Activar",
     "archive": "Archivar",
     "upgradeRequired": "Gamificación es una función Enterprise",
-    "upgradeDesc": "Actualiza a Enterprise para crear desafíos e insignias que hagan volver a los miembros."
+    "upgradeDesc": "Actualiza a Enterprise para crear desafíos e insignias que hagan volver a los miembros.",
+    "comingSoonBadge": "Próximamente",
+    "comingSoonTitle": "¡Gamificación viene a tu plan!",
+    "comingSoonDesc": "Estamos preparando algo increíble. Muy pronto recibirás una invitación exclusiva para una demostración de nuestra plataforma de gamificación — diseñada para hacer que tus clientes vuelvan una y otra vez.",
+    "comingSoonFeature1": "Desafíos y misiones personalizadas",
+    "comingSoonFeature2": "Insignias y recompensas exclusivas",
+    "comingSoonFeature3": "Rankings y tablas de posiciones",
+    "comingSoonCta": "Explorar planes superiores →"
   },
   "langSwitch": {
     "en": "EN",
