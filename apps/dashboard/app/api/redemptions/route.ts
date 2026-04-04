@@ -92,6 +92,7 @@ export async function POST(request: NextRequest) {
         id: redemption.id,
         status: 'used',
         used_at: new Date().toISOString(),
+        points_spent: redemption.points_spent,
         member: {
           id: member?.id,
           name: member?.name,
@@ -116,9 +117,37 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createServerSupabaseClient();
-    
+
+    const { data: { session } } = await (supabase.auth as any).getSession();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { data: ownerTenant } = await supabase
+      .from('tenants')
+      .select('id')
+      .eq('auth_user_id', session.user.id)
+      .is('deleted_at', null)
+      .single();
+
+    let tenantId: string | null = ownerTenant?.id ?? null;
+
+    if (!tenantId) {
+      const { data: staffRecord } = await supabase
+        .from('tenant_users')
+        .select('tenant_id')
+        .eq('auth_user_id', session.user.id)
+        .single();
+      tenantId = staffRecord?.tenant_id ?? null;
+    }
+
+    if (!tenantId) {
+      return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
+    }
+
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status');
+    const limit = parseInt(searchParams.get('limit') || '20');
 
     let query = supabase
       .from('redemptions')
@@ -134,7 +163,9 @@ export async function GET(request: NextRequest) {
           name
         )
       `, { count: 'exact' })
-      .order('created_at', { ascending: false });
+      .eq('tenant_id', tenantId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
     if (status) {
       query = query.eq('status', status);

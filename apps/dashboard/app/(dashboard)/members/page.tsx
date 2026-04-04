@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, ChevronLeft, ChevronRight, UserPlus, CheckCircle } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, UserPlus, CheckCircle, Upload, Users, FileText, Link2 } from 'lucide-react';
 import { LimitWarningBanner } from '../../../components/dashboard/LimitWarningBanner';
 import { canAddMember } from '../../../lib/plans/features';
 import type { Plan } from '../../../lib/plans/features';
@@ -46,6 +46,10 @@ export default function MembersPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importText, setImportText] = useState('');
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState<{ imported: number; skipped: number; errors: string[] } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -127,6 +131,26 @@ export default function MembersPage() {
     }
   };
 
+  const handleImport = async () => {
+    if (!importText.trim()) return;
+    setImportLoading(true);
+    setImportResult(null);
+    try {
+      const res = await fetch('/api/members/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: importText,
+      });
+      const data = await res.json();
+      setImportResult(data);
+      if (data.imported > 0) fetchMembers();
+    } catch {
+      setImportResult({ imported: 0, skipped: 0, errors: ['Connection error'] });
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
   const atMemberLimit = !canAddMember(tenantPlan, totalMembers);
   const totalPages = Math.ceil(totalMembers / itemsPerPage);
 
@@ -140,14 +164,23 @@ export default function MembersPage() {
             {t('subtitle', { count: totalMembers, plural: totalMembers !== 1 ? 's' : '' })}
           </p>
         </div>
-        <button
-          onClick={() => !atMemberLimit && setIsAddModalOpen(true)}
-          disabled={atMemberLimit}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-brand-purple text-white rounded-lg hover:bg-brand-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <UserPlus className="h-5 w-5" />
-          {t('addMember')}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <Upload className="h-5 w-5" />
+            Import CSV
+          </button>
+          <button
+            onClick={() => !atMemberLimit && setIsAddModalOpen(true)}
+            disabled={atMemberLimit}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-brand-purple text-white rounded-lg hover:bg-brand-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <UserPlus className="h-5 w-5" />
+            {t('addMember')}
+          </button>
+        </div>
       </div>
 
       <div className="mb-6">
@@ -253,9 +286,36 @@ export default function MembersPage() {
               </tbody>
             </table>
 
-            {members.length === 0 && (
-              <div className="px-6 py-12 text-center">
-                <p className="text-gray-500">{t('noMembersFound')}</p>
+            {members.length === 0 && !pageLoading && (
+              <div className="px-6 py-16 text-center">
+                <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-gray-100 mb-4">
+                  <Users className="h-6 w-6 text-gray-400" />
+                </div>
+                <h3 className="text-base font-semibold text-gray-900 mb-1">No members yet</h3>
+                <p className="text-sm text-gray-500 mb-8">Add your first members using any of these methods:</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto text-left">
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <UserPlus className="h-5 w-5 text-brand-purple" />
+                      <span className="text-sm font-medium text-gray-900">Manual</span>
+                    </div>
+                    <p className="text-xs text-gray-500">Add members one by one with the + button above</p>
+                  </div>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <FileText className="h-5 w-5 text-brand-purple" />
+                      <span className="text-sm font-medium text-gray-900">Import CSV</span>
+                    </div>
+                    <p className="text-xs text-gray-500">Upload a list of existing members in bulk</p>
+                  </div>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Link2 className="h-5 w-5 text-brand-purple" />
+                      <span className="text-sm font-medium text-gray-900">Join Link</span>
+                    </div>
+                    <p className="text-xs text-gray-500">Share your Join Link from Settings &gt; Integrations so members can join themselves</p>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -287,6 +347,88 @@ export default function MembersPage() {
           </>
         )}
       </div>
+
+      {/* CSV Import Modal */}
+      {isImportModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => !importLoading && (setIsImportModalOpen(false), setImportText(''), setImportResult(null))} />
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg p-6 m-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-1">Import Members from CSV</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Paste your CSV below. First row must be the header:{' '}
+              <code className="bg-gray-100 px-1 rounded text-xs font-mono">name,email,phone</code>{' '}
+              (phone is optional)
+            </p>
+
+            <textarea
+              rows={10}
+              value={importText}
+              onChange={(e) => setImportText(e.target.value)}
+              disabled={importLoading || !!importResult}
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple font-mono text-sm resize-none disabled:bg-gray-50"
+              placeholder={"name,email,phone\nJohn Doe,john@example.com,+1234567890"}
+            />
+
+            <div className="mt-2 mb-4">
+              <a
+                href="data:text/plain;charset=utf-8,name%2Cemail%2Cphone%0AJohn%20Doe%2Cjohn%40example.com%2C%2B1234567890"
+                download="members-template.csv"
+                className="text-xs text-brand-purple hover:underline"
+              >
+                Download sample template
+              </a>
+            </div>
+
+            {importResult ? (
+              <div className="space-y-3">
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
+                  {importResult.imported} member{importResult.imported !== 1 ? 's' : ''} imported successfully
+                </div>
+                {importResult.skipped > 0 && (
+                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+                    {importResult.skipped} row{importResult.skipped !== 1 ? 's' : ''} skipped
+                  </div>
+                )}
+                {importResult.errors.length > 0 && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+                    <p className="font-medium mb-1">Errors:</p>
+                    <ul className="list-disc list-inside space-y-0.5">
+                      {importResult.errors.slice(0, 5).map((err, i) => (
+                        <li key={i}>{err}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <button
+                  onClick={() => { setIsImportModalOpen(false); setImportText(''); setImportResult(null); }}
+                  className="w-full px-4 py-2 bg-brand-purple text-white rounded-lg hover:bg-brand-purple-700 transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setIsImportModalOpen(false); setImportText(''); setImportResult(null); }}
+                  disabled={importLoading}
+                  className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                >
+                  {tCommon('cancel')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleImport}
+                  disabled={importLoading || !importText.trim()}
+                  className="flex-1 px-4 py-2 bg-brand-purple text-white rounded-lg hover:bg-brand-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {importLoading ? 'Importing…' : 'Import'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Add Member Modal */}
       {isAddModalOpen && (

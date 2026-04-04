@@ -1,9 +1,8 @@
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
-import { redirect } from 'next/navigation';
-import { getCampaigns, getCampaignStatusCounts, getCampaignsThisMonth } from '../../../lib/campaigns/queries';
-import { PLAN_CONFIGS } from '../../../lib/plans/features';
-import CampaignsList from '../../../components/dashboard/CampaignsList';
-import type { Plan } from '../../../lib/plans/features';
+import { redirect, notFound } from 'next/navigation';
+import { getCampaignById } from '../../../../../lib/campaigns/queries';
+import CampaignForm from '../../../../../components/dashboard/CampaignForm';
+import type { Plan } from '../../../../../lib/plans/features';
 
 async function resolveAuthedTenant(
   supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>
@@ -34,29 +33,21 @@ async function resolveAuthedTenant(
   return null;
 }
 
-export default async function CampaignsPage() {
+export default async function EditCampaignPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const supabase = await createServerSupabaseClient();
   const tenant = await resolveAuthedTenant(supabase);
-
   if (!tenant) redirect('/login');
 
-  const { tenantId, plan } = tenant;
+  const campaign = await getCampaignById(tenant.tenantId, params.id);
+  if (!campaign) notFound();
 
-  const [{ campaigns }, statusCounts, currentMonthCount] = await Promise.all([
-    getCampaigns(tenantId),
-    getCampaignStatusCounts(tenantId),
-    getCampaignsThisMonth(tenantId),
-  ]);
+  if (campaign.status !== 'draft' && campaign.status !== 'scheduled') {
+    redirect('/campaigns');
+  }
 
-  const planConfig = PLAN_CONFIGS[plan];
-  const planLimit = planConfig.maxCampaignsPerMonth;
-
-  return (
-    <CampaignsList
-      campaigns={campaigns}
-      statusCounts={statusCounts}
-      planLimit={planLimit}
-      currentMonthCount={currentMonthCount}
-    />
-  );
+  return <CampaignForm campaign={campaign} tenantId={tenant.tenantId} />;
 }

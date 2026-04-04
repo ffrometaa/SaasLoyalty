@@ -18,6 +18,7 @@ import {
   UserPlus,
   X,
   Shield,
+  Link2,
 } from 'lucide-react';
 import { MemberAppTab } from '../../../components/MemberAppTab';
 
@@ -35,7 +36,7 @@ type Invoice = {
 };
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<'profile' | 'branding' | 'member-app' | 'billing' | 'language' | 'team' | 'danger'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'branding' | 'member-app' | 'billing' | 'language' | 'team' | 'danger' | 'integrations'>('profile');
   const [saved, setSaved] = useState(false);
   const [settingsLoading, setSettingsLoading] = useState(true);
 
@@ -58,6 +59,18 @@ export default function SettingsPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
   const [invoicesError, setInvoicesError] = useState<string | null>(null);
+
+  // Integrations state
+  const [integrations, setIntegrations] = useState<{
+    apiKey: string;
+    slug: string;
+    joinUrl: string;
+    widgetUrl: string;
+  } | null>(null);
+  const [integrationsLoading, setIntegrationsLoading] = useState(false);
+  const [apiKeyVisible, setApiKeyVisible] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
 
   // Logo state
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -128,6 +141,7 @@ export default function SettingsPage() {
   useEffect(() => {
     if (activeTab === 'billing') loadInvoices();
     if (activeTab === 'team') loadTeam();
+    if (activeTab === 'integrations') loadIntegrations();
   }, [activeTab]);
 
   const loadTeam = async () => {
@@ -142,6 +156,36 @@ export default function SettingsPage() {
     } finally {
       setTeamLoading(false);
     }
+  };
+
+  const loadIntegrations = async () => {
+    setIntegrationsLoading(true);
+    try {
+      const res = await fetch('/api/integrations');
+      if (res.ok) setIntegrations(await res.json());
+    } finally {
+      setIntegrationsLoading(false);
+    }
+  };
+
+  const handleRegenerateKey = async () => {
+    if (!confirm('Regenerate API key? Any existing integrations using the current key will stop working.')) return;
+    setRegenerating(true);
+    try {
+      const res = await fetch('/api/integrations', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setIntegrations(prev => prev ? { ...prev, apiKey: data.apiKey } : null);
+      }
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
+  const handleCopy = (text: string, key: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(key);
+    setTimeout(() => setCopied(null), 2000);
   };
 
   const handleSendInvite = async (e: React.FormEvent) => {
@@ -184,6 +228,7 @@ export default function SettingsPage() {
     { id: 'member-app', label: 'App de Miembros', icon: QrCode },
     { id: 'billing', label: 'Plan & Billing', icon: CreditCard },
     { id: 'team', label: 'Team', icon: Users },
+    { id: 'integrations', label: 'Integrations', icon: Link2 },
     { id: 'language', label: 'Language / Idioma', icon: Globe },
     { id: 'danger', label: 'Danger Zone', icon: AlertTriangle },
   ];
@@ -986,6 +1031,98 @@ export default function SettingsPage() {
                   );
                 })}
               </div>
+            </div>
+          )}
+
+          {/* Integrations Tab */}
+          {activeTab === 'integrations' && (
+            <div className="space-y-6">
+              {integrationsLoading ? (
+                <div className="bg-white rounded-xl border p-8 text-center">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-purple border-t-transparent mx-auto" />
+                </div>
+              ) : integrations && (
+                <>
+                  {/* Join Link */}
+                  <div className="bg-white rounded-xl border p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-1">Member Join Link</h2>
+                    <p className="text-sm text-gray-500 mb-4">Share this link so customers can sign up to your loyalty program directly.</p>
+                    <div className="flex gap-2">
+                      <input
+                        readOnly
+                        value={integrations.joinUrl}
+                        className="flex-1 px-3 py-2 border rounded-lg bg-gray-50 text-sm font-mono text-gray-700"
+                      />
+                      <button
+                        onClick={() => handleCopy(integrations.joinUrl, 'join')}
+                        className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-1"
+                      >
+                        {copied === 'join' ? <Check className="h-4 w-4 text-green-600" /> : <FileText className="h-4 w-4" />}
+                        {copied === 'join' ? 'Copied!' : 'Copy'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Embeddable Widget */}
+                  <div className="bg-white rounded-xl border p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-1">Embeddable Widget</h2>
+                    <p className="text-sm text-gray-500 mb-4">Embed this signup form on your website or kiosk. Paste the code in your site's HTML.</p>
+                    <div className="bg-gray-50 rounded-lg p-3 font-mono text-xs text-gray-700 overflow-x-auto mb-3">
+                      {`<iframe src="${integrations.widgetUrl}" width="100%" height="520" frameborder="0" style="border-radius:12px;max-width:480px;display:block;margin:0 auto"></iframe>`}
+                    </div>
+                    <button
+                      onClick={() => handleCopy(`<iframe src="${integrations.widgetUrl}" width="100%" height="520" frameborder="0" style="border-radius:12px;max-width:480px;display:block;margin:0 auto"></iframe>`, 'widget')}
+                      className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-1"
+                    >
+                      {copied === 'widget' ? <Check className="h-4 w-4 text-green-600" /> : <FileText className="h-4 w-4" />}
+                      {copied === 'widget' ? 'Copied!' : 'Copy embed code'}
+                    </button>
+                  </div>
+
+                  {/* POS / API Key */}
+                  <div className="bg-white rounded-xl border p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-1">API Key (POS / External Systems)</h2>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Use this key to register members from your POS system, kiosk, or any external tool. Send a POST request to:
+                    </p>
+                    <div className="bg-gray-50 rounded-lg p-3 font-mono text-xs text-gray-700 mb-4">
+                      POST https://dashboard.loyalbase.dev/api/public/members<br/>
+                      x-api-key: YOUR_API_KEY<br/>
+                      Content-Type: application/json<br/><br/>
+                      {'{ "name": "Jane Doe", "email": "jane@example.com", "phone": "+1234567890" }'}
+                    </div>
+                    <div className="flex gap-2 mb-3">
+                      <input
+                        type={apiKeyVisible ? 'text' : 'password'}
+                        readOnly
+                        value={integrations.apiKey}
+                        className="flex-1 px-3 py-2 border rounded-lg bg-gray-50 text-sm font-mono text-gray-700"
+                      />
+                      <button
+                        onClick={() => setApiKeyVisible(v => !v)}
+                        className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50"
+                      >
+                        {apiKeyVisible ? 'Hide' : 'Show'}
+                      </button>
+                      <button
+                        onClick={() => handleCopy(integrations.apiKey, 'apikey')}
+                        className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-1"
+                      >
+                        {copied === 'apikey' ? <Check className="h-4 w-4 text-green-600" /> : <FileText className="h-4 w-4" />}
+                        {copied === 'apikey' ? 'Copied!' : 'Copy'}
+                      </button>
+                    </div>
+                    <button
+                      onClick={handleRegenerateKey}
+                      disabled={regenerating}
+                      className="text-sm text-red-600 hover:text-red-700 disabled:opacity-50"
+                    >
+                      {regenerating ? 'Regenerating...' : '↺ Regenerate key'}
+                    </button>
+                    <p className="text-xs text-gray-400 mt-2">Regenerating invalidates all existing integrations using the current key.</p>
+                  </div>
+                </>
+              )}
             </div>
           )}
 

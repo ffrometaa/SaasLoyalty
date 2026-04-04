@@ -97,6 +97,57 @@ export async function GET(request: NextRequest) {
     const pointsChange = pointsRedeemedLastMonth ? 
       Math.round((pointsRedeemedThisMonth - pointsRedeemedLastMonth) / pointsRedeemedLastMonth * 100) : 0;
 
+    // Member segments by visit frequency
+    const { data: allMembers } = await supabase
+      .from('members')
+      .select('visits_total, status')
+      .eq('tenant_id', tenantId)
+      .is('deleted_at', null);
+
+    const segments = { frequent: 0, regular: 0, occasional: 0, atRisk: 0, inactive: 0 };
+    for (const m of allMembers || []) {
+      if (m.status !== 'active') { segments.inactive++; continue; }
+      if (m.visits_total >= 10) segments.frequent++;
+      else if (m.visits_total >= 5) segments.regular++;
+      else if (m.visits_total >= 2) segments.occasional++;
+      else segments.atRisk++;
+    }
+
+    // Visits heatmap (day_of_week x hour_of_day — precomputed in visits table)
+    const { data: visitData } = await supabase
+      .from('visits')
+      .select('day_of_week, hour_of_day')
+      .eq('tenant_id', tenantId)
+      .gte('created_at', startOfMonth.toISOString());
+
+    const heatmap: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
+    for (const v of visitData || []) {
+      if (v.day_of_week !== null && v.hour_of_day !== null) {
+        heatmap[v.day_of_week][v.hour_of_day]++;
+      }
+    }
+
+    // Top rewards redeemed
+    const { data: rewardRedemptions } = await supabase
+      .from('redemptions')
+      .select('reward_id, rewards(name)')
+      .eq('tenant_id', tenantId)
+      .eq('status', 'used');
+
+    const rewardCounts: Record<string, { name: string; count: number }> = {};
+    for (const r of rewardRedemptions || []) {
+      const reward = r.rewards as { name: string } | null;
+      if (reward && r.reward_id) {
+        if (!rewardCounts[r.reward_id]) {
+          rewardCounts[r.reward_id] = { name: reward.name, count: 0 };
+        }
+        rewardCounts[r.reward_id].count++;
+      }
+    }
+    const topRewards = Object.values(rewardCounts)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
     return NextResponse.json({
       metrics: {
         activeMembers: activeMembers || 0,
@@ -104,12 +155,15 @@ export async function GET(request: NextRequest) {
         pointsRedeemedThisMonth,
         retentionRate,
         changes: {
-          activeMembers: 12, // TODO: Calculate actual change
+          activeMembers: 0,
           visitsThisMonth: visitsChange,
           pointsRedeemedThisMonth: pointsChange,
-          retentionRate: 5, // TODO: Calculate actual change
+          retentionRate: 0,
         }
-      }
+      },
+      segments,
+      heatmap,
+      topRewards,
     });
   } catch (error) {
     console.error('Analytics API error:', error);

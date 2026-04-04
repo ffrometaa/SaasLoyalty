@@ -1,8 +1,27 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { QrCode, CheckCircle, XCircle, AlertTriangle, Gift, Camera } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { QrScanner } from '../../../components/QrScanner';
+
+type HistoryItem = {
+  id: string;
+  member: string;
+  reward: string;
+  status: string;
+  time: string;
+};
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
 
 export default function RedemptionsPage() {
   const t = useTranslations('redemptions');
@@ -14,60 +33,80 @@ export default function RedemptionsPage() {
     message: string;
     data?: any;
   } | null>(null);
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<HistoryItem[] | null>(null);
 
-  // Mock redemption history
-  useEffect(() => {
-    setHistory([
-      { id: '1', member: 'Maria Garcia', reward: 'Free Massage', status: 'used', time: '2 min ago' },
-      { id: '2', member: 'Carlos Rodriguez', reward: '10% Off', status: 'used', time: '15 min ago' },
-      { id: '3', member: 'Ana Martinez', reward: 'VIP Treatment', status: 'used', time: '1 hour ago' },
-    ]);
+  const fetchHistory = useCallback(() => {
+    fetch('/api/redemptions?status=used&limit=10')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.redemptions) {
+          setHistory(data.redemptions.map((r: any) => ({
+            id: r.id,
+            member: r.members?.name ?? 'Unknown',
+            reward: r.rewards?.name ?? 'Unknown reward',
+            status: r.status,
+            time: timeAgo(r.used_at || r.created_at),
+          })));
+        } else {
+          setHistory([]);
+        }
+      });
   }, []);
 
-  const handleProcess = async () => {
-    if (!code.trim()) return;
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
+
+  const processCode = useCallback(async (target: string) => {
+    if (!target.trim()) return;
 
     setLoading(true);
     setResult(null);
 
-    // Simulate API call
-    setTimeout(() => {
-      // Mock validation
-      if (code.toUpperCase() === 'RDM-TEST123') {
+    try {
+      const response = await fetch('/api/redemptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: target.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        const r = data.redemption;
         setResult({
           success: true,
           message: 'Redemption successful!',
           data: {
-            member: 'Maria Garcia',
-            email: 'maria@email.com',
-            reward: 'Free Massage (30 min)',
-            pointsSpent: 5000,
-            usedAt: new Date().toISOString(),
+            member: r.member?.name,
+            email: r.member?.email,
+            reward: r.reward?.name,
+            pointsSpent: r.points_spent,
+            usedAt: r.used_at,
           },
         });
-        setHistory(prev => [{
-          id: Date.now().toString(),
-          member: 'Maria Garcia',
-          reward: 'Free Massage',
-          status: 'used',
-          time: 'Just now',
-        }, ...prev]);
-      } else if (code.toUpperCase() === 'EXPIRED') {
-        setResult({
-          success: false,
-          message: 'This redemption has expired',
-        });
+        fetchHistory();
       } else {
         setResult({
           success: false,
-          message: 'Invalid code. Please check and try again.',
+          message: data.error || 'Invalid code. Please check and try again.',
         });
       }
+    } catch {
+      setResult({ success: false, message: 'Connection error. Please try again.' });
+    } finally {
       setLoading(false);
-      setCode('');
-    }, 1500);
-  };
+    }
+  }, [fetchHistory]);
+
+  const handleProcess = () => processCode(code).then(() => setCode(''));
+
+  const handleScan = useCallback((scannedCode: string) => {
+    // QR detected: stop scanner, switch to manual view, process automatically
+    setMode('manual');
+    setCode(scannedCode);
+    processCode(scannedCode);
+  }, [processCode]);
 
   const resetResult = () => {
     setResult(null);
@@ -101,7 +140,7 @@ export default function RedemptionsPage() {
                 </span>
               </button>
               <button
-                onClick={() => setMode('scan')}
+                onClick={() => { setMode('scan'); setResult(null); }}
                 className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
                   mode === 'scan'
                     ? 'bg-brand-purple text-white'
@@ -151,14 +190,17 @@ export default function RedemptionsPage() {
             )}
 
             {mode === 'scan' && (
-              <div className="text-center py-12">
-                <div className="w-64 h-64 mx-auto bg-gray-100 rounded-2xl flex items-center justify-center border-2 border-dashed border-gray-300">
-                  <div className="text-center">
-                    <Camera className="h-12 w-12 text-gray-400 mx-auto" />
-                    <p className="mt-4 text-sm text-gray-500">{t('cameraScanner')}</p>
-                    <p className="text-xs text-gray-400">{t('comingSoon')}</p>
+              <div className="space-y-3">
+                <QrScanner isActive={mode === 'scan'} onScan={handleScan} />
+                {loading && (
+                  <div className="flex items-center justify-center gap-2 py-2 text-sm text-gray-500">
+                    <svg className="animate-spin h-4 w-4 text-brand-purple" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    {t('processing')}
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>
@@ -186,10 +228,12 @@ export default function RedemptionsPage() {
                         <span className="text-gray-500">{t('reward')}</span>
                         <span className="font-medium">{result.data.reward}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">{t('pointsUsed')}</span>
-                        <span className="font-medium text-red-600">-{result.data.pointsSpent.toLocaleString()}</span>
-                      </div>
+                      {result.data.pointsSpent && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">{t('pointsUsed')}</span>
+                          <span className="font-medium text-red-600">-{result.data.pointsSpent.toLocaleString()}</span>
+                        </div>
+                      )}
                     </div>
                   )}
                   <button
@@ -224,31 +268,34 @@ export default function RedemptionsPage() {
             <h2 className="text-lg font-semibold text-gray-900">{t('recentRedemptions')}</h2>
           </div>
           <div className="divide-y">
-            {history.map((item) => (
-              <div key={item.id} className="px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <Gift className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{item.member}</p>
-                    <p className="text-sm text-gray-500">{item.reward}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                    <CheckCircle className="h-3 w-3 mr-1" />
-                    {item.status}
-                  </span>
-                  <p className="text-xs text-gray-400 mt-1">{item.time}</p>
-                </div>
-              </div>
-            ))}
-            {history.length === 0 && (
+            {history === null ? (
+              <div className="px-6 py-12 text-center text-gray-400 text-sm">Loading...</div>
+            ) : history.length === 0 ? (
               <div className="px-6 py-12 text-center">
                 <Gift className="mx-auto h-12 w-12 text-gray-300" />
                 <p className="mt-4 text-gray-500">{t('noRedemptions')}</p>
               </div>
+            ) : (
+              history.map((item) => (
+                <div key={item.id} className="px-6 py-4 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <Gift className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{item.member}</p>
+                      <p className="text-sm text-gray-500">{item.reward}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      {item.status}
+                    </span>
+                    <p className="text-xs text-gray-400 mt-1">{item.time}</p>
+                  </div>
+                </div>
+              ))
             )}
           </div>
         </div>

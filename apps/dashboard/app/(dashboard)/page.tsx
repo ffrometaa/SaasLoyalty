@@ -19,15 +19,39 @@ type Metrics = {
   };
 };
 
+type ActivityItem = {
+  id: string;
+  type: 'earn' | 'redeem' | 'new_member';
+  memberName: string;
+  points?: number;
+  createdAt: string;
+};
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const t = useTranslations('dashboard');
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [activity, setActivity] = useState<ActivityItem[] | null>(null);
 
   useEffect(() => {
     fetch('/api/analytics')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data?.metrics) setMetrics(data.metrics); });
+
+    fetch('/api/activity')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.activity) setActivity(data.activity); });
   }, []);
 
   return (
@@ -112,42 +136,42 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold text-gray-900">{t('recentActivity')}</h2>
         </div>
         <div className="divide-y">
-          <div className="px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                <span className="text-sm font-medium text-green-600">+150</span>
+          {activity === null ? (
+            <div className="px-6 py-8 text-center text-gray-400 text-sm">Loading...</div>
+          ) : activity.length === 0 ? (
+            <div className="px-6 py-8 text-center text-gray-400 text-sm">No recent activity yet.</div>
+          ) : (
+            activity.map(item => (
+              <div key={item.id} className="px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {item.type === 'earn' && (
+                    <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                      <span className="text-xs font-semibold text-green-600">+{item.points}</span>
+                    </div>
+                  )}
+                  {item.type === 'redeem' && (
+                    <div className="h-10 w-10 rounded-full bg-brand-purple-100 flex items-center justify-center">
+                      <Gift className="h-5 w-5 text-brand-purple" />
+                    </div>
+                  )}
+                  {item.type === 'new_member' && (
+                    <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                      <Users className="h-5 w-5 text-gray-600" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-medium text-gray-900">{item.memberName}</p>
+                    <p className="text-sm text-gray-500">
+                      {item.type === 'earn' && `Earned ${item.points} points`}
+                      {item.type === 'redeem' && `Redeemed ${item.points} points`}
+                      {item.type === 'new_member' && 'New member joined'}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-400">{timeAgo(item.createdAt)}</p>
               </div>
-              <div>
-                <p className="font-medium text-gray-900">Maria Garcia</p>
-                <p className="text-sm text-gray-500">Earned 150 points</p>
-              </div>
-            </div>
-            <p className="text-sm text-gray-400">2 min ago</p>
-          </div>
-          <div className="px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-brand-purple-100 flex items-center justify-center">
-                <Gift className="h-5 w-5 text-brand-purple" />
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">Carlos Rodriguez</p>
-                <p className="text-sm text-gray-500">Redeemed: Free Massage</p>
-              </div>
-            </div>
-            <p className="text-sm text-gray-400">15 min ago</p>
-          </div>
-          <div className="px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
-                <Users className="h-5 w-5 text-gray-600" />
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">New member joined</p>
-                <p className="text-sm text-gray-500">Ana Martinez</p>
-              </div>
-            </div>
-            <p className="text-sm text-gray-400">1 hour ago</p>
-          </div>
+            ))
+          )}
         </div>
       </div>
     </div>
