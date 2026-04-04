@@ -3,6 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+const CRON_SECRET = Deno.env.get('CRON_SECRET') ?? '';
 
 type ChallengeType = 'visit_count' | 'points_earned' | 'referral' | 'spend_amount' | 'streak';
 type MotivationType = 'achiever' | 'socializer' | 'explorer' | 'competitor';
@@ -63,6 +64,16 @@ const CHALLENGE_TEMPLATES: Record<MotivationType, { type: ChallengeType; name: s
 serve(async (req: Request) => {
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 });
+  }
+
+  // Validate CRON_SECRET — required for all callers (pg_cron, manual, etc.)
+  const authHeader = req.headers.get('Authorization') ?? '';
+  const secret = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+  if (!CRON_SECRET || secret !== CRON_SECRET) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
