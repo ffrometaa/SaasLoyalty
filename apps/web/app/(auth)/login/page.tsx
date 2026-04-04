@@ -26,7 +26,8 @@ export default function LoginPage() {
       return;
     }
 
-    window.location.href = 'https://dashboard.loyalbase.dev';
+    // Redirect through cross-domain endpoint to establish session on dashboard.loyalbase.dev
+    window.location.href = '/api/auth/cross-domain-login';
   };
 
   return (
