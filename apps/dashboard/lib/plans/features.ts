@@ -13,9 +13,7 @@ export type Feature =
   | 'analytics_heatmap'
   | 'analytics_export'
   | 'whitelabel_logo'
-  | 'whitelabel_custom_domain'
   | 'whitelabel_full_brand'
-  | 'booking_integrations'
   | 'support_email'
   | 'support_priority_chat'
   | 'support_account_manager'
@@ -54,9 +52,7 @@ export const PLAN_CONFIGS: Record<Plan, PlanConfig> = {
       'analytics_heatmap',
       'analytics_export',
       'whitelabel_logo',
-      'whitelabel_custom_domain',
       'whitelabel_full_brand',
-      'booking_integrations',
       'support_priority_chat',
       'support_account_manager',
       'api_access',
@@ -97,8 +93,6 @@ export const PLAN_CONFIGS: Record<Plan, PlanConfig> = {
       'analytics_full',
       'analytics_heatmap',
       'whitelabel_logo',
-      'whitelabel_custom_domain',
-      'booking_integrations',
       'support_priority_chat',
       'gamification',
     ],
@@ -117,9 +111,7 @@ export const PLAN_CONFIGS: Record<Plan, PlanConfig> = {
       'analytics_heatmap',
       'analytics_export',
       'whitelabel_logo',
-      'whitelabel_custom_domain',
       'whitelabel_full_brand',
-      'booking_integrations',
       'support_priority_chat',
       'support_account_manager',
       'api_access',

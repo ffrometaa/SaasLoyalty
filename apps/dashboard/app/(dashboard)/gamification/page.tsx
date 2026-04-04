@@ -4,6 +4,7 @@ import { GamificationPanel } from '../../../components/dashboard/GamificationPan
 import { FeatureGate } from '../../../components/dashboard/FeatureGate';
 import { getChallenges, getBadges, getGamificationSummary } from '../../../lib/gamification/queries';
 import { getTranslations } from 'next-intl/server';
+import { planHasFeature } from '../../../lib/plans/features';
 import type { Plan } from '../../../lib/plans/features';
 
 async function resolveAuthedTenantId(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>): Promise<{ tenantId: string; plan: Plan } | null> {
@@ -42,8 +43,8 @@ export default async function GamificationPage() {
 
   const { tenantId, plan } = tenant;
 
-  // If not enterprise, show upgrade gate with placeholder data
-  if (plan !== 'enterprise') {
+  // If plan doesn't include gamification, show upgrade gate
+  if (!planHasFeature(plan, 'gamification')) {
     return (
       <div className="p-6 lg:p-8">
         <div className="mb-8">
@@ -51,7 +52,6 @@ export default async function GamificationPage() {
           <p className="text-gray-600 mt-1">{t('subtitle')}</p>
         </div>
         <FeatureGate plan={plan} feature="gamification">
-          {/* This children block is shown blurred — FeatureGate renders the upgrade overlay */}
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-20 bg-gray-100 rounded-xl" />
