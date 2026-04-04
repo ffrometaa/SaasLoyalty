@@ -6,7 +6,6 @@ const DASHBOARD_URL = process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://dashboar
 export async function GET(request: NextRequest) {
   // Read the session from cookies on loyalbase.dev
   const supabase = await createServerSupabaseClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: { user } } = await (supabase.auth as any).getUser();
 
   if (!user?.email) {
