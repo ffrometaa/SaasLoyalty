@@ -127,6 +127,7 @@
     "reasonComplaint": "Service Complaint",
     "reasonOther": "Other",
     "editMemberTitle": "Edit Member",
+    "birthday": "Date of Birth (optional)",
     "saveChanges": "Save Changes"
   },
   "analytics": {

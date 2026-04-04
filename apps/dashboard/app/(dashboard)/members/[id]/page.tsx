@@ -42,6 +42,7 @@ type Member = {
   last_visit_at: string | null;
   accepts_email: boolean;
   accepts_push: boolean;
+  birthday: string | null;
   created_at: string;
   transactions: Transaction[];
 };
@@ -93,7 +94,7 @@ export default function MemberDetailPage() {
   const [adjustmentPoints, setAdjustmentPoints] = useState('');
   const [adjustmentType, setAdjustmentType] = useState<'add' | 'subtract'>('add');
   const [adjustmentReason, setAdjustmentReason] = useState('');
-  const [editForm, setEditForm] = useState({ name: '', email: '', phone: '' });
+  const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', birthday: '' });
 
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -111,7 +112,7 @@ export default function MemberDetailPage() {
         ),
       };
       setMember(m);
-      setEditForm({ name: m.name, email: m.email, phone: m.phone ?? '' });
+      setEditForm({ name: m.name, email: m.email, phone: m.phone ?? '', birthday: m.birthday ?? '' });
     } catch (err: any) {
       setPageError(err.message);
     } finally {
@@ -203,6 +204,7 @@ export default function MemberDetailPage() {
           name: editForm.name,
           email: editForm.email,
           phone: editForm.phone || null,
+          birthday: editForm.birthday || null,
         }),
       });
       const data = await res.json();
@@ -585,6 +587,16 @@ export default function MemberDetailPage() {
                   onChange={(e) => setEditForm(p => ({ ...p, phone: e.target.value }))}
                   className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple"
                   placeholder={t('phonePlaceholder')}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('birthday')}</label>
+                <input
+                  type="date"
+                  value={editForm.birthday}
+                  onChange={(e) => setEditForm(p => ({ ...p, birthday: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple"
+                  max={new Date().toISOString().split('T')[0]}
                 />
               </div>
               <div className="flex gap-3 pt-2">

@@ -127,6 +127,7 @@
     "reasonComplaint": "Queja de Servicio",
     "reasonOther": "Otro",
     "editMemberTitle": "Editar Miembro",
+    "birthday": "Fecha de Nacimiento (opcional)",
     "saveChanges": "Guardar Cambios"
   },
   "analytics": {

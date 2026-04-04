@@ -71,66 +71,119 @@ function buildBilingualHtml(enHtmlContent: string, esHtmlContent: string, tenant
 </html>`;
 }
 
+const STEP_DAY_OFFSETS: Record<number, number> = { 1: 0, 2: 5, 3: 10, 4: 15 };
+const STEP_OFFERS: Record<number, string> = {
+  1: 'Come back and earn double points on your next visit',
+  2: 'Special offer: 50 bonus points waiting for you',
+  3: "Your exclusive offer expires tomorrow — don't miss out!",
+  4: 'Last chance to reclaim your loyalty rewards',
+};
+const REACTIVATION_URL = 'https://app.loyalbase.dev';
+
 serve(async (req: Request) => {
+  // Validate CRON_SECRET — all callers must present it as Bearer token
+  const CRON_SECRET = Deno.env.get('CRON_SECRET') ?? '';
+  const authHeader = req.headers.get('Authorization') ?? '';
+  const secret = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+  if (!CRON_SECRET || secret !== CRON_SECRET) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
+    let newSequences = 0;
+    let advancedSequences = 0;
+
+    // ── 1. Start new sequences for members inactive 25+ days with no active sequence ──
     const { data: inactiveMembers } = await supabase
       .from('members')
       .select(`
-        id,
-        tenant_id,
-        name,
-        email,
-        last_visit_at,
-        accepts_email,
+        id, tenant_id, name, email, last_visit_at,
+        accepts_email, accepts_push,
         tenants (business_name, brand_color_primary)
       `)
       .eq('status', 'active')
-      .eq('accepts_email', true)
       .lt('last_visit_at', new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString());
 
-    if (!inactiveMembers || inactiveMembers.length === 0) {
-      console.log('No inactive members found for reactivation');
-      return new Response(JSON.stringify({ processed: 0 }), {
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    let processed = 0;
-
-    for (const member of inactiveMembers) {
+    for (const member of inactiveMembers ?? []) {
       const { data: existingSequence } = await supabase
         .from('reactivation_sequences')
         .select('id')
         .eq('member_id', member.id)
         .is('completed_at', null)
         .is('cancelled_at', null)
-        .single();
+        .maybeSingle();
 
       if (existingSequence) continue;
 
-      const { error: sequenceError } = await supabase
+      const { error: seqErr } = await supabase
         .from('reactivation_sequences')
-        .insert({
-          tenant_id: member.tenant_id,
-          member_id: member.id,
-          current_step: 1,
-        });
+        .insert({ tenant_id: member.tenant_id, member_id: member.id, current_step: 1 });
 
-      if (sequenceError) {
-        console.error('Error creating sequence:', sequenceError);
+      if (seqErr) { console.error('Error creating sequence:', seqErr); continue; }
+
+      await sendReactivationEmail(supabase, member, 1);
+      await sendReactivationPush(supabase, member, 1);
+      newSequences++;
+    }
+
+    // ── 2. Advance existing active sequences (steps 2 → 3 → 4) ──
+    const { data: activeSequences } = await supabase
+      .from('reactivation_sequences')
+      .select('id, member_id, tenant_id, current_step, created_at')
+      .is('completed_at', null)
+      .is('cancelled_at', null)
+      .lt('current_step', 4);
+
+    for (const seq of activeSequences ?? []) {
+      const nextStep = seq.current_step + 1;
+      const daysRequired = STEP_DAY_OFFSETS[nextStep];
+      const readyAt = new Date(seq.created_at).getTime() + daysRequired * 24 * 60 * 60 * 1000;
+      if (Date.now() < readyAt) continue;
+
+      const { data: memberData } = await supabase
+        .from('members')
+        .select(`
+          id, tenant_id, name, email, last_visit_at,
+          accepts_email, accepts_push,
+          tenants (business_name, brand_color_primary)
+        `)
+        .eq('id', seq.member_id)
+        .single();
+
+      if (!memberData) continue;
+
+      // Cancel if the member has visited since the sequence started
+      if (memberData.last_visit_at && new Date(memberData.last_visit_at) > new Date(seq.created_at)) {
+        await supabase
+          .from('reactivation_sequences')
+          .update({ cancelled_at: new Date().toISOString() })
+          .eq('id', seq.id);
         continue;
       }
 
-      await sendReactivationEmail(supabase, member, 1);
-      processed++;
+      const isLastStep = nextStep === 4;
+      await supabase
+        .from('reactivation_sequences')
+        .update({
+          current_step: nextStep,
+          ...(isLastStep ? { completed_at: new Date().toISOString() } : {}),
+        })
+        .eq('id', seq.id);
+
+      await sendReactivationEmail(supabase, memberData, nextStep);
+      await sendReactivationPush(supabase, memberData, nextStep);
+      advancedSequences++;
     }
 
-    console.log(`Processed ${processed} members for reactivation`);
-    return new Response(JSON.stringify({ processed }), {
+    console.log(`Reactivation: ${newSequences} new sequences, ${advancedSequences} advanced`);
+    return new Response(JSON.stringify({ newSequences, advancedSequences }), {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err) {
@@ -139,44 +192,35 @@ serve(async (req: Request) => {
   }
 });
 
-async function sendReactivationEmail(supabase: any, member: any, step: number) {
+// deno-lint-ignore no-explicit-any
+async function sendReactivationEmail(supabase: any, member: Record<string, unknown>, step: number) {
+  if (!member.accepts_email) return;
+
   const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-  if (!RESEND_API_KEY) {
-    console.error('RESEND_API_KEY not configured — skipping reactivation email');
-    return;
-  }
+  if (!RESEND_API_KEY) { console.error('RESEND_API_KEY not configured'); return; }
 
-  // From address should match tenant custom domain when available for better deliverability.
   const FROM_EMAIL = 'LoyaltyOS <hello@loyalbase.dev>';
-
-  const businessName = member.tenants?.business_name || 'your loyalty program';
-  const daysSinceVisit = step === 1 ? 25 : step === 2 ? 30 : step === 3 ? 35 : 40;
-
-  const stepOffers: Record<number, string> = {
-    1: 'Come back and earn double points on your next visit',
-    2: 'Special offer: 50 bonus points waiting for you',
-    3: "Your exclusive offer expires tomorrow — don't miss out!",
-    4: 'Last chance to reclaim your loyalty rewards',
-  };
-
-  const rewardsUrl = 'https://app.loyalbase.dev';
-  const offer = stepOffers[step] || stepOffers[1];
+  const tenants = member.tenants as Record<string, string> | null;
+  const businessName = tenants?.business_name || 'your loyalty program';
+  const daysSinceVisit = 25 + STEP_DAY_OFFSETS[step];
+  const offer = STEP_OFFERS[step] || STEP_OFFERS[1];
+  const memberName = (member.name as string) || 'there';
 
   const enHtmlContent = `
     <h1 style="margin:0 0 16px; font-size:24px; font-weight:800; color:#0f172a;">We miss you! 💜</h1>
-    <p style="margin:0 0 16px; font-size:15px; color:#334155; line-height:1.7;">Hi <strong>${member.name || 'there'}</strong>, it's been ${daysSinceVisit} days since your last visit to <strong>${businessName}</strong>.</p>
+    <p style="margin:0 0 16px; font-size:15px; color:#334155; line-height:1.7;">Hi <strong>${memberName}</strong>, it's been ${daysSinceVisit} days since your last visit to <strong>${businessName}</strong>.</p>
     ${emailHighlight(`<strong>Special offer just for you:</strong><br>${offer}`)}
     <p style="margin:0 0 16px; font-size:15px; color:#334155; line-height:1.7;">Come back and enjoy your loyalty rewards. Your points are waiting!</p>
-    ${emailButton('See My Rewards', rewardsUrl)}
+    ${emailButton('See My Rewards', REACTIVATION_URL)}
     <p style="margin:0; font-size:13px; color:#64748b;">This offer is exclusively for loyal members like you.</p>
   `;
 
   const esHtmlContent = `
     <h1 style="margin:0 0 16px; font-size:24px; font-weight:800; color:#0f172a;">¡Te extrañamos! 💜</h1>
-    <p style="margin:0 0 16px; font-size:15px; color:#334155; line-height:1.7;">Hola <strong>${member.name || 'ahí'}</strong>, pasaron ${daysSinceVisit} días desde tu última visita a <strong>${businessName}</strong>.</p>
+    <p style="margin:0 0 16px; font-size:15px; color:#334155; line-height:1.7;">Hola <strong>${memberName}</strong>, pasaron ${daysSinceVisit} días desde tu última visita a <strong>${businessName}</strong>.</p>
     ${emailHighlight(`<strong>Oferta especial solo para vos:</strong><br>${offer}`)}
     <p style="margin:0 0 16px; font-size:15px; color:#334155; line-height:1.7;">Volvé y disfrutá de tus recompensas de fidelización. ¡Tus puntos te esperan!</p>
-    ${emailButton('Ver Mis Recompensas', rewardsUrl)}
+    ${emailButton('Ver Mis Recompensas', REACTIVATION_URL)}
     <p style="margin:0; font-size:13px; color:#64748b;">Esta oferta es exclusiva para miembros fieles como vos.</p>
   `;
 
@@ -185,20 +229,11 @@ async function sendReactivationEmail(supabase: any, member: any, step: number) {
 
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: FROM_EMAIL,
-      to: [member.email],
-      subject,
-      html,
-    }),
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}` },
+    body: JSON.stringify({ from: FROM_EMAIL, to: [member.email as string], subject, html }),
   });
 
-  const resJson = await res.json();
-  const emailId = (resJson as any).id || null;
+  const resJson = await res.json() as { id?: string };
 
   await supabase.from('notifications').insert({
     tenant_id: member.tenant_id,
@@ -206,14 +241,47 @@ async function sendReactivationEmail(supabase: any, member: any, step: number) {
     channel: 'email',
     type: 'reactivation',
     subject,
-    status: emailId ? 'sent' : 'failed',
-    sent_at: emailId ? new Date().toISOString() : null,
-    data: { step, resendId: emailId },
+    status: resJson.id ? 'sent' : 'failed',
+    sent_at: resJson.id ? new Date().toISOString() : null,
+    data: { step, resendId: resJson.id },
+  });
+}
+
+// deno-lint-ignore no-explicit-any
+async function sendReactivationPush(supabase: any, member: Record<string, unknown>, step: number) {
+  if (!member.accepts_push) return;
+
+  const ONESIGNAL_APP_ID = Deno.env.get('ONESIGNAL_APP_ID');
+  const ONESIGNAL_API_KEY = Deno.env.get('ONESIGNAL_API_KEY');
+  if (!ONESIGNAL_APP_ID || !ONESIGNAL_API_KEY) return;
+
+  const tenants = member.tenants as Record<string, string> | null;
+  const businessName = tenants?.business_name || 'your program';
+  const offer = STEP_OFFERS[step] || STEP_OFFERS[1];
+
+  const res = await fetch('https://onesignal.com/api/v1/notifications', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Basic ${ONESIGNAL_API_KEY}` },
+    body: JSON.stringify({
+      app_id: ONESIGNAL_APP_ID,
+      include_external_user_ids: [member.id as string],
+      headings: { en: `${businessName} misses you 💜` },
+      contents: { en: offer },
+      data: { type: 'reactivation', step },
+      url: REACTIVATION_URL,
+    }),
   });
 
-  if (!emailId) {
-    console.error(`Reactivation email failed for ${member.email}:`, resJson);
-  } else {
-    console.log(`Reactivation step ${step} sent to ${member.email}`);
-  }
+  const resJson = await res.json() as { id?: string; errors?: string[] };
+
+  await supabase.from('notifications').insert({
+    tenant_id: member.tenant_id,
+    member_id: member.id,
+    channel: 'push',
+    type: 'reactivation',
+    subject: `${businessName} misses you`,
+    status: resJson.id ? 'sent' : 'failed',
+    sent_at: resJson.id ? new Date().toISOString() : null,
+    data: { step, onesignalId: resJson.id, errors: resJson.errors },
+  });
 }

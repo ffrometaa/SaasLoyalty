@@ -8,6 +8,7 @@ import { RewardsSection } from '@/components/member/RewardsScroll';
 import { TransactionHistory } from '@/components/member/TransactionHistory';
 import { BottomNav } from '@/components/member/BottomNav';
 import { BrandTheme } from '@/components/member/BrandTheme';
+import { OneSignalInit } from '@/components/member/OneSignalInit';
 import { getTierProgress, TIER_NEXT } from '@/lib/member/types';
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 import Link from 'next/link';
@@ -111,6 +112,7 @@ export default async function HomePage() {
         primary={member.tenant.brand_color_primary}
         secondary={member.tenant.brand_color_secondary}
       />
+      <OneSignalInit memberId={member.id} />
 
       <main className="pb-safe" style={{ background: 'var(--cream)' }}>
         {/* Hero with points card */}
