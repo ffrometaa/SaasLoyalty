@@ -28,23 +28,31 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // Public routes
+  // Public routes — no session required
   if (
     pathname.startsWith('/login') ||
     pathname.startsWith('/auth/callback') ||
     pathname.startsWith('/api/auth') ||
-    pathname.startsWith('/api/invite')
+    pathname.startsWith('/api/invite') ||
+    pathname.startsWith('/admin/preview')
   ) {
     return supabaseResponse;
   }
 
   const { data: { session } } = await (supabase.auth as any).getSession();
 
+  // Unauthenticated users: redirect to login for all protected routes
   if (!session) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
   }
+
+  // /admin routes: session check above ensures the user is authenticated.
+  // Additional super_admin role verification is enforced server-side in
+  // app/admin/layout.tsx via verifyAdminAccess() which redirects to /login
+  // if the user is not an active super admin. Middleware cannot call the
+  // service role client (Edge Runtime limitation), so the DB check lives there.
 
   return supabaseResponse;
 }

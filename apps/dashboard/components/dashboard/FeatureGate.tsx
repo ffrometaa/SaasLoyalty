@@ -11,6 +11,7 @@ interface FeatureGateProps {
   children: React.ReactNode;
   fallback?: React.ReactNode;
   silent?: boolean;
+  overridePlan?: Plan;
 }
 
 export function FeatureGate({
@@ -19,9 +20,12 @@ export function FeatureGate({
   children,
   fallback,
   silent = false,
+  overridePlan,
 }: FeatureGateProps) {
   const t = useTranslations('upgrade');
-  const hasAccess = planHasFeature(plan, feature);
+  // When overridePlan is provided (plan preview mode), use it instead of the real plan.
+  const effectivePlan = overridePlan ?? plan;
+  const hasAccess = planHasFeature(effectivePlan, feature);
 
   if (hasAccess) return <>{children}</>;
 
@@ -29,7 +33,7 @@ export function FeatureGate({
 
   if (fallback) return <>{fallback}</>;
 
-  const upgradePlan = getUpgradePlan(plan);
+  const upgradePlan = getUpgradePlan(effectivePlan);
   const upgradeName = upgradePlan ? PLAN_CONFIGS[upgradePlan].name : null;
 
   return (

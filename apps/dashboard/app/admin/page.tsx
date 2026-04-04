@@ -1,145 +1,149 @@
-'use client';
+import { verifyAdminAccess } from '@/lib/admin/guard';
+import { createServiceRoleClient } from '@loyalty-os/lib/server';
+import { AdminCharts } from '@/components/admin/AdminCharts';
 
-import { useEffect, useState } from 'react';
+export const dynamic = 'force-dynamic';
 
-const STATUS_BADGE: Record<string, string> = {
-  active: 'bg-green-100 text-green-700',
-  trialing: 'bg-blue-100 text-blue-700',
-  past_due: 'bg-yellow-100 text-yellow-700',
-  canceled: 'bg-red-100 text-red-700',
-};
+function getPlanMRR(plan = '') {
+  if (plan === 'starter') return 79;
+  if (plan === 'pro') return 199;
+  if (plan === 'scale') return 399;
+  return 0;
+}
 
-const PLAN_BADGE: Record<string, string> = {
-  starter: 'bg-gray-100 text-gray-700',
-  pro: 'bg-brand-purple-100 text-brand-purple-700',
-  scale: 'bg-purple-100 text-purple-700',
-};
+async function getPlatformStats() {
+  const service = createServiceRoleClient();
 
-const DEFAULT_STATS = {
-  totalTenants: 0,
-  activeTenants: 0,
-  trialingTenants: 0,
-  canceledTenants: 0,
-  totalMembers: 0,
-  recentTenants: [] as any[],
-};
+  const [
+    { data: tenants },
+    { count: totalMembers },
+    { count: campaignsThisMonth },
+    { count: redemptionsThisMonth },
+    { data: recentEvents },
+    { data: tenantGrowth },
+  ] = await Promise.all([
+    service
+      .from('tenants')
+      .select('id, business_name, plan, plan_status, created_at')
+      .is('deleted_at', null),
+    service
+      .from('members')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'active'),
+    service
+      .from('campaigns')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
+    service
+      .from('redemptions')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
+    service
+      .from('platform_events')
+      .select('id, action_type, target_type, target_id, created_at, super_admins(full_name, email)')
+      .order('created_at', { ascending: false })
+      .limit(20),
+    service
+      .from('tenants')
+      .select('created_at')
+      .is('deleted_at', null)
+      .gte('created_at', new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString())
+      .order('created_at', { ascending: true }),
+  ]);
 
-function MetricCard({ title, value, sub }: { title: string; value: string | number; sub?: string }) {
+  const allTenants = tenants ?? [];
+  const activeTenants = allTenants.filter((t = { plan_status: '' }) => t.plan_status === 'active').length;
+  const trialingTenants = allTenants.filter((t = { plan_status: '' }) => t.plan_status === 'trialing').length;
+
+  const totalMRR = allTenants
+    .filter((t = { plan_status: '' }) => t.plan_status === 'active')
+    .reduce((sum = 0, t = { plan: '' }) => sum + getPlanMRR(t.plan), 0);
+
+  // MRR by plan
+  const mrrByPlan = Object.fromEntries(
+    ['starter', 'pro', 'scale'].map(plan => {
+      const count = allTenants.filter((t = { plan_status: '', plan: '' }) => t.plan_status === 'active' && t.plan === plan).length;
+      return [plan, count * getPlanMRR(plan)];
+    })
+  );
+
+  // Tenant growth per month (last 12 months)
+  const months = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - i);
+    const label = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    const count = (tenantGrowth ?? []).filter((t = { created_at: '' }) => {
+      const created = new Date(t.created_at);
+      return created.getFullYear() === d.getFullYear() && created.getMonth() === d.getMonth();
+    }).length;
+    months.push({ month: label, count });
+  }
+
+  return {
+    totalTenants: allTenants.length,
+    activeTenants,
+    trialingTenants,
+    totalMembers: totalMembers ?? 0,
+    totalMRR,
+    totalARR: totalMRR * 12,
+    campaignsThisMonth: campaignsThisMonth ?? 0,
+    redemptionsThisMonth: redemptionsThisMonth ?? 0,
+    mrrByPlan,
+    tenantGrowth: months,
+    recentEvents: recentEvents ?? [],
+  };
+}
+
+function MetricCard({ title = '', value = '', sub = '', accent = false }) {
   return (
-    <div className="bg-white rounded-lg border p-6">
-      <p className="text-sm font-medium text-gray-600">{title}</p>
-      <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
-      {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
+    <div className={`rounded-xl border p-5 ${accent ? 'bg-[#7c3aed]/10 border-[#7c3aed]/30' : 'bg-white/[0.03] border-white/[0.08]'}`}>
+      <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">{title}</p>
+      <p className={`text-2xl font-bold ${accent ? 'text-[#a78bfa]' : 'text-white'}`}>{value}</p>
+      {sub && <p className="text-xs text-slate-500 mt-1">{sub}</p>}
     </div>
   );
 }
 
-export default function AdminOverviewPage() {
-  const [stats, setStats] = useState(DEFAULT_STATS);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+function formatCurrency(n = 0) {
+  if (n >= 1000) return `$${(n / 1000).toFixed(1)}k`;
+  return `$${n}`;
+}
 
-  useEffect(() => {
-    fetch('/api/admin/stats')
-      .then(r => {
-        if (r.status === 403 || r.status === 401) {
-          window.location.href = '/';
-          return null;
-        }
-        return r.json();
-      })
-      .then(data => {
-        if (!data) return;
-        if (data.error) { setError(data.error); setLoading(false); return; }
-        setStats({ ...DEFAULT_STATS, ...data, recentTenants: data.recentTenants ?? [] });
-        setLoading(false);
-      })
-      .catch(err => { setError(err.message); setLoading(false); });
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="p-6 lg:p-8">
-        <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-8" />
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white rounded-lg border p-6 h-32 animate-pulse" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 lg:p-8">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">{error}</div>
-      </div>
-    );
-  }
+export default async function AdminOverviewPage() {
+  await verifyAdminAccess();
+  const stats = await getPlatformStats();
 
   return (
-    <div className="p-6 lg:p-8">
+    <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Platform Overview</h1>
-        <p className="text-gray-600 mt-1">All businesses using LoyaltyOS</p>
+        <h1 className="text-2xl font-bold text-white">Platform Overview</h1>
+        <p className="text-slate-400 mt-1">LoyaltyOS platform health and activity</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <MetricCard title="Total Businesses" value={stats.totalTenants} />
-        <MetricCard title="Active" value={stats.activeTenants} sub="Paying subscribers" />
+      {/* Row 1 — Platform health */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <MetricCard title="Total Tenants" value={stats.totalTenants} sub="All registered businesses" />
+        <MetricCard title="Active Tenants" value={stats.activeTenants} sub="Paying subscribers" />
         <MetricCard title="Trialing" value={stats.trialingTenants} sub="Free trial" />
-        <MetricCard title="Total Members" value={stats.totalMembers} sub="Across all businesses" />
+        <MetricCard title="Total Members" value={stats.totalMembers.toLocaleString()} sub="Across all tenants" />
       </div>
 
-      <div className="bg-white rounded-lg border">
-        <div className="px-6 py-4 border-b">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Signups</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-gray-50">
-                <th className="text-left px-6 py-3 font-medium text-gray-600">Business</th>
-                <th className="text-left px-6 py-3 font-medium text-gray-600">Type</th>
-                <th className="text-left px-6 py-3 font-medium text-gray-600">Plan</th>
-                <th className="text-left px-6 py-3 font-medium text-gray-600">Status</th>
-                <th className="text-left px-6 py-3 font-medium text-gray-600">Members</th>
-                <th className="text-left px-6 py-3 font-medium text-gray-600">Joined</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {stats.recentTenants.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">No businesses yet</td>
-                </tr>
-              ) : stats.recentTenants.map((tenant: any) => (
-                <tr key={tenant.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <p className="font-medium text-gray-900">{tenant.business_name}</p>
-                    <p className="text-xs text-gray-500">{tenant.slug}</p>
-                  </td>
-                  <td className="px-6 py-4 capitalize text-gray-600">{tenant.business_type}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded text-xs font-medium capitalize ${PLAN_BADGE[tenant.plan] ?? 'bg-gray-100 text-gray-700'}`}>
-                      {tenant.plan}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded text-xs font-medium capitalize ${STATUS_BADGE[tenant.plan_status] ?? 'bg-gray-100 text-gray-700'}`}>
-                      {tenant.plan_status?.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-gray-600">{tenant.member_count}</td>
-                  <td className="px-6 py-4 text-gray-500">
-                    {new Date(tenant.created_at).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* Row 2 — Revenue and activity */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <MetricCard title="Monthly MRR" value={formatCurrency(stats.totalMRR)} sub="Active tenants" accent />
+        <MetricCard title="Annual ARR" value={formatCurrency(stats.totalARR)} sub="MRR × 12" accent />
+        <MetricCard title="Campaigns This Month" value={stats.campaignsThisMonth.toLocaleString()} sub="Across all tenants" />
+        <MetricCard title="Redemptions This Month" value={stats.redemptionsThisMonth.toLocaleString()} sub="Across all tenants" />
       </div>
+
+      {/* Charts — client component */}
+      <AdminCharts
+        mrrByPlan={stats.mrrByPlan}
+        tenantGrowth={stats.tenantGrowth}
+        recentEvents={stats.recentEvents}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
+import { buildBilingualEmail, buildOtpVerificationEmail } from '@loyalty-os/email';
 
 function generateOtp(): string {
   return String(Math.floor(100000 + Math.random() * 900000));
@@ -31,10 +32,15 @@ export async function POST() {
     });
 
     // Send OTP via Resend
+    // From address should match tenant custom domain when available for better deliverability.
+    // Default: LoyaltyOS <security@loyalbase.dev>
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
     if (!RESEND_API_KEY) {
       return NextResponse.json({ error: 'Email service not configured' }, { status: 500 });
     }
+
+    const { enSubject, esSubject, enHtmlContent, esHtmlContent } = buildOtpVerificationEmail({ otp });
+    const { subject, html } = buildBilingualEmail({ enSubject, esSubject, enHtmlContent, esHtmlContent });
 
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -45,27 +51,8 @@ export async function POST() {
       body: JSON.stringify({
         from: 'LoyaltyOS <security@loyalbase.dev>',
         to: [session.user.email],
-        subject: `${otp} es tu código de verificación LoyaltyOS`,
-        html: `
-          <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; background: #0a0a0f; color: #fff; border-radius: 12px; overflow: hidden;">
-            <div style="background: linear-gradient(135deg, #7c3aed, #2563eb); padding: 28px 32px;">
-              <h1 style="margin: 0; font-size: 20px; font-weight: 800;">Código de verificación</h1>
-              <p style="margin: 6px 0 0; opacity: 0.8; font-size: 13px;">LoyaltyOS Dashboard</p>
-            </div>
-            <div style="padding: 32px; text-align: center;">
-              <p style="font-size: 14px; color: rgba(255,255,255,0.6); margin: 0 0 24px;">
-                Detectamos un inicio de sesión desde un dispositivo nuevo. Ingresá este código para continuar:
-              </p>
-              <div style="display: inline-block; background: rgba(124,58,237,0.15); border: 2px solid rgba(124,58,237,0.4); border-radius: 12px; padding: 20px 40px; margin-bottom: 24px;">
-                <span style="font-size: 40px; font-weight: 900; letter-spacing: 8px; color: #a78bfa; font-family: monospace;">${otp}</span>
-              </div>
-              <p style="font-size: 12px; color: rgba(255,255,255,0.35); margin: 0;">
-                Este código vence en <strong style="color: rgba(255,255,255,0.5);">10 minutos</strong>.<br>
-                Si no fuiste vos, ignorá este email y cambiá tu contraseña.
-              </p>
-            </div>
-          </div>
-        `,
+        subject,
+        html,
       }),
     });
 

@@ -1,3 +1,12 @@
+-- ─── STEP 0: ENSURE HELPER FUNCTION EXISTS ───────────────────────────────────
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- ─── STEP 1: EXTEND CAMPAIGNS TABLE ──────────────────────────────────────────
 -- The campaigns table exists from initial schema but is missing several columns.
 

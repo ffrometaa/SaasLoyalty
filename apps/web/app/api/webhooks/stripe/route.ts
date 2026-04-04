@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { createServiceRoleClient } from '@loyalty-os/lib/server';
+import { buildBilingualEmail, buildWelcomeTenantEmail } from '@loyalty-os/email';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
@@ -291,15 +292,23 @@ async function sendWelcomeEmail({
   email: string;
   plan: string;
 }) {
+  // From address should match tenant custom domain when available for better deliverability.
+  // Default: LoyaltyOS <hello@loyalbase.dev>
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
   if (!RESEND_API_KEY) return;
 
-  const planNames: Record<string, string> = {
-    starter: 'Starter',
-    pro: 'Pro',
-    scale: 'Scale',
-  };
-  const planLabel = planNames[plan] || plan;
+  const { enSubject, esSubject, enHtmlContent, esHtmlContent } = buildWelcomeTenantEmail({
+    businessName,
+    plan,
+    dashboardUrl: 'https://dashboard.loyalbase.dev',
+  });
+
+  const { subject, html } = buildBilingualEmail({
+    enSubject,
+    esSubject,
+    enHtmlContent,
+    esHtmlContent,
+  });
 
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -310,42 +319,8 @@ async function sendWelcomeEmail({
     body: JSON.stringify({
       from: 'LoyaltyOS <hello@loyalbase.dev>',
       to: [email],
-      subject: `¡Bienvenido a LoyaltyOS, ${businessName}! Tu trial de 14 días está activo`,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0f; color: #fff; border-radius: 12px; overflow: hidden;">
-          <div style="background: linear-gradient(135deg, #7c3aed, #2563eb); padding: 32px;">
-            <h1 style="margin: 0; font-size: 24px; font-weight: 800;">¡Bienvenido a LoyaltyOS! 🎉</h1>
-            <p style="margin: 8px 0 0; opacity: 0.85; font-size: 15px;">Tu programa de fidelización ya está listo para empezar.</p>
-          </div>
-
-          <div style="padding: 32px;">
-            <p style="font-size: 15px; color: rgba(255,255,255,0.85); margin: 0 0 20px;">
-              Hola <strong>${businessName}</strong>, tu cuenta LoyaltyOS fue creada exitosamente con el plan <strong style="color: #a78bfa;">${planLabel}</strong>. Tenés 14 días gratis para explorar todas las funcionalidades.
-            </p>
-
-            <div style="background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.3); border-radius: 10px; padding: 20px; margin-bottom: 24px;">
-              <h3 style="margin: 0 0 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #a78bfa;">Primeros pasos</h3>
-              <ol style="margin: 0; padding-left: 20px; color: rgba(255,255,255,0.75); font-size: 14px; line-height: 2;">
-                <li>Ingresá al dashboard y completá tu perfil de negocio</li>
-                <li>Configurá tus primeras recompensas</li>
-                <li>Compartí el link de tu app con tus clientes</li>
-                <li>¡Empezá a registrar visitas y acumular puntos!</li>
-              </ol>
-            </div>
-
-            <div style="text-align: center; margin-bottom: 28px;">
-              <a href="https://dashboard.loyalbase.dev"
-                style="display: inline-block; background: #7c3aed; color: #fff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 700; font-size: 15px;">
-                Ir al Dashboard →
-              </a>
-            </div>
-
-            <div style="border-top: 1px solid rgba(255,255,255,0.07); padding-top: 20px; font-size: 12px; color: rgba(255,255,255,0.3);">
-              Si tenés alguna duda, respondé este email y te ayudamos. — Equipo LoyaltyOS
-            </div>
-          </div>
-        </div>
-      `,
+      subject,
+      html,
     }),
   });
 }

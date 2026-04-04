@@ -29,6 +29,9 @@ importers:
       '@loyalty-os/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@loyalty-os/email':
+        specifier: workspace:*
+        version: link:../../packages/email
       '@loyalty-os/lib':
         specifier: workspace:*
         version: link:../../packages/lib
@@ -205,6 +208,9 @@ importers:
       '@loyalty-os/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@loyalty-os/email':
+        specifier: workspace:*
+        version: link:../../packages/email
       '@loyalty-os/lib':
         specifier: workspace:*
         version: link:../../packages/lib

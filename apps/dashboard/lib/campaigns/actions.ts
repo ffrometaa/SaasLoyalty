@@ -5,6 +5,7 @@ import { requireCampaignSlot } from '../plans/guardFeature';
 import { getMemberIdsForSegment, isValidSegment, type SegmentId } from './segments';
 import { revalidatePath } from 'next/cache';
 import type { Plan } from '../plans/features';
+import { buildBilingualEmail, buildCampaignEmail } from '@loyalty-os/email';
 
 // ─── AUTH HELPER ─────────────────────────────────────────────────────────────
 
@@ -43,13 +44,21 @@ async function resolveAuthedTenant(): Promise<{ tenantId: string; userId: string
 function validateCampaignInput(input: {
   name: string;
   body: string;
+  body_en: string | null;
+  body_es: string | null;
   type: string;
   subject: string | null;
   segment: string;
   [key: string]: unknown;
 }): string | null {
   if (!input.name || input.name.trim() === '') return 'Campaign name is required.';
-  if (!input.body || input.body.trim() === '') return 'Message body is required.';
+  if (input.type === 'email') {
+    const hasEn = input.body_en && input.body_en.trim() !== '';
+    const hasEs = input.body_es && input.body_es.trim() !== '';
+    if (!hasEn && !hasEs) return 'At least one language body is required for email campaigns.';
+  } else {
+    if (!input.body || input.body.trim() === '') return 'Message body is required.';
+  }
   if (!input.segment || !isValidSegment(input.segment)) return 'Please select a valid audience segment.';
   if (input.type === 'push' && (!input.subject || input.subject.trim() === '')) {
     return 'Push notification subject is required.';
@@ -66,11 +75,14 @@ export async function createCampaign(formData: FormData) {
   const tenant = await resolveAuthedTenant();
   if (!tenant) return { error: 'Not authenticated.' };
 
+  const type = formData.get('type') as string;
   const input = {
     name: formData.get('name') as string,
-    type: formData.get('type') as string,
+    type,
     subject: formData.get('subject') as string | null,
     body: formData.get('body') as string,
+    body_en: formData.get('body_en') as string | null,
+    body_es: formData.get('body_es') as string | null,
     image_url: formData.get('image_url') as string | null,
     cta_text: formData.get('cta_text') as string | null,
     cta_url: formData.get('cta_url') as string | null,
@@ -97,7 +109,10 @@ export async function createCampaign(formData: FormData) {
       name: input.name.trim(),
       type: input.type,
       subject: input.subject || null,
-      body: input.body.trim(),
+      body: input.body ? input.body.trim() : (input.body_en || input.body_es || ''),
+      description: input.type === 'email'
+        ? JSON.stringify({ body_en: input.body_en, body_es: input.body_es })
+        : null,
       image_url: input.image_url || null,
       cta_text: input.cta_text || null,
       cta_url: input.cta_url || null,
@@ -134,11 +149,14 @@ export async function updateCampaign(campaignId: string, formData: FormData) {
   if (!existing) return { error: 'Campaign not found.' };
   if (existing.status !== 'draft') return { error: 'Only draft campaigns can be edited.' };
 
+  const updateType = formData.get('type') as string;
   const input = {
     name: formData.get('name') as string,
-    type: formData.get('type') as string,
+    type: updateType,
     subject: formData.get('subject') as string | null,
     body: formData.get('body') as string,
+    body_en: formData.get('body_en') as string | null,
+    body_es: formData.get('body_es') as string | null,
     image_url: formData.get('image_url') as string | null,
     cta_text: formData.get('cta_text') as string | null,
     cta_url: formData.get('cta_url') as string | null,
@@ -156,7 +174,10 @@ export async function updateCampaign(campaignId: string, formData: FormData) {
       name: input.name.trim(),
       type: input.type,
       subject: input.subject || null,
-      body: input.body.trim(),
+      body: input.body ? input.body.trim() : (input.body_en || input.body_es || ''),
+      description: input.type === 'email'
+        ? JSON.stringify({ body_en: input.body_en, body_es: input.body_es })
+        : null,
       image_url: input.image_url || null,
       cta_text: input.cta_text || null,
       cta_url: input.cta_url || null,
@@ -324,11 +345,47 @@ export async function sendCampaignNow(campaignId: string) {
   } else if (campaign.type === 'email') {
     // ─── RESEND EMAIL ─────────────────────────────────────────────────────────
     // RESEND_API_KEY — found in Resend dashboard under API Keys
+    // From address should match tenant custom domain when available for better deliverability.
     const resendKey = process.env.RESEND_API_KEY;
 
     if (!resendKey) {
       sendError = 'Resend API key is not configured.';
     } else {
+      // Parse bilingual body stored in description field
+      let body_en: string | null = null;
+      let body_es: string | null = null;
+      if (campaign.description) {
+        try {
+          const parsed = JSON.parse(campaign.description) as { body_en?: string; body_es?: string };
+          body_en = parsed.body_en || null;
+          body_es = parsed.body_es || null;
+        } catch {
+          // description is not bilingual JSON — use body as fallback for both
+          body_en = campaign.body;
+          body_es = campaign.body;
+        }
+      } else {
+        body_en = campaign.body;
+        body_es = campaign.body;
+      }
+
+      const { enSubject, esSubject, enHtmlContent, esHtmlContent } = buildCampaignEmail({
+        campaignName: campaign.name ?? '',
+        subject: campaign.subject ?? '',
+        enBody: body_en ?? '',
+        esBody: body_es ?? '',
+        ctaText: campaign.cta_text ?? '',
+        ctaUrl: campaign.cta_url ?? '',
+        businessName: campaign.name ?? '',
+      });
+
+      const { subject: emailSubject, html: emailHtml } = buildBilingualEmail({
+        enSubject,
+        esSubject,
+        enHtmlContent,
+        esHtmlContent,
+      });
+
       for (const memberId of memberIds) {
         const member = memberMap.get(memberId);
         if (!member?.email) continue;
@@ -341,10 +398,10 @@ export async function sendCampaignNow(campaignId: string) {
               Authorization: `Bearer ${resendKey}`,
             },
             body: JSON.stringify({
-              from: 'campaigns@loyalbase.dev',
+              from: 'LoyaltyOS <campaigns@loyalbase.dev>',
               to: [member.email],
-              subject: campaign.subject ?? campaign.name,
-              html: campaign.body,
+              subject: emailSubject,
+              html: emailHtml,
             }),
           });
 

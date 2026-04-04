@@ -68,20 +68,77 @@ function PushPreview({ subject, body, imageUrl }: { subject: string; body: strin
   );
 }
 
-function EmailPreview({ subject, body }: { subject: string; body: string }) {
+// ─── EMAIL BILINGUAL PREVIEW ───────────────────────────────────────────────────
+
+function EmailPreview({
+  subject,
+  bodyEn,
+  bodyEs,
+}: {
+  subject: string;
+  bodyEn: string;
+  bodyEs: string;
+}) {
+  const [tab, setTab] = useState<'en' | 'es'>('en');
+  const activeBody = tab === 'en' ? bodyEn : bodyEs;
+
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden">
-      <div className="bg-gray-50 px-4 py-3 border-b">
-        <p className="text-xs text-gray-500">Subject</p>
-        <p className="text-sm font-medium text-gray-900 truncate">{subject || 'Email Subject'}</p>
+    <div className="border border-gray-200 rounded-xl overflow-hidden text-[10px]">
+      {/* Subject bar */}
+      <div className="bg-gray-50 px-3 py-2 border-b">
+        <p className="text-gray-400 uppercase tracking-wide" style={{ fontSize: '8px' }}>Subject</p>
+        <p className="font-medium text-gray-800 truncate" style={{ fontSize: '10px' }}>
+          {subject || 'Email Subject'} / {subject || 'Asunto'}
+        </p>
       </div>
-      <div className="p-4">
-        <div className="text-xs text-gray-600 whitespace-pre-wrap leading-relaxed max-h-40 overflow-hidden">
-          {body || 'Your email content will appear here...'}
+
+      {/* Language tabs */}
+      <div className="flex border-b">
+        {(['en', 'es'] as const).map((lang) => (
+          <button
+            key={lang}
+            type="button"
+            onClick={() => setTab(lang)}
+            className={`flex-1 py-1.5 text-center font-bold uppercase tracking-widest transition-colors ${
+              tab === lang
+                ? 'bg-brand-purple text-white'
+                : 'bg-white text-gray-400 hover:bg-gray-50'
+            }`}
+            style={{ fontSize: '8px' }}
+          >
+            {lang}
+          </button>
+        ))}
+      </div>
+
+      {/* Body */}
+      <div className="p-3">
+        <div className="text-gray-600 whitespace-pre-wrap leading-relaxed max-h-32 overflow-hidden" style={{ fontSize: '9px' }}>
+          {activeBody || (tab === 'en' ? 'English body will appear here...' : 'El cuerpo en español aparecerá aquí...')}
         </div>
+      </div>
+
+      {/* Bilingual indicator */}
+      <div className="px-3 pb-2">
+        <div className="h-px bg-gray-100 mb-2" />
+        <p className="text-gray-300 text-center" style={{ fontSize: '8px' }}>
+          EN + ES · Bilingual email
+        </p>
       </div>
     </div>
   );
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+
+function parseEmailBodies(campaign?: Campaign) {
+  if (!campaign?.description) return { bodyEn: '', bodyEs: '' };
+  try {
+    const parsed = JSON.parse(campaign.description) as { body_en?: string; body_es?: string };
+    return { bodyEn: parsed.body_en || '', bodyEs: parsed.body_es || '' };
+  } catch {
+    return { bodyEn: campaign.body || '', bodyEs: '' };
+  }
 }
 
 // ─── MAIN FORM ────────────────────────────────────────────────────────────────
@@ -101,10 +158,13 @@ export default function CampaignForm({
   const isEdit = !!campaign;
   const defaultType = campaign?.type ?? 'push';
   const defaultSchedule = searchParams.get('schedule') === '1' ? 'later' : 'now';
+  const { bodyEn: initialBodyEn, bodyEs: initialBodyEs } = parseEmailBodies(campaign);
 
   const [type, setType] = useState(defaultType);
   const [subject, setSubject] = useState(campaign?.subject ?? '');
   const [body, setBody] = useState(campaign?.body ?? '');
+  const [bodyEn, setBodyEn] = useState(initialBodyEn);
+  const [bodyEs, setBodyEs] = useState(initialBodyEs);
   const [imageUrl, setImageUrl] = useState(campaign?.image_url ?? '');
   const [ctaText, setCtaText] = useState(campaign?.cta_text ?? '');
   const [ctaUrl, setCtaUrl] = useState(campaign?.cta_url ?? '');
@@ -118,6 +178,7 @@ export default function CampaignForm({
   const [toast, setToast] = useState<string | null>(null);
 
   const showSubject = type === 'push' || type === 'email';
+  const isEmailType = type === 'email';
   const maxBody = type === 'push' ? 200 : undefined;
 
   const buildFormData = (name: string) => {
@@ -125,7 +186,15 @@ export default function CampaignForm({
     fd.set('name', name);
     fd.set('type', type);
     fd.set('subject', subject);
-    fd.set('body', body);
+    if (isEmailType) {
+      fd.set('body', bodyEn || bodyEs || '');
+      fd.set('body_en', bodyEn);
+      fd.set('body_es', bodyEs);
+    } else {
+      fd.set('body', body);
+      fd.set('body_en', '');
+      fd.set('body_es', '');
+    }
     fd.set('image_url', imageUrl);
     fd.set('cta_text', ctaText);
     fd.set('cta_url', ctaUrl);
@@ -277,25 +346,69 @@ export default function CampaignForm({
                 </div>
               )}
 
-              {/* Body */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-sm font-medium text-gray-700">{t('fieldBody')} *</label>
-                  {maxBody && (
-                    <span className={`text-xs ${body.length > maxBody ? 'text-red-500' : 'text-gray-400'}`}>
-                      {t('charCount', { count: body.length, max: maxBody })}
-                    </span>
+              {/* Body — bilingual for email, single for others */}
+              {isEmailType ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-gray-700">{t('fieldBody')}</label>
+                    <span className="text-xs text-gray-400">{t('emailBodyNote')}</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* English body */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="text-xs font-bold text-gray-400 bg-gray-100 rounded px-1.5 py-0.5 uppercase tracking-wider">EN</span>
+                        <label className="text-sm font-medium text-gray-700">{t('emailBodyEn')}</label>
+                      </div>
+                      <textarea
+                        value={bodyEn}
+                        onChange={(e) => setBodyEn(e.target.value)}
+                        placeholder="Write the English version of your email..."
+                        rows={6}
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple/30 resize-none"
+                      />
+                    </div>
+                    {/* Spanish body */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="text-xs font-bold text-gray-400 bg-gray-100 rounded px-1.5 py-0.5 uppercase tracking-wider">ES</span>
+                        <label className="text-sm font-medium text-gray-700">{t('emailBodyEs')}</label>
+                      </div>
+                      <textarea
+                        value={bodyEs}
+                        onChange={(e) => setBodyEs(e.target.value)}
+                        placeholder="Escribí la versión en español de tu email..."
+                        rows={6}
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple/30 resize-none"
+                      />
+                    </div>
+                  </div>
+                  {!bodyEn && !bodyEs && (
+                    <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      {t('emailBodyNote')}
+                    </p>
                   )}
                 </div>
-                <textarea
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  placeholder={t('fieldBodyPlaceholder')}
-                  rows={4}
-                  maxLength={maxBody}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple/30 resize-none"
-                />
-              </div>
+              ) : (
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-sm font-medium text-gray-700">{t('fieldBody')} *</label>
+                    {maxBody && (
+                      <span className={`text-xs ${body.length > maxBody ? 'text-red-500' : 'text-gray-400'}`}>
+                        {t('charCount', { count: body.length, max: maxBody })}
+                      </span>
+                    )}
+                  </div>
+                  <textarea
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
+                    placeholder={t('fieldBodyPlaceholder')}
+                    rows={4}
+                    maxLength={maxBody}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple/30 resize-none"
+                  />
+                </div>
+              )}
 
               {/* Image URL */}
               <div>
@@ -502,11 +615,11 @@ export default function CampaignForm({
                     </div>
 
                     <p className="text-[9px] font-medium text-gray-400 uppercase tracking-wide mb-2">
-                      {type === 'email' ? t('previewEmail') : t('previewPhone')}
+                      {isEmailType ? t('previewEmail') : t('previewPhone')}
                     </p>
 
-                    {type === 'email' ? (
-                      <EmailPreview subject={subject} body={body} />
+                    {isEmailType ? (
+                      <EmailPreview subject={subject} bodyEn={bodyEn} bodyEs={bodyEs} />
                     ) : (
                       <PushPreview subject={subject} body={body} imageUrl={imageUrl} />
                     )}

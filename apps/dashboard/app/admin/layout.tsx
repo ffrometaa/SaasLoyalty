@@ -1,31 +1,24 @@
-import Link from 'next/link';
+import { verifyAdminAccess } from '@/lib/admin/guard';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { AdminHeader } from '@/components/admin/AdminHeader';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export const metadata = {
+  title: 'Super Admin — LoyaltyOS',
+};
+
+export default async function AdminLayout({ children = null }) {
+  // Full server-side guard — redirects to /login if not an active super admin
+  const admin = await verifyAdminAccess();
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <span className="text-xs font-semibold uppercase tracking-widest text-brand-purple bg-brand-purple-50 px-2 py-1 rounded">
-              Super Admin
-            </span>
-            <nav className="flex items-center gap-6">
-              <Link href="/admin" className="text-sm font-medium text-gray-700 hover:text-brand-purple transition-colors">
-                Overview
-              </Link>
-              <Link href="/admin/tenants" className="text-sm font-medium text-gray-700 hover:text-brand-purple transition-colors">
-                Tenants
-              </Link>
-            </nav>
-          </div>
-          <Link href="/" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
-            ← Back to Dashboard
-          </Link>
-        </div>
-      </header>
-      <main className="max-w-7xl mx-auto">
-        {children}
-      </main>
+    <div className="min-h-screen bg-[#0a0f1c] flex">
+      <AdminSidebar admin={admin} />
+      <div className="flex-1 flex flex-col lg:pl-64">
+        <AdminHeader admin={admin} title={null} />
+        <main className="flex-1 p-6 lg:p-8">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
