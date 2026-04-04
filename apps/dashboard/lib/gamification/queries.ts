@@ -140,12 +140,12 @@ export async function getGamificationSummary(tenantId: string): Promise<Gamifica
     const cid = row.challenge_id as string;
     const challengeName = (row.challenges as { name: string } | null)?.name ?? 'Unknown';
     if (!countByChallengeId[cid]) {
-      countByChallengeId[cid] = { name: challengeName, count: 0 };
+      countByChallengeId[cid] = { name: challengeName, completions: 0 };
     }
-    countByChallengeId[cid].count++;
+    countByChallengeId[cid].completions++;
   }
 
-  const topChallenge = Object.values(countByChallengeId).sort((a, b) => b.count - a.count)[0] ?? null;
+  const topChallenge = Object.values(countByChallengeId).sort((a, b) => b.completions - a.completions)[0] ?? null;
 
   return {
     activeChallenges: challengesResult.count ?? 0,
