@@ -31,6 +31,7 @@ export async function middleware(request: NextRequest) {
   // Public routes
   if (
     pathname.startsWith('/login') ||
+    pathname.startsWith('/auth/callback') ||
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/invite')
   ) {

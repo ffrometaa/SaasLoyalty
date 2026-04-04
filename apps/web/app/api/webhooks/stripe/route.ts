@@ -173,6 +173,15 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
     demoRequestedAt,
   });
 
+  // Send welcome email to the new customer
+  if (customerEmail) {
+    await sendWelcomeEmail({
+      businessName: businessName || tenantSlug,
+      email: customerEmail,
+      plan,
+    });
+  }
+
   console.log('Tenant updated from checkout:', tenantSlug, { cameFromDemo });
 }
 
@@ -258,13 +267,81 @@ async function notifyNewCustomer({
               </tr>
               <tr style="border-top: 1px solid rgba(255,255,255,0.07);">
                 <td style="padding: 10px 0; color: rgba(255,255,255,0.5); font-size: 13px;">Dashboard</td>
-                <td style="padding: 10px 0; font-size: 13px;">loyalbase.dev/dashboard</td>
+                <td style="padding: 10px 0; font-size: 13px;"><a href="https://dashboard.loyalbase.dev" style="color: #a78bfa; text-decoration: none;">dashboard.loyalbase.dev</a></td>
               </tr>
               ${demoNote}
             </table>
 
             <div style="margin-top: 28px; padding: 16px; background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.25); border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.7);">
               💡 Contactalos en los próximos días para asegurarte de que el onboarding salga bien — los clientes que reciben ayuda en la primera semana tienen 3x más retención.
+            </div>
+          </div>
+        </div>
+      `,
+    }),
+  });
+}
+
+async function sendWelcomeEmail({
+  businessName,
+  email,
+  plan,
+}: {
+  businessName: string;
+  email: string;
+  plan: string;
+}) {
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  if (!RESEND_API_KEY) return;
+
+  const planNames: Record<string, string> = {
+    starter: 'Starter',
+    pro: 'Pro',
+    scale: 'Scale',
+  };
+  const planLabel = planNames[plan] || plan;
+
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: 'LoyaltyOS <hello@loyalbase.dev>',
+      to: [email],
+      subject: `¡Bienvenido a LoyaltyOS, ${businessName}! Tu trial de 14 días está activo`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0f; color: #fff; border-radius: 12px; overflow: hidden;">
+          <div style="background: linear-gradient(135deg, #7c3aed, #2563eb); padding: 32px;">
+            <h1 style="margin: 0; font-size: 24px; font-weight: 800;">¡Bienvenido a LoyaltyOS! 🎉</h1>
+            <p style="margin: 8px 0 0; opacity: 0.85; font-size: 15px;">Tu programa de fidelización ya está listo para empezar.</p>
+          </div>
+
+          <div style="padding: 32px;">
+            <p style="font-size: 15px; color: rgba(255,255,255,0.85); margin: 0 0 20px;">
+              Hola <strong>${businessName}</strong>, tu cuenta LoyaltyOS fue creada exitosamente con el plan <strong style="color: #a78bfa;">${planLabel}</strong>. Tenés 14 días gratis para explorar todas las funcionalidades.
+            </p>
+
+            <div style="background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.3); border-radius: 10px; padding: 20px; margin-bottom: 24px;">
+              <h3 style="margin: 0 0 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #a78bfa;">Primeros pasos</h3>
+              <ol style="margin: 0; padding-left: 20px; color: rgba(255,255,255,0.75); font-size: 14px; line-height: 2;">
+                <li>Ingresá al dashboard y completá tu perfil de negocio</li>
+                <li>Configurá tus primeras recompensas</li>
+                <li>Compartí el link de tu app con tus clientes</li>
+                <li>¡Empezá a registrar visitas y acumular puntos!</li>
+              </ol>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 28px;">
+              <a href="https://dashboard.loyalbase.dev"
+                style="display: inline-block; background: #7c3aed; color: #fff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 700; font-size: 15px;">
+                Ir al Dashboard →
+              </a>
+            </div>
+
+            <div style="border-top: 1px solid rgba(255,255,255,0.07); padding-top: 20px; font-size: 12px; color: rgba(255,255,255,0.3);">
+              Si tenés alguna duda, respondé este email y te ayudamos. — Equipo LoyaltyOS
             </div>
           </div>
         </div>
