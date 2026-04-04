@@ -12,8 +12,17 @@ import {
   LogOut,
   Menu,
   X,
-  QrCode
+  QrCode,
 } from 'lucide-react';
+
+// Inline SVG trophy — no external icon library per spec
+function TrophyIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8 21h8m-4-4v4M5 3h14l-1 7a5 5 0 01-10 0L5 3zm0 0H3m16 0h2" />
+    </svg>
+  );
+}
 import { useState, useEffect } from 'react';
 import { getSupabaseClient } from '@loyalty-os/lib';
 import { useTranslations } from 'next-intl';
@@ -31,6 +40,7 @@ export function Sidebar() {
     { name: t('redemptions'), href: '/redemptions', icon: QrCode },
     { name: t('analytics'), href: '/analytics', icon: BarChart3 },
     { name: t('campaigns'), href: '/campaigns', icon: Megaphone },
+    { name: t('gamification'), href: '/gamification', icon: TrophyIcon },
     { name: t('settings'), href: '/settings', icon: Settings },
   ];
 
@@ -38,6 +48,7 @@ export function Sidebar() {
     starter: t('starterPlan'),
     pro: t('proPlan'),
     scale: t('scalePlan'),
+    enterprise: t('enterprisePlan'),
   };
 
   useEffect(() => {

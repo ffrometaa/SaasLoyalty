@@ -106,7 +106,17 @@
     "plan2_f2": "Full analytics + export",
     "plan2_f3": "Full brand white-label",
     "plan2_f4": "Dedicated account manager",
-    "plan2_f5": "API access"
+    "plan2_f5": "API access",
+    "plan3_name": "Enterprise",
+    "plan3_subtitle": "For large chains & franchises",
+    "plan3_f0": "Everything in Scale",
+    "plan3_f1": "SSO & custom integrations",
+    "plan3_f2": "Multi-location management",
+    "plan3_f3": "Gamification engine",
+    "plan3_f4": "Advanced campaign automation",
+    "plan3_f5": "SLA-backed support",
+    "plan3_cta": "Contact sales",
+    "plan3_price": "Custom pricing"
   },
   "faq": {
     "label": "FAQ",
@@ -148,7 +158,18 @@
     "privacy": "Privacy Policy"
   },
   "socialProof": {
-    "items": ["Spas", "Restaurants", "Gyms", "Retail Shops", "Wellness Studios", "Salons", "Hotels", "Cafés", "Barbershops", "Yoga Studios"]
+    "items": [
+      "Spas",
+      "Restaurants",
+      "Gyms",
+      "Retail Shops",
+      "Wellness Studios",
+      "Salons",
+      "Hotels",
+      "Cafés",
+      "Barbershops",
+      "Yoga Studios"
+    ]
   },
   "contact": {
     "label": "Contact",
@@ -176,7 +197,14 @@
     "successHeading": "We'll be in touch soon!",
     "successBody": "Thanks for reaching out. We've received your request and will contact you within 24 hours to schedule your demo.",
     "errorGeneric": "Something went wrong. Please try again or email us at support@loyaltyos.com",
-    "businessTypes": ["Spa/Salon", "Restaurant/Café", "Gym/Studio", "Retail Shop", "Hotel", "Other"]
+    "businessTypes": [
+      "Spa/Salon",
+      "Restaurant/Café",
+      "Gym/Studio",
+      "Retail Shop",
+      "Hotel",
+      "Other"
+    ]
   },
   "pricingPage": {
     "label": "Pricing",
@@ -302,5 +330,31 @@
       "errTooShort": "Password must be at least 8 characters",
       "errMismatch": "Passwords do not match"
     }
+  },
+  "dashboardPreview": {
+    "badge": "The Platform",
+    "title": "Your business intelligence, simplified",
+    "subtitle": "See what matters. Act on what's urgent.",
+    "metricMembers": "Active Members",
+    "metricVisits": "Visits This Month",
+    "metricPoints": "Points Redeemed",
+    "metricRetention": "Retention Rate",
+    "chartTitle": "Visits by Day",
+    "topProductsTitle": "Top Products",
+    "product1": "Margherita Pizza",
+    "product2": "Pepperoni Pizza",
+    "product3": "Classic Lasagna",
+    "alertsTitle": "Alerts",
+    "alert1": "154 customers at risk",
+    "alert2": "Tiramisu sales up 31%",
+    "alert3": "Ana S. ready to redeem Gold reward",
+    "cta": "See your own dashboard",
+    "dayMon": "Mon",
+    "dayTue": "Tue",
+    "dayWed": "Wed",
+    "dayThu": "Thu",
+    "dayFri": "Fri",
+    "daySat": "Sat",
+    "daySun": "Sun"
   }
 }

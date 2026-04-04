@@ -38,6 +38,23 @@ const NAV_ITEMS = [
     ),
   },
   {
+    href: '/challenges',
+    label: 'Desafíos',
+    icon: (active: boolean) => (
+      <svg
+        width="22"
+        height="22"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke={active ? 'var(--brand-primary-dark)' : 'var(--muted)'}
+        strokeWidth="1.8"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <polygon points="10 8 16 12 10 16 10 8" />
+      </svg>
+    ),
+  },
+  {
     href: '/history',
     label: 'Historial',
     icon: (active: boolean) => (
@@ -71,7 +88,7 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
-] as const;
+];
 
 export function BottomNav() {
   const pathname = usePathname();

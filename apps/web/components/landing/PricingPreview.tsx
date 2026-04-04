@@ -17,6 +17,7 @@ export function PricingPreview() {
       subtitle: t('plan0_subtitle'),
       features: [t('plan0_f0'), t('plan0_f1'), t('plan0_f2'), t('plan0_f3'), t('plan0_f4')],
       highlight: false,
+      enterprise: false,
     },
     {
       name: t('plan1_name'),
@@ -25,6 +26,7 @@ export function PricingPreview() {
       subtitle: t('plan1_subtitle'),
       features: [t('plan1_f0'), t('plan1_f1'), t('plan1_f2'), t('plan1_f3'), t('plan1_f4'), t('plan1_f5')],
       highlight: true,
+      enterprise: false,
     },
     {
       name: t('plan2_name'),
@@ -33,6 +35,16 @@ export function PricingPreview() {
       subtitle: t('plan2_subtitle'),
       features: [t('plan2_f0'), t('plan2_f1'), t('plan2_f2'), t('plan2_f3'), t('plan2_f4'), t('plan2_f5')],
       highlight: false,
+      enterprise: false,
+    },
+    {
+      name: t('plan3_name'),
+      monthly: null,
+      annual: null,
+      subtitle: t('plan3_subtitle'),
+      features: [t('plan3_f0'), t('plan3_f1'), t('plan3_f2'), t('plan3_f3'), t('plan3_f4'), t('plan3_f5')],
+      highlight: false,
+      enterprise: true,
     },
   ];
 
@@ -111,14 +123,18 @@ export function PricingPreview() {
         </div>
 
         {/* Plans */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-          {PLANS.map((plan, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
+          {PLANS.map((plan) => (
             <div
               key={plan.name}
               data-stagger
               style={{
-                background: '#0d0d14',
-                border: plan.highlight ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                background: plan.enterprise ? 'linear-gradient(135deg, #0d0d1a, #111128)' : '#0d0d14',
+                border: plan.highlight
+                  ? 'none'
+                  : plan.enterprise
+                  ? '1px solid rgba(124,58,237,0.3)'
+                  : '1px solid rgba(255,255,255,0.08)',
                 borderRadius: '16px',
                 padding: '28px',
                 position: 'relative',
@@ -139,25 +155,50 @@ export function PricingPreview() {
                 </div>
               )}
 
+              {plan.enterprise && (
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                  <span
+                    className="px-4 py-1 rounded-full text-xs font-bold text-white whitespace-nowrap"
+                    style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}
+                  >
+                    Enterprise
+                  </span>
+                </div>
+              )}
+
               <div className="mb-6">
                 <div className="font-display font-bold text-white text-xl mb-1">{plan.name}</div>
                 <div className="text-white/40 text-sm">{plan.subtitle}</div>
               </div>
 
               <div className="mb-6">
-                <span className="font-display font-black text-white text-4xl">
-                  ${annual ? plan.annual : plan.monthly}
-                </span>
-                <span className="text-white/40 text-sm">{t('perMonth')}</span>
-                {annual && (
-                  <div className="text-white/30 text-xs mt-1">{t('billedAnnually')}</div>
+                {plan.enterprise ? (
+                  <div>
+                    <span className="font-display font-black text-white text-2xl">{t('plan3_price')}</span>
+                  </div>
+                ) : (
+                  <div>
+                    <span className="font-display font-black text-white text-4xl">
+                      ${annual ? plan.annual : plan.monthly}
+                    </span>
+                    <span className="text-white/40 text-sm">{t('perMonth')}</span>
+                    {annual && (
+                      <div className="text-white/30 text-xs mt-1">{t('billedAnnually')}</div>
+                    )}
+                  </div>
                 )}
               </div>
 
               <ul className="space-y-3 mb-8 flex-1">
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-sm text-white/65">
-                    <svg className="w-4 h-4 mt-0.5 shrink-0 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <svg
+                      className={`w-4 h-4 mt-0.5 shrink-0 ${plan.enterprise ? 'text-indigo-400' : 'text-purple-400'}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                     {f}
@@ -165,25 +206,39 @@ export function PricingPreview() {
                 ))}
               </ul>
 
-              <Link
-                href="/register"
-                className="block w-full text-center py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02]"
-                style={
-                  plan.highlight
-                    ? {
-                        background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
-                        color: '#fff',
-                        boxShadow: '0 0 20px rgba(124,58,237,0.35)',
-                      }
-                    : {
-                        background: 'rgba(255,255,255,0.06)',
-                        color: '#fff',
-                        border: '1px solid rgba(255,255,255,0.12)',
-                      }
-                }
-              >
-                {t('startTrial')}
-              </Link>
+              {plan.enterprise ? (
+                <Link
+                  href="/contact"
+                  className="block w-full text-center py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02]"
+                  style={{
+                    background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+                    color: '#fff',
+                    boxShadow: '0 0 20px rgba(79,70,229,0.25)',
+                  }}
+                >
+                  {t('plan3_cta')}
+                </Link>
+              ) : (
+                <Link
+                  href="/register"
+                  className="block w-full text-center py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02]"
+                  style={
+                    plan.highlight
+                      ? {
+                          background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
+                          color: '#fff',
+                          boxShadow: '0 0 20px rgba(124,58,237,0.35)',
+                        }
+                      : {
+                          background: 'rgba(255,255,255,0.06)',
+                          color: '#fff',
+                          border: '1px solid rgba(255,255,255,0.12)',
+                        }
+                  }
+                >
+                  {t('startTrial')}
+                </Link>
+              )}
             </div>
           ))}
         </div>

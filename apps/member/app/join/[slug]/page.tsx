@@ -5,7 +5,7 @@ import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 
 interface JoinPageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ redirect?: string }>;
+  searchParams: Promise<{ redirect?: string; embed?: string }>;
 }
 
 async function getTenantBySlug(slug: string) {
@@ -21,7 +21,8 @@ async function getTenantBySlug(slug: string) {
 
 export default async function JoinPage({ params, searchParams }: JoinPageProps) {
   const { slug } = await params;
-  const { redirect: redirectTo } = await searchParams;
+  const { redirect: redirectTo, embed } = await searchParams;
+  const isEmbed = embed === 'true';
 
   const tenant = await getTenantBySlug(slug);
   if (!tenant) notFound();
@@ -64,7 +65,7 @@ export default async function JoinPage({ params, searchParams }: JoinPageProps) 
       `}</style>
 
       <main
-        className="min-h-screen flex flex-col"
+        className={`flex flex-col ${isEmbed ? 'min-h-[520px]' : 'min-h-screen'}`}
         style={{ background: 'var(--cream, #faf8f4)' }}
       >
         {/* Hero */}
@@ -108,9 +109,9 @@ export default async function JoinPage({ params, searchParams }: JoinPageProps) 
           {/* Benefits */}
           <div className="relative z-10 w-full max-w-xs space-y-3 mb-10">
             {[
-              { icon: '✦', text: 'Acumulá puntos en cada visita' },
-              { icon: '🎁', text: 'Canjeá por servicios y productos' },
-              { icon: '⭐', text: 'Subí de nivel y desbloqueá beneficios' },
+              { icon: '✦', text: 'Acumula puntos en cada visita' },
+              { icon: '🎁', text: 'Canjea por servicios y productos' },
+              { icon: '⭐', text: 'Sube de nivel y desbloquea beneficios' },
             ].map(({ icon, text }) => (
               <div
                 key={text}
@@ -136,12 +137,14 @@ export default async function JoinPage({ params, searchParams }: JoinPageProps) 
           >
             Unirme al programa
           </Link>
-          <p className="text-center text-xs" style={{ color: 'var(--muted, #8a887f)' }}>
-            ¿Ya tenés cuenta?{' '}
-            <Link href={loginHref} style={{ color: primary, fontWeight: 500 }}>
-              Iniciar sesión
-            </Link>
-          </p>
+          {!isEmbed && (
+            <p className="text-center text-xs" style={{ color: 'var(--muted, #8a887f)' }}>
+              ¿Ya tienes cuenta?{' '}
+              <Link href={loginHref} style={{ color: primary, fontWeight: 500 }}>
+                Iniciar sesión
+              </Link>
+            </p>
+          )}
         </div>
       </main>
     </>

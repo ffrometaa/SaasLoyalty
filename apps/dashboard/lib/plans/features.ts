@@ -1,5 +1,5 @@
 // ─── TYPES ────────────────────────────────────────────────
-export type Plan = 'starter' | 'pro' | 'scale';
+export type Plan = 'starter' | 'pro' | 'scale' | 'enterprise';
 
 export type Feature =
   | 'members_up_to_500'
@@ -19,7 +19,13 @@ export type Feature =
   | 'support_email'
   | 'support_priority_chat'
   | 'support_account_manager'
-  | 'api_access';
+  | 'api_access'
+  | 'sso'
+  | 'custom_integrations'
+  | 'multi_location'
+  | 'gamification'
+  | 'advanced_campaigns'
+  | 'support_sla';
 
 export interface PlanConfig {
   id: Plan;
@@ -33,6 +39,34 @@ export interface PlanConfig {
 
 // ─── PLAN DEFINITIONS ─────────────────────────────────────
 export const PLAN_CONFIGS: Record<Plan, PlanConfig> = {
+  enterprise: {
+    id: 'enterprise',
+    name: 'Enterprise',
+    monthlyPrice: 0,  // custom pricing
+    annualPrice: 0,
+    maxMembers: null,
+    maxCampaignsPerMonth: null,
+    features: [
+      'members_unlimited',
+      'campaigns_unlimited',
+      'analytics_full',
+      'analytics_heatmap',
+      'analytics_export',
+      'whitelabel_logo',
+      'whitelabel_custom_domain',
+      'whitelabel_full_brand',
+      'booking_integrations',
+      'support_priority_chat',
+      'support_account_manager',
+      'api_access',
+      'sso',
+      'custom_integrations',
+      'multi_location',
+      'gamification',
+      'advanced_campaigns',
+      'support_sla',
+    ],
+  },
   starter: {
     id: 'starter',
     name: 'Starter',
@@ -64,6 +98,7 @@ export const PLAN_CONFIGS: Record<Plan, PlanConfig> = {
       'whitelabel_custom_domain',
       'booking_integrations',
       'support_priority_chat',
+      'gamification',
     ],
   },
   scale: {
@@ -86,6 +121,7 @@ export const PLAN_CONFIGS: Record<Plan, PlanConfig> = {
       'support_priority_chat',
       'support_account_manager',
       'api_access',
+      'gamification',
     ],
   },
 };
@@ -112,7 +148,8 @@ export function getUpgradePlan(currentPlan: Plan): Plan | null {
   const upgrades: Record<Plan, Plan | null> = {
     starter: 'pro',
     pro: 'scale',
-    scale: null,
+    scale: 'enterprise',
+    enterprise: null,
   };
   return upgrades[currentPlan];
 }

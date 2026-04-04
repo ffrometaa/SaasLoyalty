@@ -14,17 +14,21 @@ export default async function PricingPage() {
   const t = await getTranslations('pricingPage');
 
   const TABLE_ROWS = [
-    { feature: 'Member App (PWA)', starter: true, pro: true, scale: true },
-    { feature: 'Points & Rewards Engine', starter: true, pro: true, scale: true },
-    { feature: 'QR Code Onboarding', starter: true, pro: true, scale: true },
-    { feature: 'Members', starter: '500', pro: '2,000', scale: 'Unlimited' },
-    { feature: 'Campaigns / month', starter: '2', pro: '10', scale: 'Unlimited' },
-    { feature: 'Analytics Dashboard', starter: 'Basic', pro: 'Full + Heatmap', scale: 'Full + Export' },
-    { feature: 'White-label', starter: 'Logo', pro: 'Logo + Domain', scale: 'Full Brand' },
-    { feature: 'Booking Integrations', starter: false, pro: true, scale: true },
-    { feature: 'API Access', starter: false, pro: false, scale: true },
-    { feature: 'Account Manager', starter: false, pro: false, scale: true },
-    { feature: 'Support', starter: 'Email', pro: 'Priority Chat', scale: 'Dedicated' },
+    { feature: 'Member App (PWA)', starter: true, pro: true, scale: true, enterprise: true },
+    { feature: 'Points & Rewards Engine', starter: true, pro: true, scale: true, enterprise: true },
+    { feature: 'QR Code Onboarding', starter: true, pro: true, scale: true, enterprise: true },
+    { feature: 'Members', starter: '500', pro: '2,000', scale: 'Unlimited', enterprise: 'Unlimited' },
+    { feature: 'Campaigns / month', starter: '2', pro: '10', scale: 'Unlimited', enterprise: 'Unlimited' },
+    { feature: 'Analytics Dashboard', starter: 'Basic', pro: 'Full + Heatmap', scale: 'Full + Export', enterprise: 'Full + Export' },
+    { feature: 'White-label', starter: 'Logo', pro: 'Logo + Domain', scale: 'Full Brand', enterprise: 'Full Brand' },
+    { feature: 'Booking Integrations', starter: false, pro: true, scale: true, enterprise: true },
+    { feature: 'API Access', starter: false, pro: false, scale: true, enterprise: true },
+    { feature: 'SSO & Custom Integrations', starter: false, pro: false, scale: false, enterprise: true },
+    { feature: 'Multi-location Management', starter: false, pro: false, scale: false, enterprise: true },
+    { feature: 'Gamification Engine', starter: false, pro: false, scale: false, enterprise: true },
+    { feature: 'Advanced Campaign Automation', starter: false, pro: false, scale: false, enterprise: true },
+    { feature: 'Account Manager', starter: false, pro: false, scale: true, enterprise: true },
+    { feature: 'Support', starter: 'Email', pro: 'Priority Chat', scale: 'Dedicated', enterprise: 'SLA-backed' },
   ];
 
   return (
@@ -50,7 +54,7 @@ export default async function PricingPage() {
 
         {/* Comparison table */}
         <section className="py-16 px-6" style={{ background: '#0a0a0f' }}>
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-5xl mx-auto">
             <h2 className="font-display font-bold text-white text-2xl text-center mb-10">{t('tableHeading')}</h2>
 
             <div
@@ -62,24 +66,31 @@ export default async function PricingPage() {
               }}
             >
               {/* Header */}
-              <div className="grid grid-cols-4 gap-4 px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="grid grid-cols-5 gap-4 px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                 <div className="text-white/40 text-xs font-semibold tracking-wide uppercase">{t('featureLabel')}</div>
                 {['Starter', 'Pro', 'Scale'].map((p) => (
                   <div key={p} className="text-center text-white font-semibold text-sm">{p}</div>
                 ))}
+                <div className="text-center font-semibold text-sm" style={{ color: '#a5b4fc' }}>Enterprise</div>
               </div>
 
               {TABLE_ROWS.map((row, i) => (
                 <div
                   key={i}
-                  className="grid grid-cols-4 gap-4 px-6 py-4"
+                  className="grid grid-cols-5 gap-4 px-6 py-4"
                   style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
                 >
                   <div className="text-white/60 text-sm">{row.feature}</div>
-                  {[row.starter, row.pro, row.scale].map((val, j) => (
+                  {[row.starter, row.pro, row.scale, row.enterprise].map((val, j) => (
                     <div key={j} className="text-center">
                       {val === true ? (
-                        <svg className="w-4 h-4 mx-auto text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                        <svg
+                          className={`w-4 h-4 mx-auto ${j === 3 ? 'text-indigo-400' : 'text-purple-400'}`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                        >
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       ) : val === false ? (
@@ -87,7 +98,7 @@ export default async function PricingPage() {
                           <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                         </svg>
                       ) : (
-                        <span className="text-white/60 text-xs">{val as string}</span>
+                        <span className={`text-xs ${j === 3 ? 'text-indigo-300' : 'text-white/60'}`}>{val as string}</span>
                       )}
                     </div>
                   ))}

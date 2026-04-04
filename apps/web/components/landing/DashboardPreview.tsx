@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 
 const BarChart = dynamic(() => import('recharts').then((m) => m.BarChart), { ssr: false });
 const Bar = dynamic(() => import('recharts').then((m) => m.Bar), { ssr: false });
@@ -13,26 +14,14 @@ const ResponsiveContainer = dynamic(
   { ssr: false }
 );
 
-const VISIT_DATA = [
-  { day: 'Mon', visits: 42 },
-  { day: 'Tue', visits: 58 },
-  { day: 'Wed', visits: 65 },
-  { day: 'Thu', visits: 71 },
-  { day: 'Fri', visits: 98 },
-  { day: 'Sat', visits: 112 },
-  { day: 'Sun', visits: 55 },
-];
+const VISIT_VALUES = [42, 58, 65, 71, 98, 112, 55];
+const TOP_PRODUCTS_SALES = [312, 256, 190];
+const TOP_PRODUCTS_PCT = [100, 82, 61];
 
-const TOP_PRODUCTS = [
-  { name: 'Pizza Margarita', sales: 312, pct: 100 },
-  { name: 'Pizza Pepperoni', sales: 256, pct: 82 },
-  { name: 'Lasagna Clásica', sales: 190, pct: 61 },
-];
-
-const ALERTS = [
-  { color: '#e11d48', glow: 'rgba(225,29,72,0.5)', text: '154 customers at risk' },
-  { color: '#f59e0b', glow: 'rgba(245,158,11,0.4)', text: 'Tiramisú sales up 31%' },
-  { color: '#10b981', glow: 'rgba(16,185,129,0.4)', text: 'Ana S. ready to redeem Gold reward' },
+const ALERT_COLORS = [
+  { color: '#e11d48', glow: 'rgba(225,29,72,0.5)' },
+  { color: '#f59e0b', glow: 'rgba(245,158,11,0.4)' },
+  { color: '#10b981', glow: 'rgba(16,185,129,0.4)' },
 ];
 
 interface MetricProps {
@@ -76,8 +65,31 @@ function Metric({ label, target, suffix = '', active }: MetricProps) {
 }
 
 export function DashboardPreview() {
+  const t = useTranslations('dashboardPreview');
   const sectionRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
+
+  const visitData = [
+    { day: t('dayMon'), visits: VISIT_VALUES[0] },
+    { day: t('dayTue'), visits: VISIT_VALUES[1] },
+    { day: t('dayWed'), visits: VISIT_VALUES[2] },
+    { day: t('dayThu'), visits: VISIT_VALUES[3] },
+    { day: t('dayFri'), visits: VISIT_VALUES[4] },
+    { day: t('daySat'), visits: VISIT_VALUES[5] },
+    { day: t('daySun'), visits: VISIT_VALUES[6] },
+  ];
+
+  const topProducts = [
+    { name: t('product1'), sales: TOP_PRODUCTS_SALES[0], pct: TOP_PRODUCTS_PCT[0] },
+    { name: t('product2'), sales: TOP_PRODUCTS_SALES[1], pct: TOP_PRODUCTS_PCT[1] },
+    { name: t('product3'), sales: TOP_PRODUCTS_SALES[2], pct: TOP_PRODUCTS_PCT[2] },
+  ];
+
+  const alerts = [
+    { ...ALERT_COLORS[0], text: t('alert1') },
+    { ...ALERT_COLORS[1], text: t('alert2') },
+    { ...ALERT_COLORS[2], text: t('alert3') },
+  ];
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -103,16 +115,16 @@ export function DashboardPreview() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-4">
           <span className="text-[11px] font-semibold tracking-[0.2em] text-white/40 uppercase">
-            The Platform
+            {t('badge')}
           </span>
         </div>
         <div className="text-center mb-3">
           <h2 className="font-display font-black text-white" style={{ fontSize: 'clamp(28px, 4vw, 52px)' }}>
-            Your business intelligence, simplified
+            {t('title')}
           </h2>
         </div>
         <div className="text-center mb-12">
-          <p className="text-white/50 text-lg">See what matters. Act on what&apos;s urgent.</p>
+          <p className="text-white/50 text-lg">{t('subtitle')}</p>
         </div>
 
         {/* Dashboard card */}
@@ -133,10 +145,10 @@ export function DashboardPreview() {
             <div className="flex-1 min-w-0">
               {/* Metrics grid */}
               <div className="grid grid-cols-2 gap-3 mb-6">
-                <Metric label="Active Members" target={1284} active={active} />
-                <Metric label="Visits This Month" target={3891} active={active} />
-                <Metric label="Points Redeemed" target={48320} active={active} />
-                <Metric label="Retention Rate" target={78} suffix="%" active={active} />
+                <Metric label={t('metricMembers')} target={1284} active={active} />
+                <Metric label={t('metricVisits')} target={3891} active={active} />
+                <Metric label={t('metricPoints')} target={48320} active={active} />
+                <Metric label={t('metricRetention')} target={78} suffix="%" active={active} />
               </div>
 
               {/* Bar chart */}
@@ -149,12 +161,12 @@ export function DashboardPreview() {
                 }}
               >
                 <div className="text-xs font-semibold text-white/40 mb-4 tracking-wide uppercase">
-                  Visits by Day
+                  {t('chartTitle')}
                 </div>
                 <div style={{ height: 180 }}>
                   {active && (
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={VISIT_DATA} barSize={24}>
+                      <BarChart data={visitData} barSize={24}>
                         <XAxis
                           dataKey="day"
                           axisLine={false}
@@ -192,10 +204,10 @@ export function DashboardPreview() {
                 }}
               >
                 <div className="text-xs font-semibold text-white/40 mb-4 tracking-wide uppercase">
-                  Top Products
+                  {t('topProductsTitle')}
                 </div>
                 <div className="space-y-3">
-                  {TOP_PRODUCTS.map((p, i) => (
+                  {topProducts.map((p, i) => (
                     <div key={i}>
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-white/70 truncate">{p.name}</span>
@@ -226,10 +238,10 @@ export function DashboardPreview() {
                 }}
               >
                 <div className="text-xs font-semibold text-white/40 mb-4 tracking-wide uppercase">
-                  Alerts
+                  {t('alertsTitle')}
                 </div>
                 <div className="space-y-3">
-                  {ALERTS.map((a, i) => (
+                  {alerts.map((a, i) => (
                     <div key={i} className="flex items-start gap-2.5">
                       <span
                         className="mt-1 w-2 h-2 rounded-full shrink-0"
@@ -250,7 +262,7 @@ export function DashboardPreview() {
             href="/login"
             className="inline-flex items-center gap-2 text-sm font-semibold gradient-text hover:opacity-80 transition-opacity"
           >
-            See your own dashboard
+            {t('cta')}
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>

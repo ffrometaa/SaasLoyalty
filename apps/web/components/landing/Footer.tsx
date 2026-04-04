@@ -63,16 +63,16 @@ export async function Footer() {
             </nav>
             <div className="space-y-2">
               <a
-                href="mailto:legal@loyaltyos.com"
+                href="mailto:legal@loyalbase.dev"
                 className="block text-sm text-white/40 hover:text-white/70 transition-colors"
               >
-                legal@loyaltyos.com
+                legal@loyalbase.dev
               </a>
               <a
-                href="mailto:support@loyaltyos.com"
+                href="mailto:support@loyalbase.dev"
                 className="block text-sm text-white/40 hover:text-white/70 transition-colors"
               >
-                support@loyaltyos.com
+                support@loyalbase.dev
               </a>
             </div>
           </div>

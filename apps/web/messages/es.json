@@ -106,7 +106,17 @@
     "plan2_f2": "Analíticas completas + exportación",
     "plan2_f3": "White-label de marca completa",
     "plan2_f4": "Account manager dedicado",
-    "plan2_f5": "Acceso a API"
+    "plan2_f5": "Acceso a API",
+    "plan3_name": "Enterprise",
+    "plan3_subtitle": "Para grandes cadenas y franquicias",
+    "plan3_f0": "Todo lo de Scale",
+    "plan3_f1": "SSO e integraciones personalizadas",
+    "plan3_f2": "Gestión multi-sucursal",
+    "plan3_f3": "Motor de gamificación",
+    "plan3_f4": "Automatización avanzada de campañas",
+    "plan3_f5": "Soporte con SLA garantizado",
+    "plan3_cta": "Contactar ventas",
+    "plan3_price": "Precio a medida"
   },
   "faq": {
     "label": "FAQ",
@@ -148,7 +158,18 @@
     "privacy": "Política de Privacidad"
   },
   "socialProof": {
-    "items": ["Spas", "Restaurantes", "Gimnasios", "Tiendas", "Estudios de Bienestar", "Salones", "Hoteles", "Cafeterías", "Barberías", "Estudios de Yoga"]
+    "items": [
+      "Spas",
+      "Restaurantes",
+      "Gimnasios",
+      "Tiendas",
+      "Estudios de Bienestar",
+      "Salones",
+      "Hoteles",
+      "Cafeterías",
+      "Barberías",
+      "Estudios de Yoga"
+    ]
   },
   "contact": {
     "label": "Contacto",
@@ -176,7 +197,14 @@
     "successHeading": "¡Nos ponemos en contacto pronto!",
     "successBody": "Gracias por contactarnos. Recibimos tu solicitud y nos comunicaremos dentro de 24 horas para coordinar tu demo.",
     "errorGeneric": "Algo salió mal. Por favor inténtalo de nuevo o escríbenos a support@loyaltyos.com",
-    "businessTypes": ["Spa/Salón", "Restaurante/Café", "Gimnasio/Estudio", "Tienda", "Hotel", "Otro"]
+    "businessTypes": [
+      "Spa/Salón",
+      "Restaurante/Café",
+      "Gimnasio/Estudio",
+      "Tienda",
+      "Hotel",
+      "Otro"
+    ]
   },
   "pricingPage": {
     "label": "Precios",
@@ -302,5 +330,31 @@
       "errTooShort": "La contraseña debe tener al menos 8 caracteres",
       "errMismatch": "Las contraseñas no coinciden"
     }
+  },
+  "dashboardPreview": {
+    "badge": "La Plataforma",
+    "title": "Tu inteligencia de negocio, simplificada",
+    "subtitle": "Ve lo que importa. Actúa sobre lo urgente.",
+    "metricMembers": "Miembros Activos",
+    "metricVisits": "Visitas Este Mes",
+    "metricPoints": "Puntos Canjeados",
+    "metricRetention": "Tasa de Retención",
+    "chartTitle": "Visitas por Día",
+    "topProductsTitle": "Productos Más Vendidos",
+    "product1": "Pizza Margarita",
+    "product2": "Pizza Pepperoni",
+    "product3": "Lasaña Clásica",
+    "alertsTitle": "Alertas",
+    "alert1": "154 clientes en riesgo",
+    "alert2": "Ventas de Tiramisú subieron 31%",
+    "alert3": "Ana S. lista para canjear recompensa Gold",
+    "cta": "Ver tu propio dashboard",
+    "dayMon": "Lun",
+    "dayTue": "Mar",
+    "dayWed": "Mié",
+    "dayThu": "Jue",
+    "dayFri": "Vie",
+    "daySat": "Sáb",
+    "daySun": "Dom"
   }
 }

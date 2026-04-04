@@ -13,10 +13,20 @@ const PRICE_IDS = {
   scale: process.env.STRIPE_SCALE_PRICE_ID!,
 };
 
+// Annual price IDs — create these in the Stripe dashboard as annual recurring prices
+// (monthly_price * 10, billed once per year = 2 months free).
+// Set STRIPE_STARTER_ANNUAL_PRICE_ID, STRIPE_PRO_ANNUAL_PRICE_ID, STRIPE_SCALE_ANNUAL_PRICE_ID
+// in your environment variables once the Stripe prices are created.
+const ANNUAL_PRICE_IDS = {
+  starter: process.env.STRIPE_STARTER_ANNUAL_PRICE_ID,
+  pro: process.env.STRIPE_PRO_ANNUAL_PRICE_ID,
+  scale: process.env.STRIPE_SCALE_ANNUAL_PRICE_ID,
+};
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { businessName, businessType, slug, email, userId, plan = 'starter' } = body;
+    const { businessName, businessType, slug, email, userId, plan = 'starter', billingPeriod = 'monthly' } = body;
 
     // Validate input
     if (!businessName || !businessType || !slug || !email || !userId) {
@@ -50,8 +60,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get price ID for the selected plan
-    const priceId = PRICE_IDS[plan as keyof typeof PRICE_IDS];
+    // Get price ID for the selected plan (annual takes priority if configured)
+    const isAnnual = billingPeriod === 'annual';
+    const annualPriceId = ANNUAL_PRICE_IDS[plan as keyof typeof ANNUAL_PRICE_IDS];
+    const priceId = (isAnnual && annualPriceId) ? annualPriceId : PRICE_IDS[plan as keyof typeof PRICE_IDS];
     if (!priceId) {
       return NextResponse.json(
         { error: 'Invalid plan selected' },
@@ -73,6 +85,7 @@ export async function POST(request: NextRequest) {
         plan,
         plan_status: 'trialing',
         trial_ends_at: trialEndsAt.toISOString(),
+        owner_email: email,
       });
 
     if (tenantError) {
@@ -114,7 +127,7 @@ export async function POST(request: NextRequest) {
         business_type: businessType,
         plan: plan,
       },
-      success_url: `${dashboardUrl}?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${dashboardUrl}/api/auth/stripe-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/register?cancelled=true`,
     });
 

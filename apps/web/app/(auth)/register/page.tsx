@@ -12,6 +12,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<string>('starter');
+  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
 
   const [formData, setFormData] = useState({
     businessName: '',
@@ -80,6 +81,7 @@ export default function RegisterPage() {
           email: formData.email,
           userId: authData.user.id,
           plan: selectedPlan,
+          billingPeriod,
         }),
       });
 
@@ -165,7 +167,7 @@ export default function RegisterPage() {
               <div className="mt-2">
                 <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
                   <span className="inline-flex items-center px-3 text-sm" style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRight: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}>
-                    loyaltyos.com/
+                    members.loyalbase.dev/join/
                   </span>
                   <input id="slug" type="text" required value={formData.slug}
                     onChange={(e) => updateField('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
@@ -190,6 +192,35 @@ export default function RegisterPage() {
         {step === 2 && (
           <div className="mt-8">
             <h3 className="text-base font-semibold text-white mb-4 font-display">{t('choosePlan')}</h3>
+
+            {/* Billing period toggle */}
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <button
+                type="button"
+                onClick={() => setBillingPeriod('monthly')}
+                className="px-4 py-2 text-sm font-medium rounded-lg transition-all"
+                style={{
+                  backgroundColor: billingPeriod === 'monthly' ? '#7c3aed' : 'rgba(255,255,255,0.05)',
+                  color: billingPeriod === 'monthly' ? 'white' : 'rgba(255,255,255,0.5)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                }}
+              >
+                Monthly
+              </button>
+              <button
+                type="button"
+                onClick={() => setBillingPeriod('annual')}
+                className="px-4 py-2 text-sm font-medium rounded-lg transition-all"
+                style={{
+                  backgroundColor: billingPeriod === 'annual' ? '#7c3aed' : 'rgba(255,255,255,0.05)',
+                  color: billingPeriod === 'annual' ? 'white' : 'rgba(255,255,255,0.5)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                }}
+              >
+                Annual <span style={{ color: '#22c55e', fontSize: 11, fontWeight: 700 }}>save 17%</span>
+              </button>
+            </div>
+
             <div className="grid gap-3">
               {(['starter', 'pro', 'scale'] as const).map((plan) => {
                 const details = PLANS[plan];
@@ -211,8 +242,17 @@ export default function RegisterPage() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-bold text-white">${details.price}</p>
-                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{t('perMonth')}</p>
+                        <p className="text-lg font-bold text-white">
+                          ${billingPeriod === 'annual' ? Math.round(details.price * 10 / 12) : details.price}
+                        </p>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                          {billingPeriod === 'annual' ? 'per month, billed annually' : t('perMonth')}
+                        </p>
+                        {billingPeriod === 'annual' && (
+                          <p className="text-xs" style={{ color: '#22c55e' }}>
+                            ${details.price * 10}/yr
+                          </p>
+                        )}
                       </div>
                     </div>
                     {isSelected && (
