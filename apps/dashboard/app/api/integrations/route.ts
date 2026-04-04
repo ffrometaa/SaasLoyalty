@@ -44,8 +44,9 @@ export async function GET(_request: NextRequest) {
     }
 
     const slug = tenant.slug as string;
-    const joinUrl = `https://members.loyalbase.dev/join/${slug}`;
-    const widgetUrl = `https://members.loyalbase.dev/join/${slug}?embed=true`;
+    const memberAppBase = process.env.NEXT_PUBLIC_MEMBER_APP_URL ?? 'https://member.loyalbase.dev';
+    const joinUrl = `${memberAppBase}/join/${slug}`;
+    const widgetUrl = `${memberAppBase}/join/${slug}?embed=true`;
 
     return NextResponse.json({ apiKey, slug, joinUrl, widgetUrl });
   } catch (error) {
