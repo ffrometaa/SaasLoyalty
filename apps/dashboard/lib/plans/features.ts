@@ -24,6 +24,7 @@ export type Feature =
   | 'custom_integrations'
   | 'multi_location'
   | 'gamification'
+  | 'gamification_advanced'
   | 'advanced_campaigns'
   | 'support_sla';
 
@@ -63,6 +64,7 @@ export const PLAN_CONFIGS: Record<Plan, PlanConfig> = {
       'custom_integrations',
       'multi_location',
       'gamification',
+      'gamification_advanced',
       'advanced_campaigns',
       'support_sla',
     ],

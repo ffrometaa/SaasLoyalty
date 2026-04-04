@@ -55,8 +55,8 @@ const NAV_ITEMS = [
     ),
   },
   {
-    href: '/history',
-    label: 'Historial',
+    href: '/leaderboard',
+    label: 'Ranking',
     icon: (active: boolean) => (
       <svg
         width="22"
@@ -66,8 +66,9 @@ const NAV_ITEMS = [
         stroke={active ? 'var(--brand-primary-dark)' : 'var(--muted)'}
         strokeWidth="1.8"
       >
-        <circle cx="12" cy="12" r="10" />
-        <polyline points="12 6 12 12 16 14" />
+        <rect x="18" y="3" width="4" height="18" rx="1" />
+        <rect x="10" y="8" width="4" height="13" rx="1" />
+        <rect x="2" y="13" width="4" height="8" rx="1" />
       </svg>
     ),
   },
