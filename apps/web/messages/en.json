@@ -43,8 +43,8 @@
     "item3_body": "Fully customizable points per dollar, tier levels (Bronze, Silver, Gold, Platinum), and reward catalog. Your rules, your brand.",
     "item4_title": "Push Notifications & Email",
     "item4_body": "Reach members the moment it matters. Birthday rewards, double-points campaigns, reactivation sequences — all automated.",
-    "item5_title": "Booking Integration",
-    "item5_body": "Connect with Square, Vagaro, Acuity and more. Members book appointments and earn points in the same flow."
+    "item5_title": "Gamification Engine",
+    "item5_body": "Challenges, multipliers, leaderboards and dynamic offers that keep customers engaged. Earn double points, complete goals, unlock exclusive rewards."
   },
   "howItWorks": {
     "label": "How It Works",
@@ -96,8 +96,8 @@
     "plan1_f0": "Up to 2,000 members",
     "plan1_f1": "10 campaigns per month",
     "plan1_f2": "Full analytics + heatmap",
-    "plan1_f3": "Logo + custom domain",
-    "plan1_f4": "Booking integrations",
+    "plan1_f3": "Logo branding + brand colors",
+    "plan1_f4": "Birthday rewards & campaigns",
     "plan1_f5": "Priority chat support",
     "plan2_name": "Scale",
     "plan2_subtitle": "For multi-location businesses",
@@ -115,7 +115,7 @@
     "plan3_f3": "Gamification engine",
     "plan3_f4": "Advanced campaign automation",
     "plan3_f5": "SLA-backed support",
-    "plan3_cta": "Contact sales",
+    "plan3_cta": "Coming soon",
     "plan3_price": "Custom pricing"
   },
   "faq": {
@@ -123,8 +123,8 @@
     "heading": "Frequently asked questions",
     "item0_q": "Do my customers need to download an app?",
     "item0_a": "No. LoyaltyOS is a Progressive Web App (PWA). Customers access it directly from their browser and can add it to their home screen in one tap — no App Store required, no friction for your customers.",
-    "item1_q": "Does it work with my existing booking system?",
-    "item1_a": "Yes. LoyaltyOS integrates with Square, Vagaro, Acuity, Fresha, and Calendly. If your system isn't listed, customers can still earn points manually via QR scan at point of service.",
+    "item1_q": "Can I customize the points rules and rewards?",
+    "item1_a": "Yes. You set the points-per-dollar ratio, define tier thresholds (Bronze, Silver, Gold, Platinum), and create your own reward catalog. Customers earn at your pace, redeem on your terms.",
     "item2_q": "What does \"white-label\" mean exactly?",
     "item2_a": "Your customers see your business name, your logo, and your colors — not LoyaltyOS. It looks and feels like a loyalty app you built yourself, at a fraction of the cost.",
     "item3_q": "How quickly can I get started?",

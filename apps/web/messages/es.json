@@ -43,8 +43,8 @@
     "item3_body": "Puntos por dólar totalmente personalizables, niveles (Bronze, Silver, Gold, Platinum) y catálogo de premios. Tus reglas, tu marca.",
     "item4_title": "Notificaciones Push y Email",
     "item4_body": "Llega a los miembros en el momento justo. Premios de cumpleaños, campañas de puntos dobles, secuencias de reactivación — todo automatizado.",
-    "item5_title": "Integración con Reservas",
-    "item5_body": "Conéctate con Square, Vagaro, Acuity y más. Los miembros reservan turnos y acumulan puntos en el mismo flujo."
+    "item5_title": "Motor de Gamificación",
+    "item5_body": "Desafíos, multiplicadores, rankings y ofertas dinámicas que mantienen a los clientes enganchados. Puntos dobles, metas, recompensas exclusivas."
   },
   "howItWorks": {
     "label": "Cómo Funciona",
@@ -96,8 +96,8 @@
     "plan1_f0": "Hasta 2.000 miembros",
     "plan1_f1": "10 campañas por mes",
     "plan1_f2": "Analíticas completas + mapa de calor",
-    "plan1_f3": "Logo + dominio personalizado",
-    "plan1_f4": "Integraciones con reservas",
+    "plan1_f3": "Logo + colores de marca",
+    "plan1_f4": "Recompensas y campañas de cumpleaños",
     "plan1_f5": "Soporte por chat prioritario",
     "plan2_name": "Scale",
     "plan2_subtitle": "Para negocios con múltiples sucursales",
@@ -115,7 +115,7 @@
     "plan3_f3": "Motor de gamificación",
     "plan3_f4": "Automatización avanzada de campañas",
     "plan3_f5": "Soporte con SLA garantizado",
-    "plan3_cta": "Contactar ventas",
+    "plan3_cta": "Muy pronto",
     "plan3_price": "Precio a medida"
   },
   "faq": {
@@ -123,8 +123,8 @@
     "heading": "Preguntas frecuentes",
     "item0_q": "¿Mis clientes tienen que descargar una app?",
     "item0_a": "No. LoyaltyOS es una Progressive Web App (PWA). Los clientes acceden directamente desde su navegador y pueden agregarla a su pantalla de inicio con un toque — sin App Store, sin fricción.",
-    "item1_q": "¿Funciona con mi sistema de reservas actual?",
-    "item1_a": "Sí. LoyaltyOS se integra con Square, Vagaro, Acuity, Fresha y Calendly. Si tu sistema no está en la lista, los clientes pueden acumular puntos manualmente mediante un escaneo QR en el punto de servicio.",
+    "item1_q": "¿Puedo personalizar las reglas de puntos y las recompensas?",
+    "item1_a": "Sí. Vos definís los puntos por dólar, los umbrales de nivel (Bronze, Silver, Gold, Platinum) y creás tu propio catálogo de premios. Los clientes acumulan a tu ritmo y canjean en tus términos.",
     "item2_q": "¿Qué significa exactamente \"white-label\"?",
     "item2_a": "Tus clientes ven el nombre de tu negocio, tu logo y tus colores — no LoyaltyOS. Se ve y se siente como una app de fidelización que tú mismo construiste, a una fracción del costo.",
     "item3_q": "¿Qué tan rápido puedo empezar?",

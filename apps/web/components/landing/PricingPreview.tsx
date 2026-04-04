@@ -207,17 +207,17 @@ export function PricingPreview() {
               </ul>
 
               {plan.enterprise ? (
-                <Link
-                  href="/contact"
-                  className="block w-full text-center py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02]"
+                <div
+                  className="block w-full text-center py-3 rounded-xl text-sm font-semibold"
                   style={{
-                    background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-                    color: '#fff',
-                    boxShadow: '0 0 20px rgba(79,70,229,0.25)',
+                    background: 'rgba(255,255,255,0.05)',
+                    color: 'rgba(255,255,255,0.35)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    cursor: 'default',
                   }}
                 >
                   {t('plan3_cta')}
-                </Link>
+                </div>
               ) : (
                 <Link
                   href="/register"
