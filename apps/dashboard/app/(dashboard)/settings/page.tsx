@@ -60,6 +60,9 @@ export default function SettingsPage() {
   const [invoicesLoading, setInvoicesLoading] = useState(false);
   const [invoicesError, setInvoicesError] = useState<string | null>(null);
 
+  // Usage state
+  const [usage, setUsage] = useState<{ activeMembers: number; memberLimit: number | null; pointsIssuedThisMonth: number } | null>(null);
+
   // Integrations state
   const [integrations, setIntegrations] = useState<{
     apiKey: string;
@@ -139,7 +142,7 @@ export default function SettingsPage() {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'billing') loadInvoices();
+    if (activeTab === 'billing') { loadInvoices(); loadUsage(); }
     if (activeTab === 'team') loadTeam();
     if (activeTab === 'integrations') loadIntegrations();
   }, [activeTab]);
@@ -264,6 +267,13 @@ export default function SettingsPage() {
     } finally {
       setInvoicesLoading(false);
     }
+  };
+
+  const loadUsage = async () => {
+    try {
+      const res = await fetch('/api/usage');
+      if (res.ok) setUsage(await res.json());
+    } catch {}
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -773,35 +783,41 @@ export default function SettingsPage() {
               {/* Usage */}
               <div className="bg-white rounded-xl border p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Usage This Month</h3>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">Active Members</span>
-                      <span className="text-sm text-gray-500">248 / Unlimited</span>
+                {!usage ? (
+                  <div className="flex items-center justify-center py-4">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-brand-purple border-t-transparent" />
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-700">Active Members</span>
+                        <span className="text-sm text-gray-500">
+                          {usage.activeMembers.toLocaleString()} / {usage.memberLimit ? usage.memberLimit.toLocaleString() : 'Unlimited'}
+                        </span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-brand-purple rounded-full"
+                          style={{
+                            width: usage.memberLimit
+                              ? `${Math.min(100, Math.round((usage.activeMembers / usage.memberLimit) * 100))}%`
+                              : '0%',
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-brand-purple rounded-full" style={{ width: '25%' }} />
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-700">Points Issued</span>
+                        <span className="text-sm text-gray-500">{usage.pointsIssuedThisMonth.toLocaleString()} / Unlimited</span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-green-500 rounded-full" style={{ width: '0%' }} />
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">Points Issued</span>
-                      <span className="text-sm text-gray-500">12,450 / Unlimited</span>
-                    </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-green-500 rounded-full" style={{ width: '40%' }} />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">API Calls</span>
-                      <span className="text-sm text-gray-500">3,421 / 10,000</span>
-                    </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-purple-500 rounded-full" style={{ width: '34%' }} />
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Invoice History */}
