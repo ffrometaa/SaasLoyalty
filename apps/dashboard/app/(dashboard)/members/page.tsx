@@ -54,7 +54,7 @@ export default function MembersPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const [newMember, setNewMember] = useState({ name: '', email: '', phone: '' });
+  const [newMember, setNewMember] = useState({ name: '', email: '', phone: '', sendInvite: false });
 
   const itemsPerPage = 20;
 
@@ -117,7 +117,7 @@ export default function MembersPage() {
       if (!response.ok) throw new Error(data.error || 'Failed to create member');
 
       setSuccess(true);
-      setNewMember({ name: '', email: '', phone: '' });
+      setNewMember({ name: '', email: '', phone: '', sendInvite: false });
 
       setTimeout(() => {
         setSuccess(false);
@@ -487,6 +487,18 @@ export default function MembersPage() {
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
                       placeholder={t('phonePlaceholder')}
                     />
+                  </div>
+                  <div className="flex items-center gap-3 p-3 bg-purple-50 border border-purple-100 rounded-lg">
+                    <input
+                      type="checkbox"
+                      id="sendInvite"
+                      checked={newMember.sendInvite}
+                      onChange={(e) => setNewMember(prev => ({ ...prev, sendInvite: e.target.checked }))}
+                      className="h-4 w-4 text-brand-purple rounded border-gray-300 focus:ring-brand-purple"
+                    />
+                    <label htmlFor="sendInvite" className="text-sm text-gray-700 cursor-pointer select-none">
+                      Enviar invitación por email al miembro
+                    </label>
                   </div>
                   <div className="flex gap-3 pt-4">
                     <button

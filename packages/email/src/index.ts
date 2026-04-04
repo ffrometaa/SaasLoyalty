@@ -14,3 +14,4 @@ export * from './templates/points-expiry';
 export * from './templates/trial-expiry';
 export * from './templates/payment-failed';
 export * from './templates/demo-request-confirmation';
+export * from './templates/member-invite';

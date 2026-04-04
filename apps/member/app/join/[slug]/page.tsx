@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServiceRoleClient } from '@loyalty-os/lib/server';
 
 interface JoinPageProps {
   params: Promise<{ slug: string }>;
@@ -9,12 +9,13 @@ interface JoinPageProps {
 }
 
 async function getTenantBySlug(slug: string) {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createServiceRoleClient();
   const { data } = await supabase
     .from('tenants')
     .select('id, business_name, app_name, logo_url, brand_color_primary, brand_color_secondary, slug')
     .eq('slug', slug)
     .in('plan_status', ['trialing', 'active'])
+    .is('deleted_at', null)
     .single();
   return data;
 }

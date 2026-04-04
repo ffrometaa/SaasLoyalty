@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 import { requireMemberSlot } from '../../../lib/plans/guardFeature';
+import { buildBilingualEmail, buildMemberInviteEmail } from '@loyalty-os/email';
 
 // GET /api/members - List members
 export async function GET(request: NextRequest) {
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerSupabaseClient();
     const body = await request.json();
-    const { name, email, phone } = body;
+    const { name, email, phone, sendInvite } = body;
 
     // Validate input
     if (!name || !email) {
@@ -121,7 +122,7 @@ export async function POST(request: NextRequest) {
 
     const { data: tenant } = await supabase
       .from('tenants')
-      .select('id, slug')
+      .select('id, slug, business_name, logo_url, brand_color_primary')
       .eq('auth_user_id', session.user.id)
       .is('deleted_at', null)
       .single();
@@ -167,6 +168,40 @@ export async function POST(request: NextRequest) {
         { error: 'Failed to create member' },
         { status: 500 }
       );
+    }
+
+    // Send invitation email if requested
+    if (sendInvite && email) {
+      const RESEND_API_KEY = process.env.RESEND_API_KEY;
+      if (RESEND_API_KEY) {
+        try {
+          const joinUrl = `${process.env.NEXT_PUBLIC_MEMBER_APP_URL ?? 'https://member.loyalbase.dev'}/join/${tenant.slug}`;
+          const emailContent = buildMemberInviteEmail({
+            memberName: name,
+            businessName: tenant.business_name,
+            joinUrl,
+            tenantLogoUrl: tenant.logo_url ?? '',
+            tenantPrimaryColor: tenant.brand_color_primary ?? '',
+          });
+          const { subject, html } = buildBilingualEmail(emailContent);
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${RESEND_API_KEY}`,
+            },
+            body: JSON.stringify({
+              from: `${tenant.business_name} via LoyaltyOS <noreply@loyalbase.dev>`,
+              to: [email],
+              subject,
+              html,
+            }),
+          });
+        } catch (emailError) {
+          console.error('Failed to send invite email:', emailError);
+          // Non-blocking — member was created successfully
+        }
+      }
     }
 
     return NextResponse.json({ member }, { status: 201 });
