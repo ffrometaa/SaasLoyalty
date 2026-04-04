@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     const activeMembers = membersResult.count ?? 0;
-    const pointsIssued = (pointsResult.data ?? []).reduce((sum, t) => sum + (t.points ?? 0), 0);
+    const pointsIssued = (pointsResult.data ?? []).reduce((sum: number, t) => sum + (t.points ?? 0), 0);
 
     return NextResponse.json({
       activeMembers,
