@@ -232,7 +232,7 @@ const SECTIONS = [
       'Waiver: Failure by either party to enforce any provision of these Terms shall not constitute a waiver of that party\'s right to enforce such provision in the future.',
       'Force Majeure: Neither party shall be liable for delays or failures in performance resulting from causes beyond that party\'s reasonable control, including acts of God, natural disasters, war, terrorism, labor disputes, or internet service disruptions.',
       'Assignment: You may not assign these Terms or any rights or obligations hereunder without the prior written consent of LoyaltyOS. LoyaltyOS may freely assign these Terms in connection with a merger, acquisition, or sale of assets.',
-      'Notices: Legal notices to LoyaltyOS must be sent in writing to legal@loyaltyos.com or to the registered business address of LoyaltyOS, LLC in Florida.',
+      'Notices: Legal notices to LoyaltyOS must be sent in writing to legal@loyalbase.dev or to the registered business address of LoyaltyOS, LLC in Florida.',
     ],
   },
 ];
@@ -326,8 +326,8 @@ export default function TermsPage() {
               <h2 className="font-display font-bold text-white text-lg mb-3">Contact</h2>
               <p className="text-white/55 text-sm leading-relaxed">
                 Questions about these Terms? Contact us at{' '}
-                <a href="mailto:legal@loyaltyos.com" className="text-purple-400 hover:text-purple-300 transition-colors">
-                  legal@loyaltyos.com
+                <a href="mailto:legal@loyalbase.dev" className="text-purple-400 hover:text-purple-300 transition-colors">
+                  legal@loyalbase.dev
                 </a>
               </p>
             </div>
