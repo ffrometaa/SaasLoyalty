@@ -3,6 +3,6 @@ import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 
 export async function POST(request: NextRequest) {
   const supabase = await createServerSupabaseClient();
-  await supabase.auth.signOut();
+  await (supabase.auth as any).signOut();
   return NextResponse.redirect(new URL('/login', request.url));
 }
