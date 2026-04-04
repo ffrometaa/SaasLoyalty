@@ -135,7 +135,7 @@ export async function getGamificationSummary(tenantId: string): Promise<Gamifica
   const completions = completionsResult.data ?? [];
 
   // Count completions per challenge to find the top one
-  const countByChallengeId: Record<string, { name: string; count: number }> = {};
+  const countByChallengeId: Record<string, { name: string; completions: number }> = {};
   for (const row of completions) {
     const cid = row.challenge_id as string;
     const challengeName = (row.challenges as { name: string } | null)?.name ?? 'Unknown';
