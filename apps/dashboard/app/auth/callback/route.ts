@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     }
   );
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { error } = await (supabase.auth as any).exchangeCodeForSession(code);
 
   if (error) {
     console.error('Auth callback error:', error.message);
