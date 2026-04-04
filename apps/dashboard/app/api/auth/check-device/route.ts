@@ -14,6 +14,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Demo accounts always bypass device verification
+    if (session.user.email?.endsWith('@loyaltyos.com')) {
+      return NextResponse.json({ trusted: true });
+    }
+
     const service = createServiceRoleClient();
     const { data } = await service
       .from('trusted_devices')
