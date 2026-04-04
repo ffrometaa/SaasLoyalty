@@ -6,7 +6,34 @@ import { requireMemberSlot } from '../../../lib/plans/guardFeature';
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createServerSupabaseClient();
-    
+
+    const { data: { session } } = await (supabase.auth as any).getSession();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { data: ownerTenant } = await supabase
+      .from('tenants')
+      .select('id')
+      .eq('auth_user_id', session.user.id)
+      .is('deleted_at', null)
+      .single();
+
+    let tenantId: string | null = ownerTenant?.id ?? null;
+
+    if (!tenantId) {
+      const { data: staffRecord } = await supabase
+        .from('tenant_users')
+        .select('tenant_id')
+        .eq('auth_user_id', session.user.id)
+        .single();
+      tenantId = staffRecord?.tenant_id ?? null;
+    }
+
+    if (!tenantId) {
+      return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
+    }
+
     // Get query params
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
@@ -17,11 +44,12 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get('sortBy') || 'created_at';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
-    // Build query
+    // Build query scoped to this tenant
     let query = supabase
       .from('members')
       .select('*', { count: 'exact' })
-      .eq('deleted_at', null);
+      .eq('tenant_id', tenantId)
+      .is('deleted_at', null);
 
     // Apply filters
     if (search) {

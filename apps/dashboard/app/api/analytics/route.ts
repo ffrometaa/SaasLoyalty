@@ -4,13 +4,33 @@ import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createServerSupabaseClient();
-    const tenantId = request.headers.get('x-tenant-id');
+    const { data: { session } } = await (supabase.auth as any).getSession();
+
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Resolve tenant — works for both owners and staff
+    const { data: ownerTenant } = await supabase
+      .from('tenants')
+      .select('id')
+      .eq('auth_user_id', session.user.id)
+      .is('deleted_at', null)
+      .single();
+
+    let tenantId: string | null = ownerTenant?.id ?? null;
 
     if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant context required' },
-        { status: 401 }
-      );
+      const { data: staffRecord } = await supabase
+        .from('tenant_users')
+        .select('tenant_id')
+        .eq('auth_user_id', session.user.id)
+        .single();
+      tenantId = staffRecord?.tenant_id ?? null;
+    }
+
+    if (!tenantId) {
+      return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     }
 
     // Get current date ranges

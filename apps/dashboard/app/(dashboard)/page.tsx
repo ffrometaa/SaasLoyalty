@@ -1,13 +1,34 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Users, Gift, TrendingUp, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { MetricCard } from '../../components/MetricCard';
 import { useTranslations } from 'next-intl';
 
+type Metrics = {
+  activeMembers: number;
+  visitsThisMonth: number;
+  pointsRedeemedThisMonth: number;
+  retentionRate: number;
+  changes: {
+    activeMembers: number;
+    visitsThisMonth: number;
+    pointsRedeemedThisMonth: number;
+    retentionRate: number;
+  };
+};
+
 export default function DashboardPage() {
   const router = useRouter();
   const t = useTranslations('dashboard');
+  const [metrics, setMetrics] = useState<Metrics | null>(null);
+
+  useEffect(() => {
+    fetch('/api/analytics')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.metrics) setMetrics(data.metrics); });
+  }, []);
 
   return (
     <div className="p-6 lg:p-8">
@@ -21,28 +42,26 @@ export default function DashboardPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <MetricCard
           title={t('activeMembers')}
-          value="248"
-          change={12}
+          value={metrics ? String(metrics.activeMembers) : '—'}
+          change={metrics?.changes.activeMembers ?? 0}
           icon={Users}
-          description={t('newThisMonth', { count: 18 })}
         />
         <MetricCard
           title={t('visitsThisMonth')}
-          value="1,432"
-          change={8}
+          value={metrics ? String(metrics.visitsThisMonth) : '—'}
+          change={metrics?.changes.visitsThisMonth ?? 0}
           icon={Calendar}
         />
         <MetricCard
           title={t('pointsRedeemed')}
-          value="12,450"
-          change={-3}
+          value={metrics ? String(metrics.pointsRedeemedThisMonth) : '—'}
+          change={metrics?.changes.pointsRedeemedThisMonth ?? 0}
           icon={Gift}
-          description={t('lastMonthValue', { value: '12,850' })}
         />
         <MetricCard
           title={t('retentionRate')}
-          value="78%"
-          change={5}
+          value={metrics ? `${metrics.retentionRate}%` : '—'}
+          change={metrics?.changes.retentionRate ?? 0}
           icon={TrendingUp}
         />
       </div>

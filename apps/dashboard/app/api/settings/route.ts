@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
     const { data: tenant } = await supabase
       .from('tenants')
-      .select('business_name, brand_logo_url, brand_color_primary, brand_color_secondary, plan, plan_status, business_phone, business_address, owner_first_name, owner_last_name, owner_phone, owner_email, secondary_contact_first_name, secondary_contact_last_name, secondary_contact_phone, secondary_contact_email')
+      .select('business_name, brand_logo_url, brand_color_primary, brand_color_secondary, plan, plan_status, trial_ends_at, business_phone, business_address, owner_first_name, owner_last_name, owner_phone, owner_email, secondary_contact_first_name, secondary_contact_last_name, secondary_contact_phone, secondary_contact_email')
       .eq('auth_user_id', session.user.id)
       .is('deleted_at', null)
       .single();
@@ -41,6 +41,7 @@ export async function GET(request: NextRequest) {
       },
       plan: tenant.plan,
       planStatus: tenant.plan_status,
+      trialEndsAt: tenant.trial_ends_at,
     });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

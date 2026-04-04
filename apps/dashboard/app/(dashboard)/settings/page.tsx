@@ -48,6 +48,11 @@ export default function SettingsPage() {
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviteSuccess, setInviteSuccess] = useState(false);
 
+  // Plan state
+  const [plan, setPlan] = useState('starter');
+  const [planStatus, setPlanStatus] = useState('active');
+  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
+
   // Billing state
   const [portalLoading, setPortalLoading] = useState(false);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -112,6 +117,9 @@ export default function SettingsPage() {
           }
           setLogoUrl(data.logoUrl ?? null);
           if (data.branding) setBranding(data.branding);
+          if (data.plan) setPlan(data.plan);
+          if (data.planStatus) setPlanStatus(data.planStatus);
+          if (data.trialEndsAt !== undefined) setTrialEndsAt(data.trialEndsAt ?? null);
         }
       })
       .finally(() => setSettingsLoading(false));
@@ -289,13 +297,21 @@ export default function SettingsPage() {
     URL.revokeObjectURL(url);
   };
 
+  const PLAN_INFO: Record<string, { price: string; memberLimit: string; features: string[] }> = {
+    starter: { price: '$79', memberLimit: '500', features: ['Up to 500 members', 'Basic analytics', '2 campaigns/month', 'Email support'] },
+    pro: { price: '$199', memberLimit: '2,000', features: ['Up to 2,000 members', 'Advanced analytics', 'Unlimited campaigns', 'Priority support'] },
+    scale: { price: '$399', memberLimit: 'Unlimited', features: ['Unlimited members', 'Full analytics & export', 'Unlimited campaigns', 'Account manager'] },
+  };
+  const planInfo = PLAN_INFO[plan] ?? PLAN_INFO.starter;
   const currentPlan = {
-    name: 'Pro',
-    price: '$49',
+    name: plan.charAt(0).toUpperCase() + plan.slice(1),
+    price: planInfo.price,
     billingCycle: 'Monthly',
-    nextBilling: 'April 15, 2026',
-    memberLimit: 'Unlimited',
-    features: ['Unlimited Members', 'Advanced Analytics', 'Custom Branding', 'Priority Support'],
+    nextBilling: trialEndsAt
+      ? `Trial ends ${new Date(trialEndsAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
+      : planStatus === 'active' ? 'Active subscription' : planStatus,
+    memberLimit: planInfo.memberLimit,
+    features: planInfo.features,
   };
 
   return (
