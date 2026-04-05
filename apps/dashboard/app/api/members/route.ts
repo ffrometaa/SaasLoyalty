@@ -46,8 +46,11 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get('sortBy') || 'created_at';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
+    // Use service role to bypass RLS — tenant ownership already verified above
+    const serviceClient = createServiceRoleClient();
+
     // Build query scoped to this tenant
-    let query = supabase
+    let query = serviceClient
       .from('members')
       .select('*', { count: 'exact' })
       .eq('tenant_id', tenantId)
