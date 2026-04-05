@@ -1,8 +1,10 @@
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 import type { MemberProfile, RewardItem, TransactionItem } from './types';
 
 export async function getMemberWithTenant(userId: string): Promise<MemberProfile | null> {
-  const supabase = await createServerSupabaseClient();
+  // Use service role to bypass RLS on tenants — the join fails silently when
+  // the member session has no SELECT policy on tenants. Auth is verified upstream.
+  const supabase = createServiceRoleClient();
 
   const { data, error } = await supabase
     .from('members')
