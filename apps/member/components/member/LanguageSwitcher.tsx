@@ -9,6 +9,12 @@ export function LanguageSwitcher() {
 
   function switchLocale(newLocale: string) {
     document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000; SameSite=lax`;
+    // Persist locale preference to DB (fire-and-forget — don't block the reload)
+    fetch('/api/profile/locale', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ locale: newLocale }),
+    }).catch(() => {});
     window.location.reload();
   }
 
