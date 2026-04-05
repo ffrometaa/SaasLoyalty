@@ -31,7 +31,8 @@ export async function middleware(request: NextRequest) {
   // Public routes — no session required
   if (
     pathname.startsWith('/login') ||
-    pathname.startsWith('/auth/callback') ||
+    pathname.startsWith('/forgot-password') ||
+    pathname.startsWith('/auth/') ||
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/invite') ||
     pathname.startsWith('/admin/preview')
