@@ -58,15 +58,20 @@ export async function POST(request: NextRequest) {
     || meta.name
     || userEmail.split('@')[0];
 
-  // 1. Already linked?
+  // 1. Already linked? (any status — if inactive, reactivate it)
   const { data: linked } = await serviceClient
     .from('members')
-    .select('id')
+    .select('id, status')
     .eq('auth_user_id', userId)
     .eq('tenant_id', resolvedTenantId)
     .single();
 
-  if (linked) return NextResponse.json({ ok: true });
+  if (linked) {
+    if (linked.status !== 'active') {
+      await serviceClient.from('members').update({ status: 'active' }).eq('id', linked.id);
+    }
+    return NextResponse.json({ ok: true });
+  }
 
   // 2. Link by email (dashboard-created member with auth_user_id = null)
   const { data: emailMember } = await serviceClient
@@ -101,7 +106,7 @@ export async function POST(request: NextRequest) {
     memberCode = generateMemberCode();
   }
 
-  await serviceClient.from('members').insert({
+  const { error: insertError } = await serviceClient.from('members').insert({
     auth_user_id: userId,
     tenant_id: resolvedTenantId,
     email: userEmail,
@@ -118,6 +123,10 @@ export async function POST(request: NextRequest) {
     visits_total: 0,
     member_code: memberCode,
   });
+
+  if (insertError) {
+    return NextResponse.json({ error: insertError.message }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }

@@ -174,7 +174,7 @@ export default function JoinPage() {
     }
 
     // Pass access token directly — avoids cookie race condition right after sign-in
-    await fetch('/api/auth/create-member', {
+    const memberRes = await fetch('/api/auth/create-member', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -184,6 +184,13 @@ export default function JoinPage() {
       },
       body: JSON.stringify({ tenantId: tenant!.id }),
     });
+
+    if (!memberRes.ok) {
+      const err = await memberRes.json().catch(() => ({}));
+      setError(`Error al crear tu perfil: ${err.error ?? memberRes.status}`);
+      setLoading(false);
+      return;
+    }
 
     setLoading(false);
     router.push('/');
