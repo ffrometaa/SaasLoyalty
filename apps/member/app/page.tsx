@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { getServerUser } from '@/lib/supabase';
 import { getMemberWithTenant, getRewardsForTenant, getMemberTransactions } from '@/lib/member/queries';
 import { MemberHero } from '@/components/member/MemberHero';
 import { TierBadge } from '@/components/member/TierBadge';
@@ -87,10 +86,15 @@ const TYPE_ICONS: Record<string, string> = {
 };
 
 export default async function HomePage() {
-  const user = await getServerUser();
-  if (!user) redirect('/login');
+  // Use getSession (cookie read, no network call) instead of getUser (network call that can fail).
+  // Middleware already guarantees this page is only reached by authenticated users,
+  // so a null session here means an expired/invalid cookie — redirect to login once.
+  const supabase = await createServerSupabaseClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: { session } } = await (supabase.auth as any).getSession();
+  if (!session) redirect('/login');
 
-  const member = await getMemberWithTenant(user.id);
+  const member = await getMemberWithTenant(session.user.id);
   if (!member) {
     // Authenticated but no member record — redirect to join/register flow
     const cookieStore = await cookies();
