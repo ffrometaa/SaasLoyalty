@@ -184,7 +184,7 @@ export function RewardDetail({ reward, member }: RewardDetailProps) {
         ) : (
           <div className="space-y-3">
             <p className="text-sm text-center mb-3" style={{ color: 'var(--muted)' }}>
-              ¿Confirmás el canje de{' '}
+              ¿Confirmas el canje de{' '}
               <strong style={{ color: 'var(--text)' }}>{reward.points_cost.toLocaleString()} pts</strong>{' '}
               por esta recompensa?
             </p>

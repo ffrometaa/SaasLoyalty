@@ -106,20 +106,28 @@ export function PricingPreview() {
           <span className={`text-sm font-medium leading-none ${!annual ? 'text-white' : 'text-white/40'}`}>{t('monthly')}</span>
           <button
             onClick={() => setAnnual(!annual)}
-            className="relative inline-flex items-center h-7 w-14 rounded-full flex-shrink-0 transition-colors duration-300 focus:outline-none"
-            style={{ background: annual ? '#7c3aed' : 'rgba(255,255,255,0.15)' }}
+            className="relative inline-flex items-center h-7 w-14 rounded-full flex-shrink-0 focus:outline-none"
+            style={{
+              background: annual ? '#7c3aed' : 'rgba(255,255,255,0.15)',
+              transition: 'background-color 300ms',
+            }}
           >
             <span
-              className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-300"
-              style={{ transform: annual ? 'translateX(30px) translateY(-50%)' : 'translateX(2px) translateY(-50%)' }}
+              className="absolute w-5 h-5 bg-white rounded-full shadow-sm"
+              style={{
+                top: '50%',
+                transform: annual ? 'translate(30px, -50%)' : 'translate(2px, -50%)',
+                transition: 'transform 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
             />
           </button>
           <span className={`text-sm font-medium leading-none ${annual ? 'text-white' : 'text-white/40'}`}>{t('annual')}</span>
-          {annual && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 bg-emerald-400/10 text-emerald-400 border border-emerald-400/40">
-              {t('save')}
-            </span>
-          )}
+          <span
+            className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 bg-emerald-400/10 text-emerald-400 border border-emerald-400/40"
+            style={{ opacity: annual ? 1 : 0, transition: 'opacity 300ms' }}
+          >
+            {t('save')}
+          </span>
         </div>
 
         {/* Plans */}

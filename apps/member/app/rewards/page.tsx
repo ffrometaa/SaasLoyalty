@@ -97,7 +97,7 @@ export default async function RewardsPage() {
                 className="text-xs tracking-[1px] uppercase mb-3"
                 style={{ color: 'var(--muted)' }}
               >
-                Disponibles para vos
+                Disponibles para ti
               </p>
               <div className="flex flex-col gap-2.5">
                 {available.map((reward) => (

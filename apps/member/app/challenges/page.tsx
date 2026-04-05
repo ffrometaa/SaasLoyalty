@@ -205,7 +205,7 @@ export default async function ChallengesPage() {
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <h2 className="font-display text-xl font-semibold" style={{ color: 'var(--text)' }}>
-                  Solo para vos
+                  Solo para ti
                 </h2>
                 <span
                   className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-white"

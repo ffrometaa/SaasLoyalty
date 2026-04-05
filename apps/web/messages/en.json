@@ -75,7 +75,7 @@
   "pricing": {
     "label": "Pricing",
     "heading": "Simple pricing, serious results",
-    "subheading": "Start free for 14 days. No credit card required.",
+    "subheading": "Start free for 14 days.",
     "monthly": "Monthly",
     "annual": "Annual",
     "save": "Save 17%",
@@ -83,7 +83,7 @@
     "mostPopular": "Most Popular",
     "perMonth": "/mo",
     "startTrial": "Start free trial",
-    "footer": "All plans include a 14-day free trial. No credit card required. Cancel anytime.",
+    "footer": "All plans include a 14-day free trial. Cancel anytime.",
     "plan0_name": "Starter",
     "plan0_subtitle": "For businesses getting started",
     "plan0_f0": "Up to 500 members",
@@ -138,10 +138,10 @@
   },
   "finalCta": {
     "heading": "Your next loyal customer is already in your store.",
-    "subheading": "Start your 14-day free trial today. No credit card required.",
+    "subheading": "Start your 14-day free trial today.",
     "ctaStart": "Start Free Trial",
     "ctaDemo": "Book a Demo",
-    "guarantee": "✓ No credit card required · ✓ Live in 48 hours · ✓ Cancel anytime"
+    "guarantee": "✓ Live in 48 hours · ✓ Cancel anytime"
   },
   "footer": {
     "tagline": "Turn every visit into a reason to come back.",
@@ -210,7 +210,7 @@
     "label": "Pricing",
     "heading1": "Simple pricing,",
     "heading2": "serious results",
-    "subheading": "Start free for 14 days. No credit card required. Cancel anytime.",
+    "subheading": "Start free for 14 days. Cancel anytime.",
     "tableHeading": "Everything included",
     "featureLabel": "Feature"
   },

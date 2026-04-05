@@ -75,7 +75,7 @@
   "pricing": {
     "label": "Precios",
     "heading": "Precios simples, resultados serios",
-    "subheading": "Comienza gratis por 14 días. Sin tarjeta de crédito.",
+    "subheading": "Comienza gratis por 14 días.",
     "monthly": "Mensual",
     "annual": "Anual",
     "save": "Ahorra 17%",
@@ -83,7 +83,7 @@
     "mostPopular": "Más Popular",
     "perMonth": "/mes",
     "startTrial": "Comenzar prueba gratis",
-    "footer": "Todos los planes incluyen 14 días de prueba gratis. Sin tarjeta de crédito. Cancela cuando quieras.",
+    "footer": "Todos los planes incluyen 14 días de prueba gratis. Cancela cuando quieras.",
     "plan0_name": "Starter",
     "plan0_subtitle": "Para negocios que están empezando",
     "plan0_f0": "Hasta 500 miembros",
@@ -138,10 +138,10 @@
   },
   "finalCta": {
     "heading": "Tu próximo cliente fiel ya está en tu negocio.",
-    "subheading": "Comienza tu prueba gratis de 14 días hoy. Sin tarjeta de crédito.",
+    "subheading": "Comienza tu prueba gratis de 14 días hoy.",
     "ctaStart": "Comenzar Prueba Gratis",
     "ctaDemo": "Reservar Demo",
-    "guarantee": "✓ Sin tarjeta de crédito · ✓ En vivo en 48 horas · ✓ Cancela cuando quieras"
+    "guarantee": "✓ En vivo en 48 horas · ✓ Cancela cuando quieras"
   },
   "footer": {
     "tagline": "Convierte cada visita en una razón para volver.",
@@ -210,7 +210,7 @@
     "label": "Precios",
     "heading1": "Precios simples,",
     "heading2": "resultados serios",
-    "subheading": "Comienza gratis por 14 días. Sin tarjeta de crédito. Cancela cuando quieras.",
+    "subheading": "Comienza gratis por 14 días. Cancela cuando quieras.",
     "tableHeading": "Todo incluido",
     "featureLabel": "Característica"
   },

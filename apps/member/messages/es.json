@@ -36,5 +36,65 @@
     "label": "Idioma",
     "en": "EN",
     "es": "ES"
+  },
+  "auth": {
+    "back": "Volver",
+    "backToLogin": "Volver al inicio de sesión",
+    "email": "Email",
+    "emailPlaceholder": "tu@email.com",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Mínimo 8 caracteres",
+    "fullName": "Nombre completo",
+    "namePlaceholder": "Tu nombre",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "terms": "Al continuar aceptas los",
+    "termsLink": "términos de servicio",
+    "and": "y la",
+    "privacyLink": "política de privacidad",
+    "login": {
+      "title": "Iniciar sesión",
+      "subtitle": "Ingresa tu email y contraseña para acceder.",
+      "submit": "Ingresar",
+      "submitting": "Ingresando...",
+      "noAccount": "¿No tienes cuenta?",
+      "register": "Registrate",
+      "errorInvalid": "Email o contraseña incorrectos.",
+      "errorTooMany": "Demasiados intentos. Espera un momento e intenta de nuevo.",
+      "errorGeneric": "Hubo un problema al iniciar sesión. Intenta de nuevo."
+    },
+    "register": {
+      "title": "Crear cuenta",
+      "subtitle": "Completa los datos para unirte al programa de fidelidad.",
+      "submit": "Crear cuenta",
+      "submitting": "Creando cuenta...",
+      "alreadyHaveAccount": "¿Ya tienes cuenta?",
+      "signIn": "Inicia sesión",
+      "checkEmail": "Revisa tu email",
+      "checkEmailDesc": "Enviamos un link de confirmación a {email}. Toca el link para activar tu cuenta.",
+      "noEmail": "¿No llegó? Revisa la carpeta de spam o",
+      "tryAgain": "intenta de nuevo",
+      "errorEmailExists": "Ya tienes cuenta con este email. Inicia sesión con tu contraseña correcta.",
+      "errorEmailExistsShort": "Ya tienes cuenta con este email. Inicia sesión.",
+      "errorTooMany": "Demasiados intentos. Espera un momento e intenta de nuevo.",
+      "errorGeneric": "Hubo un problema al crear tu cuenta. Intenta de nuevo."
+    },
+    "forgotPassword": {
+      "title": "Olvidé mi contraseña",
+      "subtitle": "Ingresa tu email y te enviaremos un link para restablecer tu contraseña.",
+      "submit": "Enviar link",
+      "submitting": "Enviando...",
+      "checkEmail": "Revisa tu email",
+      "checkEmailDesc": "Si existe una cuenta con {email}, recibirás un link para restablecer tu contraseña.",
+      "errorGeneric": "Hubo un problema al enviar el email. Intenta de nuevo."
+    }
+  },
+  "join": {
+    "rewardsProgram": "Programa de recompensas",
+    "benefit1": "Acumula puntos en cada visita",
+    "benefit2": "Canjea por servicios y productos",
+    "benefit3": "Sube de nivel y desbloquea beneficios",
+    "joinProgram": "Unirme al programa",
+    "alreadyHaveAccount": "¿Ya tienes cuenta?",
+    "signIn": "Iniciar sesión"
   }
 }

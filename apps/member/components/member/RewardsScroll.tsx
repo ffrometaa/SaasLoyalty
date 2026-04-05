@@ -65,7 +65,7 @@ export function RewardsSection({ available, locked }: RewardsSectionProps) {
       {/* Header */}
       <div className="flex justify-between items-center px-5 mb-3.5">
         <span className="font-display text-xl font-normal" style={{ color: 'var(--text)' }}>
-          Recompensas para vos
+          Recompensas para ti
         </span>
         <Link href="/rewards" className="text-xs" style={{ color: 'var(--sage)' }}>
           Ver todas

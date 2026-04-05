@@ -159,7 +159,7 @@ export default async function HomePage() {
                   className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-white"
                   style={{ background: 'var(--brand-primary)' }}
                 >
-                  Solo para vos
+                  Solo para ti
                 </span>
               </div>
               <p className="text-sm font-semibold truncate mb-1" style={{ color: 'var(--text)' }}>

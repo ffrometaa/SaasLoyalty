@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { createServiceRoleClient } from '@loyalty-os/lib/server';
+import { getTranslations } from 'next-intl/server';
 
 interface JoinPageProps {
   params: Promise<{ slug: string }>;
@@ -23,6 +24,7 @@ export default async function JoinPage({ params, searchParams }: JoinPageProps) 
   const { slug } = await params;
   const { redirect: redirectTo, embed } = await searchParams;
   const isEmbed = embed === 'true';
+  const t = await getTranslations('join');
 
   const tenant = await getTenantBySlug(slug);
   if (!tenant) notFound();
@@ -47,6 +49,12 @@ export default async function JoinPage({ params, searchParams }: JoinPageProps) 
   }
 
   const heroBg = darken(primary);
+
+  const benefits = [
+    { icon: '✦', text: t('benefit1') },
+    { icon: '🎁', text: t('benefit2') },
+    { icon: '⭐', text: t('benefit3') },
+  ];
 
   return (
     <>
@@ -98,17 +106,13 @@ export default async function JoinPage({ params, searchParams }: JoinPageProps) 
               {appName}
             </h1>
             <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 14 }}>
-              Programa de recompensas
+              {t('rewardsProgram')}
             </p>
           </div>
 
           {/* Benefits */}
           <div className="relative z-10 w-full max-w-xs space-y-3 mb-10">
-            {[
-              { icon: '✦', text: 'Acumula puntos en cada visita' },
-              { icon: '🎁', text: 'Canjea por servicios y productos' },
-              { icon: '⭐', text: 'Sube de nivel y desbloquea beneficios' },
-            ].map(({ icon, text }) => (
+            {benefits.map(({ icon, text }) => (
               <div
                 key={text}
                 className="flex items-center gap-3 text-left"
@@ -131,13 +135,13 @@ export default async function JoinPage({ params, searchParams }: JoinPageProps) 
             className="w-full py-4 rounded-[14px] text-[15px] font-medium text-white text-center block"
             style={{ background: heroBg }}
           >
-            Unirme al programa
+            {t('joinProgram')}
           </Link>
           {!isEmbed && (
             <p className="text-center text-xs" style={{ color: 'var(--muted, #8a887f)' }}>
-              ¿Ya tienes cuenta?{' '}
+              {t('alreadyHaveAccount')}{' '}
               <Link href={loginHref} style={{ color: primary, fontWeight: 500 }}>
-                Iniciar sesión
+                {t('signIn')}
               </Link>
             </p>
           )}

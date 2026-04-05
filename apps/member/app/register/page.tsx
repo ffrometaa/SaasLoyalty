@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@loyalty-os/lib';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 export default function RegisterPage() {
+  const t = useTranslations('auth');
   const searchParams = useSearchParams();
   const router = useRouter();
   const tenantSlug = searchParams.get('tenant') ?? '';
@@ -72,7 +74,7 @@ export default function RegisterPage() {
         setLoading(false);
 
         if (signInError) {
-          setError('Ya tienes cuenta con este email. Inicia sesión con tu contraseña correcta.');
+          setError(t('register.errorEmailExists'));
           return;
         }
 
@@ -82,12 +84,12 @@ export default function RegisterPage() {
           return;
         }
 
-        setError('Ya tienes cuenta con este email. Inicia sesión.');
+        setError(t('register.errorEmailExistsShort'));
         return;
       } else if (authError.status === 429) {
-        setError('Demasiados intentos. Espera un momento e intenta de nuevo.');
+        setError(t('register.errorTooMany'));
       } else {
-        setError('Hubo un problema al crear tu cuenta. Intenta de nuevo.');
+        setError(t('register.errorGeneric'));
       }
       setLoading(false);
       return;
@@ -120,21 +122,19 @@ export default function RegisterPage() {
             className="mb-2"
             style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 28, fontWeight: 400, color: 'var(--text, #2c2c2a)' }}
           >
-            Revisa tu email
+            {t('register.checkEmail')}
           </h1>
           <p className="text-sm leading-relaxed mb-8" style={{ color: 'var(--muted, #8a887f)' }}>
-            Enviamos un link de confirmación a{' '}
-            <strong style={{ color: 'var(--text, #2c2c2a)' }}>{email}</strong>.
-            Toca el link para activar tu cuenta.
+            {t('register.checkEmailDesc', { email })}
           </p>
           <p className="text-xs" style={{ color: 'var(--muted, #8a887f)' }}>
-            ¿No llegó? Revisa la carpeta de spam o{' '}
+            {t('register.noEmail')}{' '}
             <button
               onClick={() => setSent(false)}
               className="underline"
               style={{ color: 'var(--sage-dark, #4a5440)' }}
             >
-              intenta de nuevo
+              {t('register.tryAgain')}
             </button>.
           </p>
         </div>
@@ -153,29 +153,29 @@ export default function RegisterPage() {
           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
             <polyline points="15 18 9 12 15 6" />
           </svg>
-          Volver
+          {t('back')}
         </Link>
 
         <h1
           className="mb-2"
           style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 32, fontWeight: 300, color: 'var(--text, #2c2c2a)' }}
         >
-          Crear cuenta
+          {t('register.title')}
         </h1>
         <p className="text-sm mb-8" style={{ color: 'var(--muted, #8a887f)' }}>
-          Completa los datos para unirte al programa de fidelidad.
+          {t('register.subtitle')}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text, #2c2c2a)' }}>
-              Nombre completo
+              {t('fullName')}
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Tu nombre"
+              placeholder={t('namePlaceholder')}
               autoComplete="name"
               autoFocus
               required
@@ -188,13 +188,13 @@ export default function RegisterPage() {
 
           <div>
             <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text, #2c2c2a)' }}>
-              Email
+              {t('email')}
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => !lockedEmail && setEmail(e.target.value)}
-              placeholder="tu@email.com"
+              placeholder={t('emailPlaceholder')}
               autoComplete="email"
               required
               readOnly={lockedEmail}
@@ -211,13 +211,13 @@ export default function RegisterPage() {
 
           <div>
             <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text, #2c2c2a)' }}>
-              Contraseña
+              {t('password')}
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mínimo 8 caracteres"
+              placeholder={t('passwordPlaceholder')}
               autoComplete="new-password"
               minLength={8}
               required
@@ -249,33 +249,33 @@ export default function RegisterPage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4" />
                   <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Creando cuenta...
+                {t('register.submitting')}
               </>
             ) : (
-              'Crear cuenta'
+              t('register.submit')
             )}
           </button>
 
           <p className="text-sm text-center" style={{ color: 'var(--muted, #8a887f)' }}>
-            ¿Ya tienes cuenta?{' '}
+            {t('register.alreadyHaveAccount')}{' '}
             <Link
               href={`/login${tenantSlug ? `?tenant=${tenantSlug}` : ''}`}
               className="underline"
               style={{ color: 'var(--sage-dark, #4a5440)' }}
             >
-              Inicia sesión
+              {t('register.signIn')}
             </Link>
           </p>
         </form>
 
         <p className="text-xs text-center mt-6" style={{ color: 'var(--muted, #8a887f)' }}>
-          Al continuar aceptas los{' '}
+          {t('terms')}{' '}
           <a href="https://loyalbase.dev/terms" target="_blank" rel="noopener noreferrer" className="underline">
-            términos de servicio
+            {t('termsLink')}
           </a>
-          {' '}y la{' '}
+          {' '}{t('and')}{' '}
           <a href="https://loyalbase.dev/privacy" target="_blank" rel="noopener noreferrer" className="underline">
-            política de privacidad
+            {t('privacyLink')}
           </a>.
         </p>
       </div>
