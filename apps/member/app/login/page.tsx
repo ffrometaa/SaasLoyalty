@@ -55,6 +55,13 @@ export default function LoginPage() {
       return;
     }
 
+    // Link member record — handles pre-existing members with auth_user_id = null
+    try {
+      await fetch('/api/auth/link-member', { method: 'POST' });
+    } catch {
+      // Non-fatal — member may already be linked or tenant cookie may be absent
+    }
+
     router.push(redirectTo);
     router.refresh();
   }
