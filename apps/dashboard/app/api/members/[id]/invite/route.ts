@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
+import { buildBilingualEmail, buildMemberActivationEmail } from '@loyalty-os/email';
 
 // POST /api/members/[id]/invite — Create invitation token and send email
 export async function POST(
@@ -96,6 +97,15 @@ async function sendInviteEmail(
 
   if (RESEND_API_KEY) {
     try {
+      const emailContent = buildMemberActivationEmail({
+        memberName: member.name,
+        businessName: tenant.business_name,
+        registerUrl,
+        tenantLogoUrl: tenant.brand_logo_url ?? '',
+        tenantPrimaryColor: tenant.brand_color_primary ?? '',
+      });
+      const { subject, html } = buildBilingualEmail(emailContent);
+
       await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -105,8 +115,8 @@ async function sendInviteEmail(
         body: JSON.stringify({
           from: `${tenant.business_name} <noreply@loyalbase.dev>`,
           to: [member.email],
-          subject: `${tenant.business_name} invites you to their loyalty program / te invita a su programa de fidelidad`,
-          html: buildInviteEmail({ memberName: member.name, businessName: tenant.business_name, registerUrl }),
+          subject,
+          html,
         }),
       });
     } catch (emailError) {
@@ -115,61 +125,4 @@ async function sendInviteEmail(
   }
 
   return NextResponse.json({ success: true, registerUrl });
-}
-
-function buildInviteEmail({
-  memberName,
-  businessName,
-  registerUrl,
-}: {
-  memberName: string;
-  businessName: string;
-  registerUrl: string;
-}) {
-  return `
-<!DOCTYPE html>
-<html>
-<body style="font-family: sans-serif; background: #faf8f4; margin: 0; padding: 40px 20px;">
-  <div style="max-width: 480px; margin: 0 auto; background: white; border-radius: 16px; padding: 40px; border: 1px solid #e8e4dc;">
-    <h1 style="font-size: 24px; font-weight: 400; color: #2c2c2a; margin: 0 0 8px;">${businessName}</h1>
-    <p style="color: #8a887f; font-size: 14px; margin: 0 0 32px;">Loyalty Program / Programa de fidelidad</p>
-
-    <!-- English -->
-    <p style="color: #2c2c2a; font-size: 15px; margin: 0 0 8px;">Hi ${memberName},</p>
-    <p style="color: #555; font-size: 14px; line-height: 1.6; margin: 0 0 24px;">
-      You've been invited to activate your account in the <strong>${businessName}</strong> loyalty program.
-      Create your password to access your points and rewards.
-    </p>
-
-    <a href="${registerUrl}"
-       style="display: block; background: #4a5440; color: white; text-align: center;
-              padding: 14px 24px; border-radius: 12px; text-decoration: none;
-              font-size: 15px; font-weight: 500; margin-bottom: 32px;">
-      Activate my account
-    </a>
-
-    <!-- Divider -->
-    <hr style="border: none; border-top: 1px solid #e8e4dc; margin: 0 0 32px;" />
-
-    <!-- Spanish -->
-    <p style="color: #2c2c2a; font-size: 15px; margin: 0 0 8px;">Hola ${memberName},</p>
-    <p style="color: #555; font-size: 14px; line-height: 1.6; margin: 0 0 24px;">
-      Te invitamos a activar tu cuenta en el programa de fidelidad de <strong>${businessName}</strong>.
-      Crea tu contraseña para acceder a tus puntos y recompensas.
-    </p>
-
-    <a href="${registerUrl}"
-       style="display: block; background: #4a5440; color: white; text-align: center;
-              padding: 14px 24px; border-radius: 12px; text-decoration: none;
-              font-size: 15px; font-weight: 500; margin-bottom: 24px;">
-      Activar mi cuenta
-    </a>
-
-    <p style="color: #8a887f; font-size: 12px; text-align: center; margin: 0;">
-      This link expires in 7 days. If you weren't expecting this invitation, you can ignore this message.<br />
-      Este link expira en 7 días. Si no esperabas esta invitación, puedes ignorar este mensaje.
-    </p>
-  </div>
-</body>
-</html>`;
 }
