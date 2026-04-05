@@ -31,9 +31,11 @@ export default async function JoinPage({ params, searchParams }: JoinPageProps) 
   const primary = tenant.brand_color_primary ?? '#4a5440';
   const secondary = tenant.brand_color_secondary ?? '#c4a882';
 
-  // Pass slug as query param — the login page reads it and sets the cookie
+  // Pass slug as query param — the login/register pages read it and set the cookie
   const loginBase = `/login?tenant=${encodeURIComponent(slug)}`;
   const loginHref = redirectTo ? `${loginBase}&redirect=${encodeURIComponent(redirectTo)}` : loginBase;
+  const registerBase = `/register?tenant=${encodeURIComponent(slug)}`;
+  const registerHref = redirectTo ? `${registerBase}&redirect=${encodeURIComponent(redirectTo)}` : registerBase;
 
   // Darken primary for hero background
   function darken(hex: string): string {
@@ -125,7 +127,7 @@ export default async function JoinPage({ params, searchParams }: JoinPageProps) 
           style={{ background: 'white', borderTop: '1px solid var(--border, #e8e4dc)' }}
         >
           <Link
-            href={loginHref}
+            href={registerHref}
             className="w-full py-4 rounded-[14px] text-[15px] font-medium text-white text-center block"
             style={{ background: heroBg }}
           >
