@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   const serviceClient = createServiceRoleClient();
   const { data } = await serviceClient
     .from('tenants')
-    .select('id, name')
+    .select('id, business_name')
     .eq('join_code', code)
     .in('plan_status', ['trialing', 'active'])
     .single();
@@ -19,5 +19,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ valid: false });
   }
 
-  return NextResponse.json({ valid: true, tenantId: data.id, tenantName: data.name });
+  return NextResponse.json({ valid: true, tenantId: data.id, tenantName: data.business_name });
 }
