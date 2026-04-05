@@ -84,7 +84,7 @@ export async function POST() {
   if (emailMember) {
     await serviceClient
       .from('members')
-      .update({ auth_user_id: userId, name: memberName })
+      .update({ auth_user_id: userId, name: memberName, status: 'active' })
       .eq('id', emailMember.id);
     return NextResponse.json({ ok: true });
   }
@@ -107,6 +107,7 @@ export async function POST() {
     tenant_id: tenant.id,
     email: userEmail,
     name: memberName,
+    status: 'active',
     tier: 'bronze',
     points_balance: 0,
     points_lifetime: 0,
