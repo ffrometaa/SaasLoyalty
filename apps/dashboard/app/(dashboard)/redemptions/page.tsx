@@ -78,7 +78,7 @@ export default function RedemptionsPage() {
           success: true,
           message: 'Redemption successful!',
           data: {
-            member: r.member?.name,
+            member: r.member?.name ?? r.member?.email,
             email: r.member?.email,
             reward: r.reward?.name,
             pointsSpent: r.points_spent,

@@ -15,8 +15,8 @@ export type TransactionType =
 export interface TenantBrand {
   id: string;
   business_name: string;
-  app_name: string | null;
-  logo_url: string | null;
+  brand_app_name: string | null;
+  brand_logo_url: string | null;
   brand_color_primary: string;
   brand_color_secondary: string;
   slug: string;
@@ -26,8 +26,7 @@ export interface TenantBrand {
 export interface MemberProfile {
   id: string;
   tenant_id: string;
-  first_name: string;
-  last_name: string | null;
+  name: string;
   email: string | null;
   tier: MemberTier;
   points_balance: number;

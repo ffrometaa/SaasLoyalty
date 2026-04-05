@@ -19,7 +19,7 @@ export async function GET(
           id,
           type,
           points,
-          balance_after,
+          points_balance,
           description,
           created_at
         )
@@ -71,7 +71,8 @@ export async function PATCH(
       );
     }
 
-    const { data: member, error } = await supabase
+    const serviceClient = createServiceRoleClient();
+    const { data: member, error } = await serviceClient
       .from('members')
       .update(updates)
       .eq('id', id)

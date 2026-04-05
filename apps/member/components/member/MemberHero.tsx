@@ -19,7 +19,7 @@ export function MemberHero({ member }: MemberHeroProps) {
     member.tier
   );
 
-  const appName = member.tenant.app_name ?? member.tenant.business_name;
+  const appName = member.tenant.brand_app_name ?? member.tenant.business_name;
 
   return (
     <div
@@ -83,7 +83,7 @@ export function MemberHero({ member }: MemberHeroProps) {
           className="font-display font-light text-white"
           style={{ fontSize: 28 }}
         >
-          {member.first_name}
+          {member.name}
         </h1>
       </div>
 

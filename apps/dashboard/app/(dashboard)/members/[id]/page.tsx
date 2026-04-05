@@ -23,7 +23,7 @@ type Transaction = {
   id: string;
   type: string;
   points: number;
-  balance_after: number;
+  points_balance: number;
   description: string;
   created_at: string;
 };
@@ -425,7 +425,7 @@ export default function MemberDetailPage() {
                       <p className={`font-bold ${tx.points > 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {tx.points > 0 ? '+' : ''}{tx.points.toLocaleString()}
                       </p>
-                      <p className="text-sm text-gray-500">{t('balanceAfter', { value: tx.balance_after.toLocaleString() })}</p>
+                      <p className="text-sm text-gray-500">{t('balanceAfter', { value: tx.points_balance.toLocaleString() })}</p>
                     </div>
                   </div>
                 );

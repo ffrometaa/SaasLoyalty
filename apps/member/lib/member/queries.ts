@@ -9,8 +9,7 @@ export async function getMemberWithTenant(userId: string): Promise<MemberProfile
     .select(`
       id,
       tenant_id,
-      first_name,
-      last_name,
+      name,
       email,
       tier,
       points_balance,
@@ -20,15 +19,15 @@ export async function getMemberWithTenant(userId: string): Promise<MemberProfile
       tenant:tenants!inner (
         id,
         business_name,
-        app_name,
-        logo_url,
+        brand_app_name,
+        brand_logo_url,
         brand_color_primary,
         brand_color_secondary,
         slug,
         points_expiry_days
       )
     `)
-    .eq('user_id', userId)
+    .eq('auth_user_id', userId)
     .eq('status', 'active')
     .single();
 

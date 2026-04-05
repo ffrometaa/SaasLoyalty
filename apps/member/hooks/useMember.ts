@@ -30,14 +30,14 @@ export function useMember() {
       const { data, error: dbError } = await supabase
         .from('members')
         .select(`
-          id, tenant_id, first_name, last_name, email, tier,
+          id, tenant_id, name, email, tier,
           points_balance, points_lifetime, member_code, avatar_url,
           tenant:tenants!inner (
-            id, business_name, app_name, logo_url,
+            id, business_name, brand_app_name, brand_logo_url,
             brand_color_primary, brand_color_secondary, slug, points_expiry_days
           )
         `)
-        .eq('user_id', user.id)
+        .eq('auth_user_id', user.id)
         .eq('status', 'active')
         .single();
 

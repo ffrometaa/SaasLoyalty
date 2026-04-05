@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 import { requireMemberSlot } from '../../../lib/plans/guardFeature';
 import { buildBilingualEmail, buildMemberInviteEmail } from '@loyalty-os/email';
 
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
 
     const { data: tenant } = await supabase
       .from('tenants')
-      .select('id, slug, business_name, logo_url, brand_color_primary')
+      .select('id, slug, business_name, brand_logo_url, brand_color_primary')
       .eq('auth_user_id', session.user.id)
       .is('deleted_at', null)
       .single();
@@ -144,8 +144,10 @@ export async function POST(request: NextRequest) {
     // Generate unique member code
     const memberCode = `${tenant.slug.toUpperCase()}-${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`;
 
-    // Create member
-    const { data: member, error } = await supabase
+    // Create member — use service role to bypass RLS (app.tenant_id session var not set)
+    const serviceClient = createServiceRoleClient();
+
+    const { data: member, error } = await serviceClient
       .from('members')
       .insert({
         tenant_id: tenantId,
@@ -180,7 +182,7 @@ export async function POST(request: NextRequest) {
             memberName: name,
             businessName: tenant.business_name,
             joinUrl,
-            tenantLogoUrl: tenant.logo_url ?? '',
+            tenantLogoUrl: tenant.brand_logo_url ?? '',
             tenantPrimaryColor: tenant.brand_color_primary ?? '',
           });
           const { subject, html } = buildBilingualEmail(emailContent);
