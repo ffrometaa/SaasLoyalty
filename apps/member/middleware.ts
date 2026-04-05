@@ -59,7 +59,8 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: { user } } = await (supabase.auth as any).getUser();
 
   if (!user) {
     // No session — redirect to login, preserving tenant context
