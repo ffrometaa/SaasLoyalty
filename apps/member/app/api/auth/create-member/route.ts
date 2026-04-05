@@ -58,8 +58,6 @@ export async function POST(request: NextRequest) {
     || meta.name
     || userEmail.split('@')[0];
 
-  const serviceClient = createServiceRoleClient();
-
   // 1. Already linked?
   const { data: linked } = await serviceClient
     .from('members')
