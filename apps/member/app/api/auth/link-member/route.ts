@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServiceRoleClient } from '@loyalty-os/lib/server';
-import { getServerUser } from '@/lib/supabase';
+import { createServiceRoleClient, createServerSupabaseClient } from '@loyalty-os/lib/server';
 import { cookies } from 'next/headers';
 
 function generateMemberCode(): string {
@@ -16,10 +15,14 @@ function generateMemberCode(): string {
 // Called after signUp() when email confirmation is disabled and session is returned immediately.
 // Replicates the linking logic from /auth/callback.
 export async function POST() {
-  const user = await getServerUser();
-  if (!user) {
+  // Use getSession() (cookie read, no network call) — more reliable than getUser()
+  const supabase = await createServerSupabaseClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: { session } } = await (supabase.auth as any).getSession();
+  if (!session?.user) {
     return NextResponse.json({ error: 'No session' }, { status: 401 });
   }
+  const user = session.user;
 
   const cookieStore = await cookies();
   const tenantSlug = cookieStore.get('loyalty_tenant')?.value;

@@ -10,7 +10,7 @@ import { BottomNav } from '@/components/member/BottomNav';
 import { BrandTheme } from '@/components/member/BrandTheme';
 import { OneSignalInit } from '@/components/member/OneSignalInit';
 import { getTierProgress, TIER_NEXT } from '@/lib/member/types';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 import Link from 'next/link';
 
 const TIER_LABELS: Record<string, string> = {
@@ -94,12 +94,62 @@ export default async function HomePage() {
   const { data: { session } } = await (supabase.auth as any).getSession();
   if (!session) redirect('/login');
 
-  const member = await getMemberWithTenant(session.user.id);
+  let member = await getMemberWithTenant(session.user.id);
   if (!member) {
-    // Authenticated but no member record — redirect to join/register flow
+    // Authenticated but no member record — try to link/create inline before redirecting
     const cookieStore = await cookies();
     const tenantSlug = cookieStore.get('loyalty_tenant')?.value;
-    redirect(tenantSlug ? `/join/${tenantSlug}` : '/register');
+    const joinCode = cookieStore.get('loyalty_join_code')?.value;
+
+    if (tenantSlug || joinCode) {
+      const serviceClient = createServiceRoleClient();
+      let tenant: { id: string } | null = null;
+
+      if (joinCode) {
+        const { data } = await serviceClient.from('tenants').select('id')
+          .eq('join_code', joinCode.trim().toUpperCase())
+          .in('plan_status', ['trialing', 'active']).single();
+        tenant = data ?? null;
+      }
+      if (!tenant && tenantSlug) {
+        const { data } = await serviceClient.from('tenants').select('id')
+          .eq('slug', tenantSlug)
+          .in('plan_status', ['trialing', 'active']).single();
+        tenant = data ?? null;
+      }
+
+      if (tenant) {
+        const userId = session.user.id;
+        const userEmail = session.user.email ?? '';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const memberName = ((session.user as any).user_metadata?.name as string | undefined) ?? userEmail.split('@')[0];
+
+        const { data: linked } = await serviceClient.from('members').select('id')
+          .eq('auth_user_id', userId).eq('tenant_id', tenant.id).single();
+
+        if (!linked) {
+          const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+          let memberCode = Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+          for (let i = 0; i < 3; i++) {
+            const { data: existing } = await serviceClient.from('members').select('id')
+              .eq('tenant_id', tenant.id).eq('member_code', memberCode).single();
+            if (!existing) break;
+            memberCode = Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+          }
+          await serviceClient.from('members').insert({
+            auth_user_id: userId, tenant_id: tenant.id, email: userEmail,
+            name: memberName, status: 'active', tier: 'bronze',
+            points_balance: 0, points_lifetime: 0, visits_total: 0, member_code: memberCode,
+          });
+        }
+
+        member = await getMemberWithTenant(userId);
+      }
+    }
+
+    if (!member) {
+      redirect(tenantSlug ? `/join/${tenantSlug}` : '/register');
+    }
   }
 
   const [{ available, locked }, transactions, activeMultiplier, dynamicChallenge] = await Promise.all([
