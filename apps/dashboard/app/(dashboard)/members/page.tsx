@@ -248,6 +248,7 @@ export default function MembersPage() {
           </div>
         ) : (
           <>
+            <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -327,6 +328,7 @@ export default function MembersPage() {
                 ))}
               </tbody>
             </table>
+            </div>
 
             {members.length === 0 && !pageLoading && (
               <div className="px-6 py-16 text-center">
