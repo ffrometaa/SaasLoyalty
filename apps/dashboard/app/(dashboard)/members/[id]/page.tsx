@@ -16,6 +16,7 @@ import {
   CheckCircle,
   AlertTriangle,
   X,
+  Send,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -43,6 +44,7 @@ type Member = {
   accepts_email: boolean;
   accepts_push: boolean;
   birthday: string | null;
+  auth_user_id: string | null;
   created_at: string;
   transactions: Transaction[];
 };
@@ -98,6 +100,8 @@ export default function MemberDetailPage() {
 
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteSent, setInviteSent] = useState(false);
 
   const fetchMember = async () => {
     try {
@@ -215,6 +219,21 @@ export default function MemberDetailPage() {
       setActionError(err.message);
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleInvite = async () => {
+    setInviteLoading(true);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/members/${id}/invite`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send invitation');
+      setInviteSent(true);
+    } catch (err: any) {
+      setActionError(err.message);
+    } finally {
+      setInviteLoading(false);
     }
   };
 
@@ -394,6 +413,16 @@ export default function MemberDetailPage() {
                 >
                   <CheckCircle className="h-5 w-5" />
                   {t('unblockMember')}
+                </button>
+              )}
+              {!member.auth_user_id && (
+                <button
+                  onClick={handleInvite}
+                  disabled={inviteLoading || inviteSent}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-brand-purple text-brand-purple rounded-lg hover:bg-brand-purple-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Send className="h-4 w-4" />
+                  {inviteSent ? t('inviteSent') : inviteLoading ? t('sending') : t('sendInvite')}
                 </button>
               )}
             </div>

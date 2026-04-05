@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { getServerUser } from '@/lib/supabase';
 import { getMemberWithTenant, getRewardsForTenant, getMemberTransactions } from '@/lib/member/queries';
 import { MemberHero } from '@/components/member/MemberHero';
@@ -90,7 +91,12 @@ export default async function HomePage() {
   if (!user) redirect('/login');
 
   const member = await getMemberWithTenant(user.id);
-  if (!member) redirect('/login');
+  if (!member) {
+    // Authenticated but no member record — redirect to join/register flow
+    const cookieStore = await cookies();
+    const tenantSlug = cookieStore.get('loyalty_tenant')?.value;
+    redirect(tenantSlug ? `/join/${tenantSlug}` : '/register');
+  }
 
   const [{ available, locked }, transactions, activeMultiplier, dynamicChallenge] = await Promise.all([
     getRewardsForTenant(member.tenant_id, member.points_balance, 6),
