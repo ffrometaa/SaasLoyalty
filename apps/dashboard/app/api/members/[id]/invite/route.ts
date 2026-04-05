@@ -94,7 +94,7 @@ async function sendInviteEmail(
 ) {
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
   const memberAppUrl = process.env.NEXT_PUBLIC_MEMBER_APP_URL ?? 'https://member.loyalbase.dev';
-  const registerUrl = `${memberAppUrl}/register?token=${token}&tenant=${tenant.slug}`;
+  const registerUrl = `${memberAppUrl}/join?token=${token}&tenant=${tenant.slug}`;
 
   if (RESEND_API_KEY) {
     try {

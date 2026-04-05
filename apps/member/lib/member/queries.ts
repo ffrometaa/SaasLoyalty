@@ -15,7 +15,7 @@ export async function getMemberWithTenant(userId: string, tenantId?: string): Pr
   // Filter by tenant when provided — required when user has members in multiple tenants
   if (tenantId) query = query.eq('tenant_id', tenantId);
 
-  const { data: member } = await query.limit(1).single();
+  const { data: member } = await query.limit(1).maybeSingle();
 
   if (!member) return null;
 

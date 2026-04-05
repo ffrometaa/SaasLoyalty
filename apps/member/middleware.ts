@@ -15,6 +15,8 @@ const PUBLIC_PATHS = [
   '/forgot-password',
   '/reset-password',
   '/auth',
+  '/api/auth',
+  '/api/invitations',
   '/offline',
   '/manifest.json',
   '/sw.js',
@@ -63,10 +65,11 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await (supabase.auth as any).getUser();
 
   if (!user) {
-    // No session — redirect to login, preserving tenant context
-    const tenantSlug = request.cookies.get('loyalty_tenant')?.value;
+    // No session — redirect to join, preserving tenant context
+    const tenantSlug = request.cookies.get('loyalty_tenant_id')?.value;
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = tenantSlug ? `/join/${tenantSlug}` : '/login';
+    // In member app, we use /join, not /login. We don't have [tenantSlug] dynamic route, so we just redirect to /join
+    loginUrl.pathname = '/join';
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }

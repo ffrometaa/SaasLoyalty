@@ -1,5 +1,5 @@
 import { PointsCard } from './PointsCard';
-import { getTierProgress, TIER_NEXT } from '@/lib/member/types';
+import { getTierProgress } from '@/lib/member/types';
 import type { MemberProfile } from '@/lib/member/types';
 
 const TIER_LABELS: Record<string, string> = {

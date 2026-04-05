@@ -41,9 +41,39 @@ export default function JoinPage() {
 
   const codeInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-validate code on mount — URL param takes priority over localStorage
+  // Auto-validate code or token on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    if (token) {
+      setLoading(true);
+      fetch(`/api/invitations/${token}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setLoading(false);
+          if (data.error) {
+            setError(data.error);
+            return;
+          }
+          if (data.email) setEmail(data.email);
+          if (data.name) {
+            const parts = data.name.split(' ');
+            setFirstName(parts[0]);
+            if (parts.length > 1) setLastName(parts.slice(1).join(' '));
+          }
+          if (data.joinCode) {
+            setCode(data.joinCode);
+            validateCode(data.joinCode, true);
+          }
+        })
+        .catch(() => {
+          setLoading(false);
+          setError('Error validando la invitación.');
+        });
+      return;
+    }
+
     const codeFromUrl = params.get('code')?.trim().toUpperCase();
     const codeFromStorage = localStorage.getItem(BIZ_CODE_KEY) ?? '';
     const initial = codeFromUrl ?? codeFromStorage;

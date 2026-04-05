@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { WifiOff, RefreshCw } from 'lucide-react';
 
 export function OfflineIndicator() {
-  const [isOnline, setIsOnline] = useState(true);
+  const [, setIsOnline] = useState(true);
   const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {

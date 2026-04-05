@@ -47,6 +47,7 @@ type Member = {
   auth_user_id: string | null;
   created_at: string;
   transactions: Transaction[];
+  top_rewards?: { name: string; count: number }[];
 };
 
 const tierColors = {
@@ -262,6 +263,20 @@ export default function MemberDetailPage() {
     );
   }
 
+
+  const getDaysSinceLastVisit = () => {
+    if (!member.last_visit_at) return null;
+    const diff = new Date().getTime() - new Date(member.last_visit_at).getTime();
+    return Math.floor(diff / (1000 * 3600 * 24));
+  };
+  const daysSince = getDaysSinceLastVisit();
+  let daysColorClass = 'text-gray-600';
+  if (daysSince !== null) {
+    if (daysSince <= 30) daysColorClass = 'text-green-600';
+    else if (daysSince <= 90) daysColorClass = 'text-yellow-600';
+    else daysColorClass = 'text-red-600';
+  }
+
   const tierStyle = tierColors[member.tier as keyof typeof tierColors] ?? tierColors.bronze;
   const nextTier = nextTierMap[member.tier];
   const progressToNext = nextTier
@@ -313,6 +328,12 @@ export default function MemberDetailPage() {
                 <Calendar className="h-5 w-5" />
                 <span>{t('memberSince', { date: new Date(member.created_at).toLocaleDateString() })}</span>
               </div>
+              {daysSince !== null && (
+                <div className={`flex items-center gap-3 font-medium ${daysColorClass}`}>
+                  <Calendar className="h-5 w-5" />
+                  <span>Última visita: Hace {daysSince} día{daysSince !== 1 ? 's' : ''}</span>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 pt-6 border-t flex items-center justify-between">

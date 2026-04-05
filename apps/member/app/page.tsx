@@ -8,7 +8,7 @@ import { TransactionHistory } from '@/components/member/TransactionHistory';
 import { BottomNav } from '@/components/member/BottomNav';
 import { BrandTheme } from '@/components/member/BrandTheme';
 import { OneSignalInit } from '@/components/member/OneSignalInit';
-import { getTierProgress, TIER_NEXT } from '@/lib/member/types';
+import { getTierProgress } from '@/lib/member/types';
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
@@ -104,7 +104,7 @@ export default async function HomePage() {
     getTopDynamicChallenge(member.tenant_id, member.id),
   ]);
 
-  const { pointsToNext, nextTier } = getTierProgress(member.points_lifetime, member.tier);
+  const { nextTier } = getTierProgress(member.points_lifetime, member.tier);
 
   const nextTierLabel = nextTier ? TIER_LABELS[nextTier] : null;
   const nextInfo = nextTier

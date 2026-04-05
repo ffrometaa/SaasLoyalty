@@ -119,7 +119,7 @@ export default async function LeaderboardPage() {
                 const medal = RANK_MEDALS[entry.rank];
                 const tierColor = TIER_COLORS[entry.tier] ?? '#94a3b8';
                 const deltaUp = entry.delta > 0;
-                const deltaDown = entry.delta < 0;
+                
 
                 return (
                   <div

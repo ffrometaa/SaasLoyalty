@@ -22,7 +22,7 @@ export function MemberAppTab() {
   const [copied, setCopied] = useState<'link' | 'code' | 'reglink' | null>(null);
 
   const joinUrl = slug ? `${MEMBER_APP_URL}/join/${slug}` : '';
-  const registerUrl = joinCode ? `${MEMBER_APP_URL}/register?code=${joinCode}` : '';
+  const registerUrl = joinCode ? `${MEMBER_APP_URL}/join?code=${joinCode}` : '';
 
   // Fetch tenant join info
   useEffect(() => {

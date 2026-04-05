@@ -10,7 +10,7 @@ export function buildMemberActivationEmail({
   memberAppUrl = 'https://member.loyalbase.dev',
 }) {
   const color = tenantPrimaryColor || '#7c3aed';
-  const registerPageUrl = `${memberAppUrl}/register`;
+  const joinPageUrl = `${memberAppUrl}/join`;
 
   const enSubject = `Activate your account — ${businessName} loyalty program`;
   const esSubject = `Activa tu cuenta — programa de fidelidad de ${businessName}`;
@@ -26,7 +26,7 @@ export function buildMemberActivationEmail({
       </div>
     </div>
     <p style="margin:8px 0 0; font-size:13px; color:#64748b; text-align:center;">
-      Go to <a href="${registerPageUrl}" style="color:${color};">${registerPageUrl}</a> and enter this code to join <strong>${businessName}</strong>
+      Go to <a href="${joinPageUrl}" style="color:${color};">${joinPageUrl}</a> and enter this code to join <strong>${businessName}</strong>
     </p>
     <p style="margin:16px 0 0; font-size:12px; color:#94a3b8; text-align:center;">This link expires in 7 days.</p>
     `
@@ -42,7 +42,7 @@ export function buildMemberActivationEmail({
       </div>
     </div>
     <p style="margin:8px 0 0; font-size:13px; color:#64748b; text-align:center;">
-      Ve a <a href="${registerPageUrl}" style="color:${color};">${registerPageUrl}</a> e ingresa este código para unirte a <strong>${businessName}</strong>
+      Ve a <a href="${joinPageUrl}" style="color:${color};">${joinPageUrl}</a> e ingresa este código para unirte a <strong>${businessName}</strong>
     </p>
     <p style="margin:16px 0 0; font-size:12px; color:#94a3b8; text-align:center;">Este link expira en 7 días.</p>
     `

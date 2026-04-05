@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient, createServerSupabaseClient } from '@loyalty-os/lib/server';
 
@@ -17,8 +19,8 @@ export async function POST(request: NextRequest) {
 
   let userId: string;
   let userEmail: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let meta: Record<string, any>;
+  // 
+  let meta: Record<string, unknown>;
 
   if (accessToken) {
     const { data: { user } } = await serviceClient.auth.getUser(accessToken);
@@ -28,12 +30,12 @@ export async function POST(request: NextRequest) {
     meta = user.user_metadata ?? {};
   } else {
     const supabase = await createServerSupabaseClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // 
     const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) return NextResponse.json({ error: 'No session' }, { status: 401 });
     userId = user.id;
     userEmail = user.email ?? '';
-    meta = (user as any).user_metadata ?? {};
+    meta = user.user_metadata ?? {};
   }
 
   const body = await request.json().catch(() => ({}));

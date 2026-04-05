@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 
-// GET /api/members/[id] - Get member details
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -10,8 +9,37 @@ export async function GET(
     const { id } = await params;
     const supabase = await createServerSupabaseClient();
 
-    // Fetch member with transactions
-    const { data: member, error } = await supabase
+    const { data: { session } } = await (supabase.auth as any).getSession();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { data: ownerTenant } = await supabase
+      .from('tenants')
+      .select('id')
+      .eq('auth_user_id', session.user.id)
+      .is('deleted_at', null)
+      .single();
+
+    let tenantId: string | null = ownerTenant?.id ?? null;
+
+    if (!tenantId) {
+      const { data: staffRecord } = await supabase
+        .from('tenant_users')
+        .select('tenant_id')
+        .eq('auth_user_id', session.user.id)
+        .single();
+      tenantId = staffRecord?.tenant_id ?? null;
+    }
+
+    if (!tenantId) {
+      return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
+    }
+
+    const serviceClient = createServiceRoleClient();
+
+    // Fetch member with transactions and redemptions
+    const { data: member, error } = await serviceClient
       .from('members')
       .select(`
         *,
@@ -22,17 +50,48 @@ export async function GET(
           points_balance,
           description,
           created_at
+        ),
+        redemptions (
+          id,
+          reward_id,
+          rewards:reward_id (
+            id,
+            name
+          )
         )
       `)
       .eq('id', id)
+      .eq('tenant_id', tenantId)
       .single();
 
     if (error || !member) {
+      console.error('Error fetching member:', error);
       return NextResponse.json(
         { error: 'Member not found' },
         { status: 404 }
       );
     }
+
+    // Calculate top 3 products acquired (from redemptions)
+    const redemptions = member.redemptions || [];
+    const rewardCounts: Record<string, { name: string; count: number }> = {};
+    for (const r of redemptions as any[]) {
+      if (r.rewards && r.rewards.name) {
+        if (!rewardCounts[r.reward_id]) {
+          rewardCounts[r.reward_id] = { name: r.rewards.name, count: 0 };
+        }
+        rewardCounts[r.reward_id].count++;
+      }
+    }
+
+    const topRewards = Object.values(rewardCounts)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3)
+      .map(r => ({ name: r.name, count: r.count }));
+
+    // Omit raw redemptions to save bandwidth
+    delete member.redemptions;
+    (member as any).top_rewards = topRewards;
 
     return NextResponse.json({ member });
   } catch (error) {
@@ -52,6 +111,12 @@ export async function PATCH(
   try {
     const { id } = await params;
     const supabase = await createServerSupabaseClient();
+    
+    const { data: { session } } = await (supabase.auth as any).getSession();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
 
     // Allowed fields to update
