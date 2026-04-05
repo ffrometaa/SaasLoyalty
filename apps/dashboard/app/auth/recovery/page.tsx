@@ -16,7 +16,7 @@ export default function AuthRecoveryPage() {
       const refreshToken = params.get('refresh_token');
       const type = params.get('type');
 
-      if (type !== 'recovery' || !accessToken || !refreshToken) {
+      if (!accessToken || !refreshToken) {
         setError('Link inválido o expirado.');
         return;
       }
@@ -32,7 +32,12 @@ export default function AuthRecoveryPage() {
         return;
       }
 
-      router.replace('/auth/reset');
+      // Password recovery → reset form; any other type (magiclink, signup, etc.) → dashboard
+      if (type === 'recovery') {
+        router.replace('/auth/reset');
+      } else {
+        router.replace('/');
+      }
     }
 
     handle();

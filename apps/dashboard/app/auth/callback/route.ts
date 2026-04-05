@@ -7,7 +7,9 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get('next') ?? '/';
 
   if (!code) {
-    return NextResponse.redirect(`${origin}/login?error=missing_code`);
+    // No PKCE code — token may be in the hash fragment (magic link / implicit flow).
+    // The browser will carry the hash when following this redirect.
+    return NextResponse.redirect(`${origin}/auth/recovery`);
   }
 
   const response = NextResponse.redirect(`${origin}${next}`);
