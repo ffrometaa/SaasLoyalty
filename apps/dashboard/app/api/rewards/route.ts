@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 
 // GET /api/rewards - List rewards
 export async function GET(request: NextRequest) {
@@ -125,7 +125,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Create reward
-    const { data: reward, error } = await supabase
+    const serviceClient = createServiceRoleClient();
+    const { data: reward, error } = await serviceClient
       .from('rewards')
       .insert({
         tenant_id: tenantId,

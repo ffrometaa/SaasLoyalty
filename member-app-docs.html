@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Member App — Mapa Completo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple: #7c3aed;
+      --purple-light: #ede9fe;
+      --purple-dark: #5b21b6;
+      --green: #059669;
+      --green-light: #d1fae5;
+      --blue: #2563eb;
+      --blue-light: #dbeafe;
+      --amber: #d97706;
+      --amber-light: #fef3c7;
+      --red: #dc2626;
+      --red-light: #fee2e2;
+      --slate: #64748b;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 50%, #7c3aed 100%);
+      padding: 48px 32px 40px;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='28'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+      pointer-events: none;
+    }
+    .header-inner { max-width: 1100px; margin: 0 auto; position: relative; }
+    .header-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 20px; padding: 4px 12px; font-size: 12px;
+      font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .header h1 { font-size: 36px; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+    .header h1 span { color: #c4b5fd; }
+    .header p { color: rgba(255,255,255,0.75); font-size: 16px; max-width: 600px; margin-bottom: 32px; }
+    .header-stats {
+      display: flex; gap: 32px; flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-num { font-size: 28px; font-weight: 800; color: #c4b5fd; }
+    .stat-label { font-size: 12px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ── LAYOUT ── */
+    .main { max-width: 1100px; margin: 0 auto; padding: 40px 32px; }
+    .section { margin-bottom: 48px; }
+    .section-title {
+      font-size: 20px; font-weight: 700; color: var(--text);
+      margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+    }
+    .section-title .icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+    }
+    .card-header {
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      font-weight: 600; font-size: 13px; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--muted);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* ── GRID ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    @media (max-width: 768px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .header h1 { font-size: 26px; }
+    }
+
+    /* ── ROUTES TABLE ── */
+    .routes-grid { display: flex; flex-direction: column; gap: 0; }
+    .route-item {
+      display: grid;
+      grid-template-columns: 200px 60px 1fr;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      align-items: start;
+      gap: 16px;
+      transition: background 0.15s;
+    }
+    .route-item:last-child { border-bottom: none; }
+    .route-item:hover { background: #f8fafc; }
+    .route-path {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px; font-weight: 600;
+      color: var(--purple);
+      word-break: break-all;
+    }
+    .route-desc { color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-green { background: var(--green-light); color: var(--green); }
+    .badge-red { background: var(--red-light); color: var(--red); }
+    .badge-purple { background: var(--purple-light); color: var(--purple-dark); }
+    .badge-blue { background: var(--blue-light); color: var(--blue); }
+    .badge-amber { background: var(--amber-light); color: var(--amber); }
+
+    /* ── PERSONALIZATION ── */
+    .field-item {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+    }
+    .field-item:last-child { border-bottom: none; }
+    .field-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--purple-light); color: var(--purple);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .field-name { font-weight: 600; font-size: 13px; font-family: monospace; color: var(--purple-dark); margin-bottom: 2px; }
+    .field-desc { font-size: 13px; color: var(--muted); }
+
+    /* ── FEATURE CARDS ── */
+    .feature-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+    }
+    .feature-card-title {
+      font-size: 15px; font-weight: 700; margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .feature-card ul { padding-left: 18px; }
+    .feature-card li { color: var(--muted); font-size: 13px; margin-bottom: 6px; line-height: 1.5; }
+    .feature-card li strong { color: var(--text); }
+
+    /* ── TIERS ── */
+    .tiers-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    @media (max-width: 768px) { .tiers-row { grid-template-columns: 1fr 1fr; } }
+    .tier-card {
+      border-radius: 12px; padding: 16px; text-align: center;
+      border: 1px solid;
+    }
+    .tier-bronze { background: #fef3c7; border-color: #d97706; }
+    .tier-silver { background: #f1f5f9; border-color: #94a3b8; }
+    .tier-gold   { background: #fefce8; border-color: #ca8a04; }
+    .tier-platinum { background: var(--purple-light); border-color: var(--purple); }
+    .tier-emoji { font-size: 28px; margin-bottom: 6px; }
+    .tier-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+    .tier-range { font-size: 12px; color: var(--muted); }
+
+    /* ── FLOW ── */
+    .flow {
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .flow-step {
+      display: flex; gap: 16px; align-items: flex-start;
+      padding: 14px 20px; position: relative;
+    }
+    .flow-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 31px; top: 48px;
+      width: 2px; height: calc(100% - 20px);
+      background: var(--border);
+    }
+    .flow-num {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--purple); color: white;
+      font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 2px; position: relative; z-index: 1;
+    }
+    .flow-content strong { font-size: 13px; display: block; margin-bottom: 2px; }
+    .flow-content span { font-size: 12px; color: var(--muted); }
+
+    /* ── API TABLE ── */
+    .api-item {
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 60px 220px 1fr; gap: 12px; align-items: start;
+    }
+    .api-item:last-child { border-bottom: none; }
+    .method { font-family: monospace; font-weight: 700; font-size: 12px; }
+    .method-get { color: var(--green); }
+    .method-post { color: var(--blue); }
+    .api-path { font-family: monospace; font-size: 12px; color: var(--purple); word-break: break-all; }
+    .api-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    /* ── COMPONENTS TABLE ── */
+    .comp-item {
+      display: grid; grid-template-columns: 180px 1fr;
+      padding: 12px 20px; border-bottom: 1px solid var(--border);
+      gap: 12px; align-items: start;
+    }
+    .comp-item:last-child { border-bottom: none; }
+    .comp-name { font-family: monospace; font-size: 12px; font-weight: 600; color: var(--purple-dark); }
+    .comp-desc { font-size: 13px; color: var(--muted); }
+
+    /* ── PWA ── */
+    .pwa-cache-item {
+      display: grid; grid-template-columns: 1fr 120px;
+      padding: 12px 20px; border-bottom: 1px solid var(--border);
+      gap: 12px; align-items: center;
+    }
+    .pwa-cache-item:last-child { border-bottom: none; }
+    .cache-target { font-size: 13px; color: var(--text); }
+    .cache-target code { font-family: monospace; background: #f1f5f9; padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+    .cache-strategy { font-size: 11px; font-weight: 600; text-align: right; }
+
+    /* ── CSS VARS ── */
+    .var-item {
+      display: flex; gap: 12px; align-items: center;
+      padding: 12px 20px; border-bottom: 1px solid var(--border);
+    }
+    .var-item:last-child { border-bottom: none; }
+    .var-swatch { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); flex-shrink: 0; }
+    .var-name { font-family: monospace; font-size: 12px; font-weight: 600; color: var(--purple-dark); }
+    .var-desc { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+    /* ── DB TABLES ── */
+    .db-item {
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 200px 1fr; gap: 12px;
+    }
+    .db-item:last-child { border-bottom: none; }
+    .db-table { font-family: monospace; font-size: 12px; font-weight: 600; color: var(--purple-dark); }
+    .db-fields { font-size: 12px; color: var(--muted); }
+    .db-fields code { background: #f1f5f9; padding: 1px 5px; border-radius: 4px; font-size: 11px; margin: 2px; display: inline-block; }
+
+    /* ── CHALLENGES ── */
+    .challenge-type {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 20px; border-bottom: 1px solid var(--border);
+    }
+    .challenge-type:last-child { border-bottom: none; }
+    .ch-icon { font-size: 24px; width: 36px; text-align: center; }
+    .ch-type { font-weight: 600; font-size: 13px; }
+    .ch-desc { font-size: 12px; color: var(--muted); }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center; padding: 32px;
+      color: var(--muted); font-size: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── DIVIDER ── */
+    .divider { height: 1px; background: var(--border); margin: 8px 0; }
+
+    /* ── CALLOUT ── */
+    .callout {
+      border-radius: 10px; padding: 14px 16px;
+      font-size: 13px; display: flex; gap: 10px; align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .callout-purple { background: var(--purple-light); border-left: 3px solid var(--purple); }
+    .callout-amber { background: var(--amber-light); border-left: 3px solid var(--amber); }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="header-badge">✦ LoyaltyOS</div>
+    <h1>Web App de <span>Miembros</span><br>Mapa Completo</h1>
+    <p>Arquitectura, features, personalización de tenants y lógica de negocio de la app que ven los clientes finales.</p>
+    <div class="header-stats">
+      <div class="stat"><div class="stat-num">12</div><div class="stat-label">Páginas</div></div>
+      <div class="stat"><div class="stat-num">3</div><div class="stat-label">API Endpoints</div></div>
+      <div class="stat"><div class="stat-num">4</div><div class="stat-label">Tiers</div></div>
+      <div class="stat"><div class="stat-num">3</div><div class="stat-label">Tipos de Desafíos</div></div>
+      <div class="stat"><div class="stat-num">PWA</div><div class="stat-label">Instalable</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SECCIÓN 1: RUTAS -->
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#ede9fe">🗺️</div>
+      Páginas y Rutas
+    </div>
+    <div class="card">
+      <div class="card-header">Ruta &nbsp;·&nbsp; Auth &nbsp;·&nbsp; Descripción</div>
+      <div class="routes-grid">
+
+        <div style="background:#fafafa; padding:10px 20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--green); border-bottom:1px solid var(--border);">Páginas Públicas — Sin autenticación</div>
+
+        <div class="route-item">
+          <div class="route-path">/join/[slug]</div>
+          <span class="badge badge-green">Público</span>
+          <div class="route-desc">Landing de onboarding del tenant. Muestra logo, colores de marca, beneficios del programa. Setea cookie <code style="background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:11px">loyalty_tenant</code> por 30 días para que el login tenga contexto del tenant.</div>
+        </div>
+        <div class="route-item">
+          <div class="route-path">/login</div>
+          <span class="badge badge-green">Público</span>
+          <div class="route-desc">Formulario de email. Usa Supabase OTP (magic link). Muestra "back to store" si hay cookie de tenant.</div>
+        </div>
+        <div class="route-item">
+          <div class="route-path">/auth/callback</div>
+          <span class="badge badge-green">Público</span>
+          <div class="route-desc">Confirma el código OTP, crea sesión. Si es el primer ingreso del usuario, <strong>auto-crea el registro de miembro</strong> (tier bronze, puntos 0, código único). Redirige al destino original.</div>
+        </div>
+        <div class="route-item">
+          <div class="route-path">/offline</div>
+          <span class="badge badge-green">Público</span>
+          <div class="route-desc">Fallback PWA cuando no hay conexión. Muestra mensaje y botón para volver al home.</div>
+        </div>
+
+        <div style="background:#fafafa; padding:10px 20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--red); border-bottom:1px solid var(--border); border-top:1px solid var(--border);">Páginas Protegidas — Requieren sesión</div>
+
+        <div class="route-item">
+          <div class="route-path">/</div>
+          <span class="badge badge-red">Auth</span>
+          <div class="route-desc"><strong>Home Dashboard:</strong> puntos actuales (con animación count-up), progreso de tier, banner de multiplicador activo, desafío personalizado, scroll horizontal de recompensas, últimas 5 transacciones.</div>
+        </div>
+        <div class="route-item">
+          <div class="route-path">/rewards</div>
+          <span class="badge badge-red">Auth</span>
+          <div class="route-desc">Lista de recompensas del tenant. Dos grupos: <strong>Disponibles</strong> (puede canjear ya) y <strong>Bloqueadas</strong> (le faltan X puntos). Con categoría, costo en puntos y ícono.</div>
+        </div>
+        <div class="route-item">
+          <div class="route-path">/rewards/[id]</div>
+          <span class="badge badge-red">Auth</span>
+          <div class="route-desc">Detalle de recompensa. Muestra descripción completa, costo, validez, y botón "Canjear" que ejecuta el flujo completo de redemption.</div>
+        </div>
+        <div class="route-item">
+          <div class="route-path">/challenges</div>
+          <span class="badge badge-red">Auth</span>
+          <div class="route-desc">3 secciones: <strong>"Solo para vos"</strong> (dinámicos personalizados), <strong>Misiones</strong> (multi-paso), <strong>Desafíos activos y completados</strong>. Muestra progreso en barras.</div>
+        </div>
+        <div class="route-item">
+          <div class="route-path">/leaderboard</div>
+          <span class="badge badge-red">Auth</span>
+          <div class="route-desc">Ranking mensual del tenant. Medallas para top 3 (🥇🥈🥉), posición del miembro actual resaltada, delta de posición vs mes anterior (▲/▼).</div>
+        </div>
+        <div class="route-item">
+          <div class="route-path">/history</div>
+          <span class="badge badge-red">Auth</span>
+          <div class="route-desc">Historial completo de transacciones. Tipos: earn, redeem, expire, bonus, referral, birthday, adjustment, refund. Hasta 50 registros.</div>
+        </div>
+        <div class="route-item">
+          <div class="route-path">/profile</div>
+          <span class="badge badge-red">Auth</span>
+          <div class="route-desc">Nombre, email, código de miembro, toggles de notificaciones (email, push), selector de idioma, botón de Sign Out.</div>
+        </div>
+        <div class="route-item">
+          <div class="route-path">/redemptions</div>
+          <span class="badge badge-red">Auth</span>
+          <div class="route-desc">Mis canjes: activos (pendientes, con QR) y usados/expirados. Modal con QR code al tocar un canje activo.</div>
+        </div>
+        <div class="route-item">
+          <div class="route-path">/redeem/success</div>
+          <span class="badge badge-red">Auth</span>
+          <div class="route-desc">Pantalla de confirmación post-canje. Muestra QR grande + código alfanumérico de 6 dígitos para mostrarle al staff del negocio.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 2: PERSONALIZACIÓN DEL TENANT -->
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#fef3c7">🎨</div>
+      Personalización por Tenant
+    </div>
+    <div class="callout callout-purple">
+      <span>💡</span>
+      <span>El tenant NO configura nada dentro de la app de miembros. Todo se setea desde el <strong>Dashboard</strong> y la app lo refleja en tiempo real leyendo la base de datos.</span>
+    </div>
+    <div class="card">
+      <div class="field-item">
+        <div class="field-icon">🏷️</div>
+        <div>
+          <div class="field-name">app_name</div>
+          <div class="field-desc">Nombre de la app que ve el miembro. Aparece en el hero, en el título del PWA, en los emails de invitación y como título de la página. Si está vacío, usa <code style="font-family:monospace;background:#f1f5f9;padding:1px 5px;border-radius:4px">business_name</code> como fallback.</div>
+        </div>
+      </div>
+      <div class="field-item">
+        <div class="field-icon">🖼️</div>
+        <div>
+          <div class="field-name">logo_url</div>
+          <div class="field-desc">Logo del negocio. Se muestra en el hero de la página de Join, en el home del miembro y en la cabecera. Si es null, se muestra un ícono ✦ como placeholder.</div>
+        </div>
+      </div>
+      <div class="field-item">
+        <div class="field-icon" style="background:#dbeafe;color:#2563eb">🎨</div>
+        <div>
+          <div class="field-name">brand_color_primary</div>
+          <div class="field-desc">Color principal de la marca. Controla botones, bordes activos, barras de progreso, fondos del hero, QR accent. Se inyecta como <code style="font-family:monospace;background:#f1f5f9;padding:1px 5px;border-radius:4px">--brand-primary</code>. También se calcula una versión más oscura (<code style="font-family:monospace;background:#f1f5f9;padding:1px 5px;border-radius:4px">--brand-primary-dark</code>) y más clara (<code style="font-family:monospace;background:#f1f5f9;padding:1px 5px;border-radius:4px">--brand-primary-light</code>).</div>
+        </div>
+      </div>
+      <div class="field-item">
+        <div class="field-icon" style="background:#d1fae5;color:#059669">🎨</div>
+        <div>
+          <div class="field-name">brand_color_secondary</div>
+          <div class="field-desc">Color de acento. Usado principalmente en la barra de progreso de tier y elementos secundarios del UI. Inyectado como <code style="font-family:monospace;background:#f1f5f9;padding:1px 5px;border-radius:4px">--brand-secondary</code>.</div>
+        </div>
+      </div>
+      <div class="field-item">
+        <div class="field-icon" style="background:#fee2e2;color:#dc2626">⏳</div>
+        <div>
+          <div class="field-name">points_expiry_days</div>
+          <div class="field-desc">Días hasta que expiran los puntos inactivos. Se muestra en la tarjeta de puntos del home: "Tus puntos vencen el [fecha calculada]". Si es null, no muestra fecha de vencimiento.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CSS Vars -->
+    <div style="margin-top:16px;">
+      <div class="card">
+        <div class="card-header">CSS Variables generadas automáticamente</div>
+        <div class="var-item">
+          <div class="var-swatch" style="background:#7c3aed"></div>
+          <div><div class="var-name">--brand-primary</div></div>
+          <div class="var-desc">Color original del tenant</div>
+        </div>
+        <div class="var-item">
+          <div class="var-swatch" style="background:#5b21b6"></div>
+          <div><div class="var-name">--brand-primary-dark</div></div>
+          <div class="var-desc">Oscurecido 25% — hero, hover states</div>
+        </div>
+        <div class="var-item">
+          <div class="var-swatch" style="background:#ede9fe"></div>
+          <div><div class="var-name">--brand-primary-light</div></div>
+          <div class="var-desc">color-mix 15% primary + white — fondos suaves</div>
+        </div>
+        <div class="var-item">
+          <div class="var-swatch" style="background:#c4a882"></div>
+          <div><div class="var-name">--brand-secondary</div></div>
+          <div class="var-desc">Color secundario del tenant</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 3: SISTEMA DE PUNTOS Y TIERS -->
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#fef3c7">⭐</div>
+      Sistema de Puntos y Tiers
+    </div>
+
+    <div class="grid-2" style="margin-bottom:16px;">
+      <div class="feature-card">
+        <div class="feature-card-title">💰 Tipos de Puntos</div>
+        <ul>
+          <li><strong>points_balance:</strong> puntos gastables. Sube cuando gana, baja cuando canjea.</li>
+          <li><strong>points_lifetime:</strong> acumulado histórico, NUNCA baja. Solo sirve para calcular el tier.</li>
+          <li>Cada movimiento genera un registro en <code style="font-family:monospace;background:#f1f5f9;padding:1px 4px;border-radius:3px">transactions</code> con tipo, delta y saldo resultante.</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-title">⏰ Expiración de Puntos</div>
+        <ul>
+          <li>Controlada por <code style="font-family:monospace;background:#f1f5f9;padding:1px 4px;border-radius:3px">points_expiry_days</code> del tenant.</li>
+          <li>Se muestra en el home: "Vigentes hasta [fecha]".</li>
+          <li>Al expirar, se crea una transacción tipo <code>expire</code> con delta negativo.</li>
+          <li>No afecta <code>points_lifetime</code>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tiers-row" style="margin-bottom:16px;">
+      <div class="tier-card tier-bronze">
+        <div class="tier-emoji">🥉</div>
+        <div class="tier-name" style="color:#92400e">Bronze</div>
+        <div class="tier-range">0 – 999 pts</div>
+      </div>
+      <div class="tier-card tier-silver">
+        <div class="tier-emoji">🥈</div>
+        <div class="tier-name" style="color:#475569">Silver</div>
+        <div class="tier-range">1,000 – 4,999 pts</div>
+      </div>
+      <div class="tier-card tier-gold">
+        <div class="tier-emoji">🥇</div>
+        <div class="tier-name" style="color:#854d0e">Gold</div>
+        <div class="tier-range">5,000 – 9,999 pts</div>
+      </div>
+      <div class="tier-card tier-platinum">
+        <div class="tier-emoji">✦</div>
+        <div class="tier-name" style="color:#4c1d95">Platinum</div>
+        <div class="tier-range">10,000+ pts · Techo</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Tipos de transacciones</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;padding:16px 20px;">
+        <span class="badge badge-green">earn</span>
+        <span class="badge badge-red">redeem</span>
+        <span class="badge badge-amber">expire</span>
+        <span class="badge badge-purple">bonus</span>
+        <span class="badge badge-blue">referral</span>
+        <span class="badge" style="background:#fce7f3;color:#9d174d">birthday</span>
+        <span class="badge badge-blue">adjustment</span>
+        <span class="badge badge-green">refund</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 4: FLUJO DE CANJE -->
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#d1fae5">🎁</div>
+      Flujo de Canje de Recompensas
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">🔍 Validaciones antes del canje</div>
+        <div class="flow">
+          <div class="flow-step">
+            <div class="flow-num">1</div>
+            <div class="flow-content"><strong>Miembro no bloqueado</strong><span>Estado del miembro debe ser 'active'</span></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">2</div>
+            <div class="flow-content"><strong>Recompensa activa y en fecha</strong><span>is_active = true, dentro de valid_from / valid_until</span></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">3</div>
+            <div class="flow-content"><strong>No alcanzó el máximo</strong><span>Redemptions totales < max_redemptions de la reward</span></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">4</div>
+            <div class="flow-content"><strong>Saldo suficiente</strong><span>points_balance >= points_cost</span></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">5</div>
+            <div class="flow-content"><strong>Sin canje pendiente duplicado</strong><span>No existe redemption pendiente para la misma reward</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">✅ Acciones al aprobar el canje</div>
+        <div class="flow">
+          <div class="flow-step">
+            <div class="flow-num">1</div>
+            <div class="flow-content"><strong>Crear registro en redemptions</strong><span>QR code (12 chars) + código alfanumérico (6 chars), expira en 30 días</span></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">2</div>
+            <div class="flow-content"><strong>Descontar puntos</strong><span>points_balance -= points_cost de la recompensa</span></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">3</div>
+            <div class="flow-content"><strong>Crear transacción</strong><span>Tipo 'redeem', delta negativo, balance_after actualizado</span></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">4</div>
+            <div class="flow-content"><strong>Redirigir a /redeem/success</strong><span>Con id, code, qr, pts, exp, name en query params</span></div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-num">5</div>
+            <div class="flow-content"><strong>Miembro muestra QR al staff</strong><span>Staff escanea o tipea código alfanumérico para validar</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 5: DESAFÍOS -->
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#dbeafe">🏆</div>
+      Sistema de Desafíos
+    </div>
+    <div class="grid-3" style="margin-bottom:16px;">
+      <div class="feature-card" style="border-top:3px solid var(--purple);">
+        <div class="feature-card-title">⚡ Dinámicos<span class="badge badge-purple" style="margin-left:8px;font-size:10px">Solo para vos</span></div>
+        <ul>
+          <li><strong>Personalizados por miembro</strong>, generados por el sistema automáticamente.</li>
+          <li>Máximo 3 activos a la vez.</li>
+          <li>Tienen fecha de expiración.</li>
+          <li>Se pueden descartar (dismiss).</li>
+          <li>Badge "Personalizado" en UI.</li>
+          <li>Tabla: <code style="font-family:monospace;background:#f1f5f9;padding:1px 4px;border-radius:3px">dynamic_challenges</code></li>
+        </ul>
+      </div>
+      <div class="feature-card" style="border-top:3px solid var(--blue);">
+        <div class="feature-card-title">🗺️ Misiones<span class="badge badge-blue" style="margin-left:8px;font-size:10px">Multi-paso</span></div>
+        <ul>
+          <li>Secuencia ordenada de pasos.</li>
+          <li>Cada paso es un sub-desafío.</li>
+          <li>Bonus al completar TODOS los pasos.</li>
+          <li>Progreso: steps_completed / total_steps.</li>
+          <li>Tablas: <code style="font-family:monospace;background:#f1f5f9;padding:1px 4px;border-radius:3px">missions</code> + <code style="font-family:monospace;background:#f1f5f9;padding:1px 4px;border-radius:3px">mission_steps</code></li>
+        </ul>
+      </div>
+      <div class="feature-card" style="border-top:3px solid var(--green);">
+        <div class="feature-card-title">🎯 Estándar<span class="badge badge-green" style="margin-left:8px;font-size:10px">Admin-definidos</span></div>
+        <ul>
+          <li>Creados por el tenant en el dashboard.</li>
+          <li>5 tipos disponibles (ver abajo).</li>
+          <li>Progreso individual por miembro.</li>
+          <li>Bonus en puntos al completarlos.</li>
+          <li>Tablas: <code style="font-family:monospace;background:#f1f5f9;padding:1px 4px;border-radius:3px">challenges</code> + <code style="font-family:monospace;background:#f1f5f9;padding:1px 4px;border-radius:3px">member_challenge_progress</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Tipos de desafíos estándar</div>
+      <div class="challenge-type">
+        <div class="ch-icon">🎯</div>
+        <div>
+          <div class="ch-type">visit_count</div>
+          <div class="ch-desc">Visita el local X cantidad de veces. Ej: "Visitanos 5 veces y ganás 200 puntos extra"</div>
+        </div>
+      </div>
+      <div class="challenge-type">
+        <div class="ch-icon">⭐</div>
+        <div>
+          <div class="ch-type">points_earned</div>
+          <div class="ch-desc">Acumulá X puntos en total. Ej: "Sumá 500 puntos en el mes para desbloquear bonus"</div>
+        </div>
+      </div>
+      <div class="challenge-type">
+        <div class="ch-icon">⚡</div>
+        <div>
+          <div class="ch-type">referral</div>
+          <div class="ch-desc">Referí X amigos al programa. Ej: "Traé 3 amigos y ganás 300 puntos por cada uno"</div>
+        </div>
+      </div>
+      <div class="challenge-type">
+        <div class="ch-icon">🏆</div>
+        <div>
+          <div class="ch-type">spend_amount</div>
+          <div class="ch-desc">Gastá $X en el local. Ej: "Gastá $5,000 en el trimestre para acceder al bonus de oro"</div>
+        </div>
+      </div>
+      <div class="challenge-type">
+        <div class="ch-icon">🔥</div>
+        <div>
+          <div class="ch-type">streak</div>
+          <div class="ch-desc">Visitá X días seguidos. Ej: "Visitanos 7 días consecutivos y conseguís el bonus de racha"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 6: AUTH FLOW -->
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#fee2e2">🔐</div>
+      Flujo de Autenticación
+    </div>
+    <div class="callout callout-amber">
+      <span>⚠️</span>
+      <span>Los miembros se crean <strong>automáticamente</strong> en el primer login. No hay registro manual — si el email es nuevo, el sistema crea el miembro con tier bronze y 0 puntos.</span>
+    </div>
+    <div class="card">
+      <div class="flow" style="padding:8px 0;">
+        <div class="flow-step">
+          <div class="flow-num">1</div>
+          <div class="flow-content"><strong>Usuario visita /join/[slug]</strong><span>Se guarda el slug del tenant en cookie loyalty_tenant (30 días)</span></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">2</div>
+          <div class="flow-content"><strong>Redirige a /login (o directo al login)</strong><span>El login lee la cookie para mostrar "← Volver a {business_name}"</span></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">3</div>
+          <div class="flow-content"><strong>Usuario ingresa email → "Continuar"</strong><span>supabase.auth.signInWithOtp({ email, shouldCreateUser: true })</span></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">4</div>
+          <div class="flow-content"><strong>Supabase envía magic link al email</strong><span>Link apunta a /auth/callback?code=XXX&redirect=DESTINO</span></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">5</div>
+          <div class="flow-content"><strong>/auth/callback — exchangeCodeForSession()</strong><span>Crea sesión, setea cookies de Supabase SSR</span></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">6</div>
+          <div class="flow-content"><strong>¿Primer login?</strong><span>Si no existe miembro para este auth_user_id → lo crea automáticamente con tier bronze, puntos 0, member_code único</span></div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--green)">✓</div>
+          <div class="flow-content"><strong>Redirige al destino original o a /</strong><span>Sesión activa, miembro listo para usar la app</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 7: APIs -->
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#dbeafe">⚙️</div>
+      API Endpoints
+    </div>
+    <div class="card">
+      <div class="api-item">
+        <div class="method method-get">GET</div>
+        <div class="api-path">/api/rewards</div>
+        <div class="api-desc">Recompensas activas del tenant del miembro. Filtra por: <code style="font-family:monospace;background:#f1f5f9;padding:1px 4px;border-radius:3px">is_active</code>, <code style="font-family:monospace;background:#f1f5f9;padding:1px 4px;border-radius:3px">deleted_at is null</code>, rango de fechas válidas, max_redemptions no alcanzado. Devuelve rewards disponibles y bloqueadas según el balance del miembro.</div>
+      </div>
+      <div class="api-item">
+        <div class="method method-post">POST</div>
+        <div class="api-path">/api/rewards/[id]/redeem</div>
+        <div class="api-desc">Ejecuta un canje. Body: <code style="font-family:monospace;background:#f1f5f9;padding:1px 4px;border-radius:3px">{ memberId }</code>. Corre todas las validaciones, crea el redemption, descuenta puntos y crea transacción. Devuelve id, qr_code, alphanumeric_code, expires_at, points_spent, remaining_points.</div>
+      </div>
+      <div class="api-item">
+        <div class="method method-get">GET</div>
+        <div class="api-path">/api/redemptions</div>
+        <div class="api-desc">Canjes del miembro. Query param <code style="font-family:monospace;background:#f1f5f9;padding:1px 4px;border-radius:3px">?status=pending|used</code>. Devuelve redemptions con info de la reward (nombre, puntos gastados). Usado por /redemptions page.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 8: PWA -->
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#d1fae5">📱</div>
+      PWA — Instalable como App
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">Estrategias de Caché (Service Worker)</div>
+        <div class="pwa-cache-item">
+          <div class="cache-target">Google Fonts — <code>fonts.googleapis.com</code></div>
+          <div class="cache-strategy" style="color:var(--green)">CacheFirst · 1 año</div>
+        </div>
+        <div class="pwa-cache-item">
+          <div class="cache-target">Imágenes — <code>jpg, png, svg, webp…</code></div>
+          <div class="cache-strategy" style="color:var(--blue)">StaleWhileRevalidate · 30 días</div>
+        </div>
+        <div class="pwa-cache-item">
+          <div class="cache-target">Next.js Static — <code>/_next/static/*</code></div>
+          <div class="cache-strategy" style="color:var(--green)">CacheFirst · 30 días</div>
+        </div>
+        <div class="pwa-cache-item">
+          <div class="cache-target">APIs — <code>/api/*</code></div>
+          <div class="cache-strategy" style="color:var(--amber)">NetworkFirst · 5 min</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Manifest &amp; Meta</div>
+        <div style="padding:16px 20px; display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;">
+            <span style="color:var(--muted)">name</span><span>"Mis Puntos — LoyaltyOS"</span>
+          </div>
+          <div class="divider"></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;">
+            <span style="color:var(--muted)">display</span><span>standalone</span>
+          </div>
+          <div class="divider"></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;">
+            <span style="color:var(--muted)">orientation</span><span>portrait</span>
+          </div>
+          <div class="divider"></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;">
+            <span style="color:var(--muted)">viewportFit</span><span>cover (notch-aware)</span>
+          </div>
+          <div class="divider"></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;">
+            <span style="color:var(--muted)">shortcuts</span><span>Mis Recompensas, Historial</span>
+          </div>
+          <div class="divider"></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;">
+            <span style="color:var(--muted)">skipWaiting</span><span>true — actualiza inmediato</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 9: BASE DE DATOS -->
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#e0e7ff">🗄️</div>
+      Tablas de Base de Datos Involucradas
+    </div>
+    <div class="card">
+      <div class="db-item">
+        <div class="db-table">tenants</div>
+        <div class="db-fields">
+          <code>app_name</code> <code>business_name</code> <code>logo_url</code>
+          <code>brand_color_primary</code> <code>brand_color_secondary</code>
+          <code>points_expiry_days</code> <code>slug</code> <code>plan_status</code>
+        </div>
+      </div>
+      <div class="db-item">
+        <div class="db-table">members</div>
+        <div class="db-fields">
+          <code>auth_user_id</code> <code>tenant_id</code> <code>name</code>
+          <code>email</code> <code>member_code</code>
+          <code>points_balance</code> <code>points_lifetime</code>
+          <code>tier</code> <code>status</code> <code>last_visit_at</code>
+        </div>
+      </div>
+      <div class="db-item">
+        <div class="db-table">transactions</div>
+        <div class="db-fields">
+          <code>member_id</code> <code>type</code> <code>delta</code>
+          <code>balance_after</code> <code>description</code> <code>created_at</code>
+        </div>
+      </div>
+      <div class="db-item">
+        <div class="db-table">rewards</div>
+        <div class="db-fields">
+          <code>tenant_id</code> <code>name</code> <code>points_cost</code>
+          <code>category</code> <code>is_active</code> <code>valid_from</code>
+          <code>valid_until</code> <code>max_redemptions</code> <code>min_tier</code>
+        </div>
+      </div>
+      <div class="db-item">
+        <div class="db-table">redemptions</div>
+        <div class="db-fields">
+          <code>member_id</code> <code>reward_id</code> <code>status</code>
+          <code>qr_code</code> <code>alphanumeric_code</code> <code>expires_at</code>
+          <code>used_at</code>
+        </div>
+      </div>
+      <div class="db-item">
+        <div class="db-table">challenges</div>
+        <div class="db-fields">
+          <code>tenant_id</code> <code>type</code> <code>goal_value</code>
+          <code>bonus_points</code> <code>status</code>
+        </div>
+      </div>
+      <div class="db-item">
+        <div class="db-table">member_challenge_progress</div>
+        <div class="db-fields">
+          <code>member_id</code> <code>challenge_id</code>
+          <code>current_value</code> <code>completed_at</code>
+        </div>
+      </div>
+      <div class="db-item">
+        <div class="db-table">missions + mission_steps</div>
+        <div class="db-fields">
+          <code>tenant_id</code> <code>steps_completed</code>
+          <code>total_steps</code> <code>bonus_points</code>
+        </div>
+      </div>
+      <div class="db-item">
+        <div class="db-table">dynamic_challenges</div>
+        <div class="db-fields">
+          <code>member_id</code> <code>type</code> <code>goal_value</code>
+          <code>current_value</code> <code>dismissed</code> <code>completed_at</code>
+          <code>expires_at</code>
+        </div>
+      </div>
+      <div class="db-item">
+        <div class="db-table">point_multipliers</div>
+        <div class="db-fields">
+          <code>tenant_id</code> <code>name</code> <code>multiplier</code>
+          <code>is_active</code> <code>ends_at</code>
+        </div>
+      </div>
+      <div class="db-item">
+        <div class="db-table">leaderboard_snapshots</div>
+        <div class="db-fields">
+          <code>tenant_id</code> <code>period_type</code>
+          <code>entries</code> (JSON: rank, memberId, name, tier, points, delta)
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 10: COMPONENTES CLAVE -->
+  <div class="section">
+    <div class="section-title">
+      <div class="icon" style="background:#fce7f3">🧩</div>
+      Componentes Clave
+    </div>
+    <div class="card">
+      <div class="comp-item">
+        <div class="comp-name">BrandTheme</div>
+        <div class="comp-desc">Client component. Inyecta los colores del tenant como CSS variables en &lt;html&gt;. Se monta en el layout raíz de la app autenticada.</div>
+      </div>
+      <div class="comp-item">
+        <div class="comp-name">MemberHero</div>
+        <div class="comp-desc">Hero del home. Muestra avatar con inicial, nombre del miembro, app_name del tenant, logo, tier badge con progreso.</div>
+      </div>
+      <div class="comp-item">
+        <div class="comp-name">PointsCard</div>
+        <div class="comp-desc">Tarjeta de puntos con animación count-up al cargar, barra de progreso hacia el siguiente tier, fecha de expiración.</div>
+      </div>
+      <div class="comp-item">
+        <div class="comp-name">BottomNav</div>
+        <div class="comp-desc">Navegación de 5 tabs en la parte inferior: Home, Recompensas, Desafíos, Ranking, Perfil.</div>
+      </div>
+      <div class="comp-item">
+        <div class="comp-name">RewardsScroll</div>
+        <div class="comp-desc">Scroll horizontal de recompensas en el home. Disponibles (con precio en puntos) + Bloqueadas (con candado y puntos necesarios).</div>
+      </div>
+      <div class="comp-item">
+        <div class="comp-name">RedemptionQR</div>
+        <div class="comp-desc">QR code grande + código alfanumérico de 6 chars. Se muestra en /redeem/success y en /redemptions al tocar un canje activo.</div>
+      </div>
+      <div class="comp-item">
+        <div class="comp-name">TransactionHistory</div>
+        <div class="comp-desc">Lista de transacciones con ícono por tipo, descripción, fecha y delta de puntos coloreado (verde = ganó, rojo = gastó).</div>
+      </div>
+      <div class="comp-item">
+        <div class="comp-name">InstallPrompt</div>
+        <div class="comp-desc">Banner de instalación PWA. Aparece si la app no está instalada y el browser soporta beforeinstallprompt.</div>
+      </div>
+      <div class="comp-item">
+        <div class="comp-name">OfflineIndicator</div>
+        <div class="comp-desc">Badge flotante que aparece cuando el dispositivo pierde conexión.</div>
+      </div>
+      <div class="comp-item">
+        <div class="comp-name">OneSignalInit</div>
+        <div class="comp-desc">Inicializa push notifications vía OneSignal si el miembro habilitó las notificaciones push.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  LoyaltyOS · Member App — Documentación técnica generada el 4 de abril 2026
+</div>
+
+</body>
+</html>

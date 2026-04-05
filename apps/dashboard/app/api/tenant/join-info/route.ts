@@ -12,7 +12,7 @@ export async function GET() {
 
     const { data: tenant, error } = await supabase
       .from('tenants')
-      .select('slug, business_name, app_name')
+      .select('slug, business_name, brand_app_name')
       .eq('auth_user_id', session.user.id)
       .is('deleted_at', null)
       .single();
@@ -23,7 +23,7 @@ export async function GET() {
 
     return NextResponse.json({
       slug: tenant.slug,
-      appName: tenant.app_name ?? tenant.business_name,
+      appName: tenant.brand_app_name ?? tenant.business_name,
     });
   } catch (error) {
     console.error('Join info error:', error);

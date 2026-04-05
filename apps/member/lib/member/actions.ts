@@ -1,6 +1,6 @@
 'use server';
 
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 import { getMemberRedemptionCount } from './queries';
 import type { RedemptionResult } from './types';
 
@@ -19,6 +19,7 @@ export async function createRedemption(
   memberId: string
 ): Promise<{ success: true; data: RedemptionResult } | { success: false; error: string }> {
   const supabase = await createServerSupabaseClient();
+  const serviceClient = createServiceRoleClient();
 
   // 1. Fetch member + reward + tenant in parallel
   const [memberRes, rewardRes] = await Promise.all([
@@ -94,7 +95,7 @@ export async function createRedemption(
   });
 
   // 7. Insert redemption
-  const { data: redemption, error: redemptionError } = await supabase
+  const { data: redemption, error: redemptionError } = await serviceClient
     .from('redemptions')
     .insert({
       tenant_id: member.tenant_id,
@@ -117,7 +118,7 @@ export async function createRedemption(
 
   // 8. Insert transaction
   const newBalance = member.points_balance - reward.points_cost;
-  const { error: transactionError } = await supabase.from('transactions').insert({
+  const { error: transactionError } = await serviceClient.from('transactions').insert({
     tenant_id: member.tenant_id,
     member_id: memberId,
     reward_id: rewardId,
@@ -134,7 +135,7 @@ export async function createRedemption(
   }
 
   // 9. Update member points balance
-  const { error: updateError } = await supabase
+  const { error: updateError } = await serviceClient
     .from('members')
     .update({ points_balance: newBalance, updated_at: new Date().toISOString() })
     .eq('id', memberId);

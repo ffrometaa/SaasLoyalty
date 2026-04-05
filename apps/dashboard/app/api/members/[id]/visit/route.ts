@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 
 // POST /api/members/[id]/visit - Register a visit (earn points)
 export async function POST(
@@ -9,6 +9,7 @@ export async function POST(
   try {
     const { id: memberId } = await params;
     const supabase = await createServerSupabaseClient();
+    const serviceClient = createServiceRoleClient();
     const body = await request.json();
     const { amount, description } = body;
 
@@ -65,7 +66,7 @@ export async function POST(
 
     // Use a transaction-like approach with multiple operations
     // 1. Create transaction record
-    const { data: transaction, error: transactionError } = await supabase
+    const { data: transaction, error: transactionError } = await serviceClient
       .from('transactions')
       .insert({
         tenant_id: tenant?.id,
@@ -87,7 +88,7 @@ export async function POST(
     }
 
     // 2. Update member stats
-    const { error: updateError } = await supabase
+    const { error: updateError } = await serviceClient
       .from('members')
       .update({
         points_balance: newBalance,
@@ -108,7 +109,7 @@ export async function POST(
 
     // 3. Create visit record for analytics
     const now = new Date();
-    await supabase.from('visits').insert({
+    await serviceClient.from('visits').insert({
       tenant_id: tenant?.id,
       member_id: memberId,
       transaction_id: transaction.id,
@@ -119,7 +120,7 @@ export async function POST(
     });
 
     // 4. Cancel any active reactivation sequences
-    await supabase
+    await serviceClient
       .from('reactivation_sequences')
       .update({
         cancelled_at: new Date().toISOString(),

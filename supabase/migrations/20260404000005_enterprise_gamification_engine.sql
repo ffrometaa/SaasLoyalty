@@ -250,8 +250,8 @@ SELECT cron.schedule(
   '0 */6 * * *',
   $$
   SELECT net.http_post(
-    url := 'https://<PROJECT_REF>.supabase.co/functions/v1/run-scoring-engine',
-    headers := '{"Content-Type": "application/json", "Authorization": "Bearer <ANON_KEY>"}'::jsonb,
+    url := 'https://nazdeuocjmhzjysbtzfm.supabase.co/functions/v1/run-scoring-engine',
+    headers := '{"Content-Type": "application/json", "Authorization": "Bearer sb_publishable_U6S_lwjUTZQfrAn2XfUC-w_UUUDUyWv"}'::jsonb,
     body := '{"trigger": "cron"}'::jsonb
   );
   $$
@@ -263,8 +263,8 @@ SELECT cron.schedule(
   '0 1 * * 1',
   $$
   SELECT net.http_post(
-    url := 'https://<PROJECT_REF>.supabase.co/functions/v1/run-scoring-engine',
-    headers := '{"Content-Type": "application/json", "Authorization": "Bearer <ANON_KEY>"}'::jsonb,
+    url := 'https://nazdeuocjmhzjysbtzfm.supabase.co/functions/v1/run-scoring-engine',
+    headers := '{"Content-Type": "application/json", "Authorization": "Bearer sb_publishable_U6S_lwjUTZQfrAn2XfUC-w_UUUDUyWv"}'::jsonb,
     body := '{"trigger": "cron", "tasks": ["leaderboard_weekly"]}'::jsonb
   );
   $$
@@ -276,8 +276,8 @@ SELECT cron.schedule(
   '30 1 1 * *',
   $$
   SELECT net.http_post(
-    url := 'https://<PROJECT_REF>.supabase.co/functions/v1/run-scoring-engine',
-    headers := '{"Content-Type": "application/json", "Authorization": "Bearer <ANON_KEY>"}'::jsonb,
+    url := 'https://nazdeuocjmhzjysbtzfm.supabase.co/functions/v1/run-scoring-engine',
+    headers := '{"Content-Type": "application/json", "Authorization": "Bearer sb_publishable_U6S_lwjUTZQfrAn2XfUC-w_UUUDUyWv"}'::jsonb,
     body := '{"trigger": "cron", "tasks": ["leaderboard_monthly"]}'::jsonb
   );
   $$

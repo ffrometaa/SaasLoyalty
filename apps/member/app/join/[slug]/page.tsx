@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation';
-import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { createServiceRoleClient } from '@loyalty-os/lib/server';
 
@@ -12,7 +11,7 @@ async function getTenantBySlug(slug: string) {
   const supabase = createServiceRoleClient();
   const { data } = await supabase
     .from('tenants')
-    .select('id, business_name, app_name, logo_url, brand_color_primary, brand_color_secondary, slug')
+    .select('id, business_name, brand_app_name, brand_logo_url, brand_color_primary, brand_color_secondary, slug')
     .eq('slug', slug)
     .in('plan_status', ['trialing', 'active'])
     .is('deleted_at', null)
@@ -28,19 +27,13 @@ export default async function JoinPage({ params, searchParams }: JoinPageProps) 
   const tenant = await getTenantBySlug(slug);
   if (!tenant) notFound();
 
-  // Persist tenant slug in cookie so middleware and login/callback can read it
-  const cookieStore = await cookies();
-  cookieStore.set('loyalty_tenant', slug, {
-    path: '/',
-    maxAge: 60 * 60 * 24 * 30, // 30 days
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-  });
-
-  const appName = tenant.app_name ?? tenant.business_name;
+  const appName = tenant.brand_app_name ?? tenant.business_name;
   const primary = tenant.brand_color_primary ?? '#4a5440';
   const secondary = tenant.brand_color_secondary ?? '#c4a882';
-  const loginHref = redirectTo ? `/login?redirect=${encodeURIComponent(redirectTo)}` : '/login';
+
+  // Pass slug as query param — the login page reads it and sets the cookie
+  const loginBase = `/login?tenant=${encodeURIComponent(slug)}`;
+  const loginHref = redirectTo ? `${loginBase}&redirect=${encodeURIComponent(redirectTo)}` : loginBase;
 
   // Darken primary for hero background
   function darken(hex: string): string {
@@ -80,9 +73,9 @@ export default async function JoinPage({ params, searchParams }: JoinPageProps) 
 
           {/* Logo */}
           <div className="relative z-10 mb-8">
-            {tenant.logo_url ? (
+            {tenant.brand_logo_url ? (
               <img
-                src={tenant.logo_url}
+                src={tenant.brand_logo_url}
                 alt={appName}
                 className="w-24 h-24 rounded-3xl object-cover mx-auto mb-4"
                 style={{ border: '2px solid rgba(255,255,255,0.2)' }}

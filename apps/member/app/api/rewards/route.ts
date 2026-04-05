@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       .eq('tenant_id', tenantId)
       .eq('is_active', true)
       .is('deleted_at', null)
-      .order('points_required', { ascending: true });
+      .order('points_cost', { ascending: true });
 
     if (error) {
       console.error('Error fetching rewards:', error);

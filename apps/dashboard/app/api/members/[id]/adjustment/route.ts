@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 
 // POST /api/members/[id]/adjustment - Add or subtract points manually
 export async function POST(
@@ -9,6 +9,7 @@ export async function POST(
   try {
     const { id: memberId } = await params;
     const supabase = await createServerSupabaseClient();
+    const serviceClient = createServiceRoleClient();
     const body = await request.json();
     const { type, points, reason } = body;
 
@@ -39,7 +40,7 @@ export async function POST(
     const delta = type === 'add' ? points : -points;
     const newBalance = Math.max(0, member.points_balance + delta);
 
-    const { data: transaction, error: txError } = await supabase
+    const { data: transaction, error: txError } = await serviceClient
       .from('transactions')
       .insert({
         tenant_id: member.tenant_id,
@@ -56,7 +57,7 @@ export async function POST(
       return NextResponse.json({ error: 'Failed to record transaction' }, { status: 500 });
     }
 
-    await supabase
+    await serviceClient
       .from('members')
       .update({ points_balance: newBalance })
       .eq('id', memberId);

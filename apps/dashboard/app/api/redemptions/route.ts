@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 
 // POST /api/redemptions/process - Process a redemption (staff scans QR)
 export async function POST(request: NextRequest) {
@@ -54,7 +54,8 @@ export async function POST(request: NextRequest) {
     // Check if expired
     if (new Date(redemption.expires_at) < new Date()) {
       // Mark as expired
-      await supabase
+      const serviceClient = createServiceRoleClient();
+      await serviceClient
         .from('redemptions')
         .update({ status: 'expired' })
         .eq('id', redemption.id);
@@ -66,7 +67,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Process the redemption
-    const { error: updateError } = await supabase
+    const serviceClient = createServiceRoleClient();
+    const { error: updateError } = await serviceClient
       .from('redemptions')
       .update({
         status: 'used',

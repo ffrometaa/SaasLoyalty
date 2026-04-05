@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 
 // GET /api/rewards/[id] - Get reward details
 export async function GET(
@@ -60,7 +60,8 @@ export async function PATCH(
       );
     }
 
-    const { data: reward, error } = await supabase
+    const serviceClient = createServiceRoleClient();
+    const { data: reward, error } = await serviceClient
       .from('rewards')
       .update(updates)
       .eq('id', id)
@@ -94,7 +95,8 @@ export async function DELETE(
     const { id } = await params;
     const supabase = await createServerSupabaseClient();
 
-    const { error } = await supabase
+    const serviceClient = createServiceRoleClient();
+    const { error } = await serviceClient
       .from('rewards')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', id);

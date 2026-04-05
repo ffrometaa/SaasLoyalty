@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Landing Web — Mapa Completo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --dark: #0a0a0f;
+      --purple: #7c3aed;
+      --purple-light: #ede9fe;
+      --purple-dark: #5b21b6;
+      --green: #059669;
+      --green-light: #d1fae5;
+      --blue: #2563eb;
+      --blue-light: #dbeafe;
+      --amber: #d97706;
+      --amber-light: #fef3c7;
+      --red: #dc2626;
+      --red-light: #fee2e2;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; font-size: 14px; }
+
+    .header { background: linear-gradient(135deg, #0a0a0f 0%, #1e1b4b 50%, #4c1d95 100%); padding: 48px 32px 40px; color: white; position: relative; overflow: hidden; }
+    .header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 70% 50%, rgba(124,58,237,0.3) 0%, transparent 60%); pointer-events: none; }
+    .header-inner { max-width: 1100px; margin: 0 auto; position: relative; }
+    .header-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 16px; }
+    .header h1 { font-size: 38px; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+    .header h1 span { background: linear-gradient(90deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .header p { color: rgba(255,255,255,0.7); font-size: 16px; max-width: 600px; margin-bottom: 32px; }
+    .header-stats { display: flex; gap: 32px; flex-wrap: wrap; }
+    .stat { }
+    .stat-num { font-size: 28px; font-weight: 800; color: #a78bfa; }
+    .stat-label { font-size: 11px; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .main { max-width: 1100px; margin: 0 auto; padding: 40px 32px; }
+    .section { margin-bottom: 48px; }
+    .section-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .section-title .icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    @media (max-width: 768px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } .header h1 { font-size: 26px; } }
+
+    .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .badge-green { background: var(--green-light); color: var(--green); }
+    .badge-red { background: var(--red-light); color: var(--red); }
+    .badge-purple { background: var(--purple-light); color: var(--purple-dark); }
+    .badge-blue { background: var(--blue-light); color: var(--blue); }
+    .badge-amber { background: var(--amber-light); color: var(--amber); }
+    .badge-dark { background: #1e1b4b; color: #a78bfa; }
+
+    .route-item { display: grid; grid-template-columns: 180px 90px 1fr; padding: 14px 20px; border-bottom: 1px solid var(--border); align-items: start; gap: 14px; transition: background 0.15s; }
+    .route-item:hover { background: #f8fafc; }
+    .route-item:last-child { border-bottom: none; }
+    .route-path { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; font-weight: 600; color: var(--purple); word-break: break-all; }
+    .route-desc { color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+    .section-divider { background: #f8fafc; padding: 10px 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+
+    .plan-card { border-radius: 14px; padding: 24px 20px; border: 2px solid var(--border); position: relative; }
+    .plan-card.popular { border-color: var(--purple); }
+    .popular-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--purple); color: white; font-size: 11px; font-weight: 700; padding: 3px 12px; border-radius: 20px; white-space: nowrap; }
+    .plan-name { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+    .plan-price { font-size: 32px; font-weight: 800; color: var(--purple); margin: 10px 0 4px; }
+    .plan-price span { font-size: 14px; font-weight: 400; color: var(--muted); }
+    .plan-tagline { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+    .plan-features { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .plan-feature { display: flex; gap: 8px; font-size: 12px; align-items: flex-start; }
+    .plan-feature .check { color: var(--green); font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+    .plan-feature .cross { color: #cbd5e1; font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+
+    .feature-item { display: flex; align-items: flex-start; gap: 14px; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+    .feature-item:last-child { border-bottom: none; }
+    .feature-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .feature-name { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+    .feature-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    .step-item { display: flex; gap: 14px; padding: 14px 20px; border-bottom: 1px solid var(--border); align-items: flex-start; position: relative; }
+    .step-item:not(:last-child)::after { content: ''; position: absolute; left: 31px; top: 48px; width: 2px; height: calc(100% - 20px); background: var(--border); }
+    .step-item:last-child { border-bottom: none; }
+    .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--purple); color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; position: relative; z-index: 1; }
+    .step-content strong { font-size: 13px; display: block; margin-bottom: 2px; }
+    .step-content span { font-size: 12px; color: var(--muted); }
+
+    .api-item { padding: 14px 20px; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: 60px 200px 1fr; gap: 12px; align-items: start; }
+    .api-item:last-child { border-bottom: none; }
+    .method { font-family: monospace; font-weight: 700; font-size: 12px; }
+    .method-get { color: var(--green); }
+    .method-post { color: var(--blue); }
+    .api-path { font-family: monospace; font-size: 12px; color: var(--purple); word-break: break-all; }
+    .api-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    .field-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .field-item:last-child { border-bottom: none; }
+    .field-label { font-family: monospace; font-size: 12px; font-weight: 600; color: var(--purple-dark); white-space: nowrap; min-width: 160px; }
+    .field-desc { font-size: 12px; color: var(--muted); }
+    .field-req { color: var(--red); font-size: 10px; font-weight: 700; background: var(--red-light); padding: 1px 5px; border-radius: 4px; margin-left: 6px; flex-shrink: 0; }
+    .field-opt { color: var(--muted); font-size: 10px; font-weight: 700; background: #f1f5f9; padding: 1px 5px; border-radius: 4px; margin-left: 6px; flex-shrink: 0; }
+
+    .section-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .section-card-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .section-card ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .section-card li { font-size: 12px; color: var(--muted); display: flex; gap: 6px; align-items: flex-start; }
+    .section-card li::before { content: '·'; color: var(--purple); font-weight: 700; flex-shrink: 0; }
+
+    .comp-tag { display: inline-flex; align-items: center; gap: 4px; background: #f1f5f9; border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; font-family: monospace; font-size: 11px; color: var(--purple-dark); margin: 2px; }
+
+    .callout { border-radius: 10px; padding: 14px 16px; font-size: 13px; display: flex; gap: 10px; align-items: flex-start; margin-bottom: 16px; }
+    .callout-purple { background: var(--purple-light); border-left: 3px solid var(--purple); }
+    .callout-green { background: var(--green-light); border-left: 3px solid var(--green); }
+    .callout-amber { background: var(--amber-light); border-left: 3px solid var(--amber); }
+
+    .footer { text-align: center; padding: 32px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); }
+    code { font-family: monospace; background: #f1f5f9; padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-badge">🌐 LoyaltyOS</div>
+    <h1>Landing <span>Web App</span><br>Mapa Completo</h1>
+    <p>Marketing, onboarding, pricing, registro multi-paso y flujos de autenticación del sitio público.</p>
+    <div class="header-stats">
+      <div class="stat"><div class="stat-num">11</div><div class="stat-label">Páginas</div></div>
+      <div class="stat"><div class="stat-num">5</div><div class="stat-label">API Routes</div></div>
+      <div class="stat"><div class="stat-num">4</div><div class="stat-label">Planes</div></div>
+      <div class="stat"><div class="stat-num">3</div><div class="stat-label">Pasos Registro</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- RUTAS -->
+  <div class="section">
+    <div class="section-title"><div class="icon" style="background:#ede9fe">🗺️</div>Páginas y Rutas</div>
+    <div class="card">
+      <div class="section-divider" style="color:var(--green)">Páginas Públicas de Marketing</div>
+      <div class="route-item">
+        <div class="route-path">/</div>
+        <span class="badge badge-green">Marketing</span>
+        <div class="route-desc"><strong>Home Landing:</strong> Hero con propuesta de valor, barra de social proof, sección de problemas, grilla de features, "Cómo funciona", preview del dashboard, testimonios de clientes, teaser de pricing, FAQ y CTA final.</div>
+      </div>
+      <div class="route-item">
+        <div class="route-path">/pricing</div>
+        <span class="badge badge-green">Marketing</span>
+        <div class="route-desc"><strong>Precios:</strong> Tabla completa de 4 planes con toggle mensual/anual (17% descuento), matriz comparativa de 14 features, y CTA de signup por plan.</div>
+      </div>
+      <div class="route-item">
+        <div class="route-path">/about</div>
+        <span class="badge badge-green">Marketing</span>
+        <div class="route-desc"><strong>Nosotros:</strong> Misión de la empresa, métricas/stats de la plataforma, 3 tarjetas de valores fundamentales.</div>
+      </div>
+      <div class="route-item">
+        <div class="route-path">/contact</div>
+        <span class="badge badge-green">Marketing</span>
+        <div class="route-desc"><strong>Demo / Contacto:</strong> Formulario de solicitud de demo. Guarda en tabla <code>demo_requests</code> de Supabase. Confirmación visual al enviar.</div>
+      </div>
+      <div class="route-item">
+        <div class="route-path">/privacy</div>
+        <span class="badge badge-green">Legal</span>
+        <div class="route-desc"><strong>Política de Privacidad:</strong> Cobertura completa GDPR. Menciona sub-procesadores: Stripe, Supabase, Vercel, Resend.</div>
+      </div>
+      <div class="route-item">
+        <div class="route-path">/terms</div>
+        <span class="badge badge-green">Legal</span>
+        <div class="route-desc"><strong>Términos de Servicio:</strong> Acuerdo SaaS B2B. Suscripción, cancelación, uso aceptable, datos, IP, jurisdicción: Florida.</div>
+      </div>
+
+      <div class="section-divider" style="color:var(--blue)">Páginas de Autenticación /(auth)/</div>
+      <div class="route-item">
+        <div class="route-path">/login</div>
+        <span class="badge badge-blue">Auth</span>
+        <div class="route-desc">Email + contraseña. Al hacer login exitoso, redirige al dashboard via <strong>cross-domain login endpoint</strong> (establece sesión en dashboard.loyalbase.dev).</div>
+      </div>
+      <div class="route-item">
+        <div class="route-path">/register</div>
+        <span class="badge badge-blue">Auth</span>
+        <div class="route-desc"><strong>Registro multi-paso:</strong> Paso 1: datos del negocio. Paso 2: selección de plan. Paso 3: credenciales + aceptación de términos. Lleva al checkout de Stripe. Trial de 14 días.</div>
+      </div>
+      <div class="route-item">
+        <div class="route-path">/forgot-password</div>
+        <span class="badge badge-blue">Auth</span>
+        <div class="route-desc">Solicitud de reset por email.</div>
+      </div>
+      <div class="route-item">
+        <div class="route-path">/reset-password</div>
+        <span class="badge badge-blue">Auth</span>
+        <div class="route-desc">Confirmación de nueva contraseña (llegó por link en email).</div>
+      </div>
+      <div class="route-item">
+        <div class="route-path">/callback</div>
+        <span class="badge badge-blue">Auth</span>
+        <div class="route-desc">Maneja callbacks de verificación de email y OAuth. Redirige si hay sesión activa.</div>
+      </div>
+      <div class="route-item">
+        <div class="route-path">/invite/[token]</div>
+        <span class="badge badge-blue">Auth</span>
+        <div class="route-desc">Acepta invitación al equipo de un tenant desde email de invitación.</div>
+      </div>
+      <div class="route-item" style="border-bottom:none">
+        <div class="route-path">/registration-complete</div>
+        <span class="badge badge-blue">Auth</span>
+        <div class="route-desc">Pantalla de confirmación tras completar el registro y el pago.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIONES DE LA LANDING -->
+  <div class="section">
+    <div class="section-title"><div class="icon" style="background:#fef3c7">📄</div>Secciones del Home (/)</div>
+    <div class="grid-3">
+      <div class="section-card">
+        <div class="section-card-title">🚀 Hero</div>
+        <ul>
+          <li>Headline principal con propuesta de valor</li>
+          <li>Subtítulo y descripción breve</li>
+          <li>CTA primario "Empezar gratis"</li>
+          <li>CTA secundario "Ver demo"</li>
+          <li>Visual/screenshot del producto</li>
+        </ul>
+      </div>
+      <div class="section-card">
+        <div class="section-card-title">🏆 Social Proof Bar</div>
+        <ul>
+          <li>Logos de clientes / partners</li>
+          <li>Métricas de la plataforma</li>
+          <li>Indicadores de confianza</li>
+        </ul>
+      </div>
+      <div class="section-card">
+        <div class="section-card-title">😤 Problem Section</div>
+        <ul>
+          <li>Pain points que resuelve LoyaltyOS</li>
+          <li>Antes/después del problema</li>
+          <li>Contexto del mercado</li>
+        </ul>
+      </div>
+      <div class="section-card">
+        <div class="section-card-title">⚡ Features Grid</div>
+        <ul>
+          <li>Tarjetas de features principales</li>
+          <li>Puntos y recompensas</li>
+          <li>App PWA para miembros</li>
+          <li>Campañas automáticas</li>
+          <li>Analytics y heatmap</li>
+          <li>White-label branding</li>
+        </ul>
+      </div>
+      <div class="section-card">
+        <div class="section-card-title">👣 How It Works</div>
+        <ul>
+          <li>Flujo paso a paso (4-6 pasos)</li>
+          <li>Ilustraciones por step</li>
+          <li>Desde signup hasta primer miembro</li>
+        </ul>
+      </div>
+      <div class="section-card">
+        <div class="section-card-title">🖥️ Dashboard Preview</div>
+        <ul>
+          <li>Screenshot/video del producto real</li>
+          <li>Muestra la UI del dashboard</li>
+          <li>Genera confianza ("lo que vas a usar")</li>
+        </ul>
+      </div>
+      <div class="section-card">
+        <div class="section-card-title">💬 Testimonios</div>
+        <ul>
+          <li>Reviews de clientes reales</li>
+          <li>Nombre, negocio, foto</li>
+          <li>Carousel o grid</li>
+        </ul>
+      </div>
+      <div class="section-card">
+        <div class="section-card-title">💲 Pricing Teaser</div>
+        <ul>
+          <li>Vista previa de planes</li>
+          <li>Link a /pricing completo</li>
+          <li>Desde $79/mes</li>
+        </ul>
+      </div>
+      <div class="section-card">
+        <div class="section-card-title">❓ FAQ</div>
+        <ul>
+          <li>8-10 preguntas frecuentes</li>
+          <li>Accordion/expandible</li>
+          <li>Cubre: pricing, trial, cancelación, datos</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTRO MULTI-PASO -->
+  <div class="section">
+    <div class="section-title"><div class="icon" style="background:#d1fae5">📝</div>Registro Multi-Paso (/register)</div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <strong>Datos del Negocio</strong>
+          <span>Nombre del negocio (required), tipo de negocio (dropdown, required), slug para la URL del tenant (required, único)</span>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <strong>Selección de Plan</strong>
+          <span>Toggle mensual/anual (17% descuento en anual), 3 planes disponibles: Starter $79, Pro $199, Scale $399. Order summary lateral con pricing calculado.</span>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num" style="background:var(--green)">3</div>
+        <div class="step-content">
+          <strong>Credenciales + Pago</strong>
+          <span>Email (required, validado), contraseña, aceptación de términos. Botón → Stripe Checkout. Trial 14 días mencionado. POST /api/register crea checkout session.</span>
+        </div>
+      </div>
+    </div>
+    <div class="callout callout-green">
+      <span>✓</span>
+      <span>El flujo de Enterprise va por <strong>/contact</strong> — no tiene registro self-service. Lleva a formulario de demo/contacto con equipo de ventas.</span>
+    </div>
+  </div>
+
+  <!-- PLANES -->
+  <div class="section">
+    <div class="section-title"><div class="icon" style="background:#fce7f3">💳</div>Planes de Precios</div>
+    <div class="grid-4">
+      <div class="plan-card">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">$79<span>/mes</span></div>
+        <div class="plan-tagline">Para negocios que empiezan</div>
+        <ul class="plan-features">
+          <li class="plan-feature"><span class="check">✓</span><span>500 miembros</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>2 campañas/mes</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>App PWA miembros</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>QR onboarding</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Analytics básico</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Logo white-label</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Soporte por email</span></li>
+          <li class="plan-feature"><span class="cross">✗</span><span>Heatmap de visitas</span></li>
+          <li class="plan-feature"><span class="cross">✗</span><span>Export de datos</span></li>
+          <li class="plan-feature"><span class="cross">✗</span><span>API access</span></li>
+          <li class="plan-feature"><span class="cross">✗</span><span>Gamificación</span></li>
+        </ul>
+      </div>
+      <div class="plan-card popular">
+        <div class="popular-badge">⭐ Más popular</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">$199<span>/mes</span></div>
+        <div class="plan-tagline">Para negocios en crecimiento</div>
+        <ul class="plan-features">
+          <li class="plan-feature"><span class="check">✓</span><span>2,000 miembros</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>10 campañas/mes</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>App PWA miembros</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Analytics completo</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Heatmap de visitas</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Logo + Colores white-label</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Chat prioritario</span></li>
+          <li class="plan-feature"><span class="cross">✗</span><span>Export de datos</span></li>
+          <li class="plan-feature"><span class="cross">✗</span><span>API access</span></li>
+          <li class="plan-feature"><span class="cross">✗</span><span>Gamificación</span></li>
+        </ul>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">Scale</div>
+        <div class="plan-price">$399<span>/mes</span></div>
+        <div class="plan-tagline">Miembros ilimitados</div>
+        <ul class="plan-features">
+          <li class="plan-feature"><span class="check">✓</span><span>Miembros ilimitados</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Campañas ilimitadas</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Analytics + Export</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Heatmap de visitas</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Full Brand white-label</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>API access</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Account manager</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Soporte dedicado</span></li>
+          <li class="plan-feature"><span class="cross">✗</span><span>Gamificación</span></li>
+          <li class="plan-feature"><span class="cross">✗</span><span>Multi-location</span></li>
+          <li class="plan-feature"><span class="cross">✗</span><span>SSO</span></li>
+        </ul>
+      </div>
+      <div class="plan-card" style="border-color:#1e1b4b;background:linear-gradient(135deg,#f8fafc,#ede9fe)">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price" style="font-size:22px;margin-top:14px">Precio<br>personalizado</div>
+        <div class="plan-tagline">Multi-location + SSO</div>
+        <ul class="plan-features">
+          <li class="plan-feature"><span class="check">✓</span><span>Todo lo de Scale</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Multi-location</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>SSO integrations</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Gamificación avanzada</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Automatización avanzada</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Account manager</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>SLA-backed support</span></li>
+          <li class="plan-feature"><span class="check">✓</span><span>Onboarding dedicado</span></li>
+        </ul>
+      </div>
+    </div>
+    <div style="margin-top:16px; padding:14px 20px; background:white; border:1px solid var(--border); border-radius:10px; font-size:13px; color:var(--muted);">
+      💡 <strong>Descuento anual:</strong> 17% off en todos los planes con pago anual. Enterprise no tiene self-service — va por formulario de contacto/demo.
+    </div>
+  </div>
+
+  <!-- FORMULARIO CONTACTO -->
+  <div class="section">
+    <div class="section-title"><div class="icon" style="background:#fee2e2">📬</div>Formulario de Demo/Contacto (/contact)</div>
+    <div class="card">
+      <div class="card-header">Campos del formulario → guarda en Supabase <code>demo_requests</code></div>
+      <div class="field-item">
+        <div class="field-label">business_name</div><span class="field-req">REQ</span>
+        <div class="field-desc">Nombre del negocio</div>
+      </div>
+      <div class="field-item">
+        <div class="field-label">business_type</div><span class="field-req">REQ</span>
+        <div class="field-desc">Dropdown: tipo de negocio (restaurant, café, salon, gym, retail, etc.)</div>
+      </div>
+      <div class="field-item">
+        <div class="field-label">owner_name</div><span class="field-req">REQ</span>
+        <div class="field-desc">Nombre del dueño/contacto</div>
+      </div>
+      <div class="field-item">
+        <div class="field-label">email</div><span class="field-req">REQ</span>
+        <div class="field-desc">Email validado con regex</div>
+      </div>
+      <div class="field-item">
+        <div class="field-label">phone</div><span class="field-opt">OPT</span>
+        <div class="field-desc">Teléfono de contacto</div>
+      </div>
+      <div class="field-item">
+        <div class="field-label">message</div><span class="field-opt">OPT</span>
+        <div class="field-desc">Mensaje o consulta adicional (textarea)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- API ROUTES -->
+  <div class="section">
+    <div class="section-title"><div class="icon" style="background:#dbeafe">⚙️</div>API Routes</div>
+    <div class="card">
+      <div class="api-item">
+        <div class="method method-post">POST</div>
+        <div class="api-path">/api/register</div>
+        <div class="api-desc">Recibe: businessName, businessType, slug, email, userId, plan, billingPeriod. Crea sesión de Stripe Checkout. Retorna checkout URL para redirigir al pago.</div>
+      </div>
+      <div class="api-item">
+        <div class="method method-get">GET</div>
+        <div class="api-path">/api/auth/cross-domain-login</div>
+        <div class="api-desc">Establece sesión en <code>dashboard.loyalbase.dev</code> después del login en la web. Necesario porque son dominios distintos (no comparten cookies).</div>
+      </div>
+      <div class="api-item">
+        <div class="method method-post">POST</div>
+        <div class="api-path">/api/webhooks/stripe</div>
+        <div class="api-desc">Handler de eventos de Stripe: checkout completado, suscripción creada, pago fallido, cancelación. Actualiza <code>plan_status</code> en tabla <code>tenants</code>.</div>
+      </div>
+      <div class="api-item">
+        <div class="method method-get">GET</div>
+        <div class="api-path">/api/invite/[token]</div>
+        <div class="api-desc">Valida el token de invitación al equipo. Retorna info del invite (email, tenant, role) para pre-rellenar el formulario.</div>
+      </div>
+      <div class="api-item">
+        <div class="method method-post">POST</div>
+        <div class="api-path">/api/invite/accept</div>
+        <div class="api-desc">Procesa la aceptación de una invitación de equipo. Crea el registro en <code>tenant_users</code> y marca el invite como aceptado.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPONENTES -->
+  <div class="section">
+    <div class="section-title"><div class="icon" style="background:#fce7f3">🧩</div>Componentes Clave</div>
+    <div class="card">
+      <div style="padding:20px; display:flex; flex-wrap:wrap; gap:6px;">
+        <span class="comp-tag">Navbar</span>
+        <span class="comp-tag">HeroSection</span>
+        <span class="comp-tag">SocialProofBar</span>
+        <span class="comp-tag">ProblemSection</span>
+        <span class="comp-tag">FeaturesGrid</span>
+        <span class="comp-tag">HowItWorks</span>
+        <span class="comp-tag">DashboardPreview</span>
+        <span class="comp-tag">Testimonials</span>
+        <span class="comp-tag">PricingPreview</span>
+        <span class="comp-tag">FAQ</span>
+        <span class="comp-tag">FinalCTA</span>
+        <span class="comp-tag">Footer</span>
+        <span class="comp-tag">ContactForm</span>
+        <span class="comp-tag">RegisterForm (multi-step)</span>
+        <span class="comp-tag">PlanSelector</span>
+        <span class="comp-tag">PricingTable</span>
+        <span class="comp-tag">PricingComparison</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES PROMOVIDOS -->
+  <div class="section">
+    <div class="section-title"><div class="icon" style="background:#d1fae5">📣</div>Features Promovidos en la Landing</div>
+    <div class="grid-3">
+      <div class="feature-item" style="border:1px solid var(--border);border-radius:10px;margin:0">
+        <div class="feature-icon" style="background:#ede9fe">⭐</div>
+        <div><div class="feature-name">Puntos y Recompensas</div><div class="feature-desc">Engine de puntos por visita, motor de tiers, canje con QR.</div></div>
+      </div>
+      <div class="feature-item" style="border:1px solid var(--border);border-radius:10px;margin:0">
+        <div class="feature-icon" style="background:#d1fae5">📱</div>
+        <div><div class="feature-name">App PWA para Miembros</div><div class="feature-desc">Instalable en el celular, funciona offline, brandeable por tenant.</div></div>
+      </div>
+      <div class="feature-item" style="border:1px solid var(--border);border-radius:10px;margin:0">
+        <div class="feature-icon" style="background:#dbeafe">📣</div>
+        <div><div class="feature-name">Campañas Automáticas</div><div class="feature-desc">Email y push segmentados con scheduling y A/B testing.</div></div>
+      </div>
+      <div class="feature-item" style="border:1px solid var(--border);border-radius:10px;margin:0">
+        <div class="feature-icon" style="background:#fef3c7">📊</div>
+        <div><div class="feature-name">Analytics Real-Time</div><div class="feature-desc">Métricas, heatmap de visitas, retención, segmentos de riesgo.</div></div>
+      </div>
+      <div class="feature-item" style="border:1px solid var(--border);border-radius:10px;margin:0">
+        <div class="feature-icon" style="background:#fce7f3">🎨</div>
+        <div><div class="feature-name">White-Label Branding</div><div class="feature-desc">Logo, colores, nombre de la app, todo personalizable por tier de plan.</div></div>
+      </div>
+      <div class="feature-item" style="border:1px solid var(--border);border-radius:10px;margin:0">
+        <div class="feature-icon" style="background:#fee2e2">🔗</div>
+        <div><div class="feature-name">QR Onboarding</div><div class="feature-desc">Link y QR únicos por tenant para que los miembros se unan desde el celular.</div></div>
+      </div>
+      <div class="feature-item" style="border:1px solid var(--border);border-radius:10px;margin:0">
+        <div class="feature-icon" style="background:#ede9fe">🔔</div>
+        <div><div class="feature-name">Push Notifications</div><div class="feature-desc">Notificaciones nativas vía OneSignal. Opt-in por el miembro.</div></div>
+      </div>
+      <div class="feature-item" style="border:1px solid var(--border);border-radius:10px;margin:0">
+        <div class="feature-icon" style="background:#d1fae5">🏢</div>
+        <div><div class="feature-name">Multi-location</div><div class="feature-desc">Enterprise: gestión de múltiples locales bajo un mismo tenant.</div></div>
+      </div>
+      <div class="feature-item" style="border:1px solid var(--border);border-radius:10px;margin:0">
+        <div class="feature-icon" style="background:#fef3c7">🎮</div>
+        <div><div class="feature-name">Gamificación</div><div class="feature-desc">Enterprise: desafíos, badges, leaderboards para engagement avanzado.</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div class="footer">LoyaltyOS · Landing Web — Documentación técnica · Abril 2026</div>
+</body>
+</html>

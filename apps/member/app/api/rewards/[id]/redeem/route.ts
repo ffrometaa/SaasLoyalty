@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 
 // POST /api/member/rewards/[id]/redeem - Create a redemption
 export async function POST(
@@ -9,6 +9,7 @@ export async function POST(
   try {
     const { id: rewardId } = await params;
     const supabase = await createServerSupabaseClient();
+    const serviceClient = createServiceRoleClient();
     const body = await request.json();
     const { memberId } = body;
 
@@ -85,11 +86,11 @@ export async function POST(
     }
 
     // Check points balance
-    if (member.points_balance < reward.points_required) {
+    if (member.points_balance < reward.points_cost) {
       return NextResponse.json(
         { 
           error: 'Not enough points',
-          required: reward.points_required,
+          required: reward.points_cost,
           current: member.points_balance
         },
         { status: 400 }
@@ -122,13 +123,13 @@ export async function POST(
     expiresAt.setDate(expiresAt.getDate() + 30);
 
     // Create redemption
-    const { data: redemption, error: redemptionError } = await supabase
+    const { data: redemption, error: redemptionError } = await serviceClient
       .from('redemptions')
       .insert({
         tenant_id: member.tenant_id,
         member_id: memberId,
         reward_id: rewardId,
-        points_spent: reward.points_required,
+        points_spent: reward.points_cost,
         status: 'pending',
         qr_code: qrCode,
         alphanumeric_code: alphanumericCode,
@@ -146,19 +147,19 @@ export async function POST(
     }
 
     // Create transaction
-    const newBalance = member.points_balance - reward.points_required;
-    await supabase.from('transactions').insert({
+    const newBalance = member.points_balance - reward.points_cost;
+    await serviceClient.from('transactions').insert({
       tenant_id: member.tenant_id,
       member_id: memberId,
       type: 'redeem',
-      points: -reward.points_required,
-      balance_after: newBalance,
+      points: -reward.points_cost,
+      points_balance: newBalance,
       description: `Redeemed: ${reward.name}`,
       reference_id: redemption.id,
     });
 
     // Update member balance
-    await supabase
+    await serviceClient
       .from('members')
       .update({ points_balance: newBalance })
       .eq('id', memberId);
@@ -167,7 +168,7 @@ export async function POST(
       redemption: {
         id: redemption.id,
         reward_name: reward.name,
-        points_spent: reward.points_required,
+        points_spent: reward.points_cost,
         remaining_points: newBalance,
         qr_code: qrCode,
         alphanumeric_code: alphanumericCode,
