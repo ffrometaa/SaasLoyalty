@@ -10,6 +10,43 @@ export const metadata: Metadata = {
   description: 'Simple, transparent pricing for every stage of your business. Start free for 14 days.',
 };
 
+const pricingSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: 'LoyaltyOS',
+  description: 'White-label loyalty and membership platform for local businesses.',
+  url: 'https://loyalbase.dev/pricing',
+  offers: [
+    {
+      '@type': 'Offer',
+      name: 'Starter',
+      price: '49',
+      priceCurrency: 'USD',
+      priceSpecification: { '@type': 'UnitPriceSpecification', price: '49', priceCurrency: 'USD', unitText: 'MONTH' },
+      description: 'For businesses getting started. Up to 500 members, 2 campaigns/month.',
+      url: 'https://loyalbase.dev/pricing',
+    },
+    {
+      '@type': 'Offer',
+      name: 'Pro',
+      price: '99',
+      priceCurrency: 'USD',
+      priceSpecification: { '@type': 'UnitPriceSpecification', price: '99', priceCurrency: 'USD', unitText: 'MONTH' },
+      description: 'For growing local businesses. Up to 2,000 members, 10 campaigns/month.',
+      url: 'https://loyalbase.dev/pricing',
+    },
+    {
+      '@type': 'Offer',
+      name: 'Scale',
+      price: '199',
+      priceCurrency: 'USD',
+      priceSpecification: { '@type': 'UnitPriceSpecification', price: '199', priceCurrency: 'USD', unitText: 'MONTH' },
+      description: 'For multi-location businesses. Unlimited members and campaigns.',
+      url: 'https://loyalbase.dev/pricing',
+    },
+  ],
+};
+
 export default async function PricingPage() {
   const t = await getTranslations('pricingPage');
 
@@ -32,6 +69,10 @@ export default async function PricingPage() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingSchema) }}
+      />
       <Navbar />
       <div className="pt-16">
         {/* Hero */}
