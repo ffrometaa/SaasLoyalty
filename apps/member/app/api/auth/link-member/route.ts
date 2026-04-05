@@ -23,18 +23,36 @@ export async function POST() {
 
   const cookieStore = await cookies();
   const tenantSlug = cookieStore.get('loyalty_tenant')?.value;
-  if (!tenantSlug) {
+  const joinCode = cookieStore.get('loyalty_join_code')?.value;
+
+  if (!tenantSlug && !joinCode) {
     return NextResponse.json({ ok: true, note: 'no tenant cookie' });
   }
 
   const serviceClient = createServiceRoleClient();
 
-  const { data: tenant } = await serviceClient
-    .from('tenants')
-    .select('id')
-    .eq('slug', tenantSlug)
-    .in('plan_status', ['trialing', 'active'])
-    .single();
+  // Resolve tenant: prefer join_code (newer flow), fall back to slug
+  let tenant: { id: string } | null = null;
+
+  if (joinCode) {
+    const { data } = await serviceClient
+      .from('tenants')
+      .select('id')
+      .eq('join_code', joinCode.trim().toUpperCase())
+      .in('plan_status', ['trialing', 'active'])
+      .single();
+    tenant = data ?? null;
+  }
+
+  if (!tenant && tenantSlug) {
+    const { data } = await serviceClient
+      .from('tenants')
+      .select('id')
+      .eq('slug', tenantSlug)
+      .in('plan_status', ['trialing', 'active'])
+      .single();
+    tenant = data ?? null;
+  }
 
   if (!tenant) {
     return NextResponse.json({ ok: true, note: 'tenant not found' });

@@ -64,23 +64,39 @@ export async function GET(request: NextRequest) {
   const memberName = (sessionData.user.user_metadata?.name as string | undefined)
     ?? userEmail.split('@')[0];
 
-  // Read tenant from cookie
+  // Read tenant from cookie — support both join_code (new) and slug (legacy)
   const cookieStore = await cookies();
   const tenantSlug = cookieStore.get('loyalty_tenant')?.value;
+  const joinCode = cookieStore.get('loyalty_join_code')?.value;
 
-  if (!tenantSlug) {
+  if (!tenantSlug && !joinCode) {
     return response;
   }
 
   const serviceClient = createServiceRoleClient();
 
-  // Fetch tenant
-  const { data: tenant } = await serviceClient
-    .from('tenants')
-    .select('id')
-    .eq('slug', tenantSlug)
-    .in('plan_status', ['trialing', 'active'])
-    .single();
+  // Resolve tenant: prefer join_code, fall back to slug
+  let tenant: { id: string } | null = null;
+
+  if (joinCode) {
+    const { data } = await serviceClient
+      .from('tenants')
+      .select('id')
+      .eq('join_code', joinCode.trim().toUpperCase())
+      .in('plan_status', ['trialing', 'active'])
+      .single();
+    tenant = data ?? null;
+  }
+
+  if (!tenant && tenantSlug) {
+    const { data } = await serviceClient
+      .from('tenants')
+      .select('id')
+      .eq('slug', tenantSlug)
+      .in('plan_status', ['trialing', 'active'])
+      .single();
+    tenant = data ?? null;
+  }
 
   if (!tenant) {
     return response;

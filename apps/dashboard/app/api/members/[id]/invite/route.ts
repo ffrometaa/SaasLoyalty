@@ -18,10 +18,10 @@ export async function POST(
 
     const serviceClient = createServiceRoleClient();
 
-    // Fetch member + tenant in one go
+    // Fetch member + tenant in one go (include join_code for email)
     const { data: member, error: memberError } = await serviceClient
       .from('members')
-      .select('id, name, email, auth_user_id, tenant_id, tenants!inner(id, slug, business_name, brand_logo_url, brand_color_primary)')
+      .select('id, name, email, auth_user_id, tenant_id, tenants!inner(id, slug, business_name, brand_logo_url, brand_color_primary, join_code)')
       .eq('id', id)
       .single();
 
@@ -39,6 +39,7 @@ export async function POST(
       business_name: string;
       brand_logo_url: string | null;
       brand_color_primary: string;
+      join_code: string | null;
     };
 
     // Upsert invitation (replace any existing pending one for this member)
@@ -89,7 +90,7 @@ export async function POST(
 async function sendInviteEmail(
   token: string,
   member: { name: string; email: string },
-  tenant: { slug: string; business_name: string; brand_logo_url: string | null; brand_color_primary: string }
+  tenant: { slug: string; business_name: string; brand_logo_url: string | null; brand_color_primary: string; join_code?: string | null }
 ) {
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
   const memberAppUrl = process.env.NEXT_PUBLIC_MEMBER_APP_URL ?? 'https://member.loyalbase.dev';
@@ -103,6 +104,8 @@ async function sendInviteEmail(
         registerUrl,
         tenantLogoUrl: tenant.brand_logo_url ?? '',
         tenantPrimaryColor: tenant.brand_color_primary ?? '',
+        joinCode: tenant.join_code ?? '',
+        memberAppUrl,
       });
       const { subject, html } = buildBilingualEmail(emailContent);
 

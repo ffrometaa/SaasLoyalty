@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Copy, Check, Download, ExternalLink, Loader2, QrCode } from 'lucide-react';
+import { Copy, Check, Download, ExternalLink, Loader2, QrCode, Hash } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useTranslations } from 'next-intl';
 
@@ -11,13 +11,18 @@ const MEMBER_APP_URL =
 export function MemberAppTab() {
   const t = useTranslations('memberApp');
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const codeCanvasRef = useRef<HTMLCanvasElement>(null);
+
   const [slug, setSlug] = useState<string | null>(null);
   const [appName, setAppName] = useState<string>('');
+  const [businessName, setBusinessName] = useState<string>('');
+  const [joinCode, setJoinCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<'link' | 'code' | 'reglink' | null>(null);
 
   const joinUrl = slug ? `${MEMBER_APP_URL}/join/${slug}` : '';
+  const registerUrl = joinCode ? `${MEMBER_APP_URL}/register?code=${joinCode}` : '';
 
   // Fetch tenant join info
   useEffect(() => {
@@ -29,16 +34,17 @@ export function MemberAppTab() {
         } else {
           setSlug(data.slug);
           setAppName(data.appName);
+          setBusinessName(data.businessName ?? data.appName);
+          setJoinCode(data.joinCode ?? null);
         }
       })
       .catch(() => setError(t('networkError')))
       .finally(() => setLoading(false));
   }, []);
 
-  // Render QR when joinUrl is available
+  // Render QR for join URL (slug-based)
   useEffect(() => {
     if (!joinUrl || !canvasRef.current) return;
-
     QRCode.toCanvas(canvasRef.current, joinUrl, {
       width: 220,
       margin: 2,
@@ -47,32 +53,39 @@ export function MemberAppTab() {
     }).catch(console.error);
   }, [joinUrl]);
 
-  function handleCopy() {
-    if (!joinUrl) return;
-    navigator.clipboard.writeText(joinUrl).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+  // Render QR for register?code= URL
+  useEffect(() => {
+    if (!registerUrl || !codeCanvasRef.current) return;
+    QRCode.toCanvas(codeCanvasRef.current, registerUrl, {
+      width: 220,
+      margin: 2,
+      color: { dark: '#1c2117', light: '#ffffff' },
+      errorCorrectionLevel: 'M',
+    }).catch(console.error);
+  }, [registerUrl]);
+
+  function copy(text: string, key: 'link' | 'code' | 'reglink') {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(key);
+      setTimeout(() => setCopied(null), 2000);
     });
   }
 
-  function handleDownload() {
-    const canvas = canvasRef.current;
-    if (!canvas || !slug) return;
-
-    // Render a larger version for download
+  function handleDownload(canvas: HTMLCanvasElement | null, filename: string) {
+    if (!canvas) return;
     const offscreen = document.createElement('canvas');
     const size = 600;
     offscreen.width = size;
     offscreen.height = size;
-
-    QRCode.toCanvas(offscreen, joinUrl, {
+    const url = canvas === canvasRef.current ? joinUrl : registerUrl;
+    QRCode.toCanvas(offscreen, url, {
       width: size,
       margin: 3,
       color: { dark: '#1c2117', light: '#ffffff' },
       errorCorrectionLevel: 'M',
     }).then(() => {
       const link = document.createElement('a');
-      link.download = `qr-${slug}.png`;
+      link.download = filename;
       link.href = offscreen.toDataURL('image/png');
       link.click();
     });
@@ -101,12 +114,93 @@ export function MemberAppTab() {
 
   return (
     <div className="space-y-6">
-      {/* Header card */}
+      {/* ── JOIN CODE CARD ─────────────────────────────────────────────────── */}
+      {joinCode && (
+        <div className="bg-white rounded-xl border p-6">
+          <div className="flex items-center gap-2 mb-1">
+            <Hash className="h-4 w-4 text-brand-purple" />
+            <h2 className="text-lg font-semibold text-gray-900">{t('joinCodeTitle')}</h2>
+          </div>
+          <p className="text-sm text-gray-500 mb-6">{t('joinCodeSubtitle')}</p>
+
+          <div className="flex flex-col sm:flex-row gap-8 items-start">
+            {/* QR for register?code= URL */}
+            <div className="flex flex-col items-center gap-3 shrink-0">
+              <div className="rounded-2xl border-2 border-gray-100 p-3 bg-white shadow-sm">
+                <canvas ref={codeCanvasRef} className="rounded-lg" />
+              </div>
+              <p className="text-xs text-gray-400 text-center">{t('scanToJoin', { name: businessName })}</p>
+              <button
+                onClick={() => handleDownload(codeCanvasRef.current, `qr-code-${joinCode}.png`)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
+                <Download className="h-4 w-4" />
+                {t('downloadQr')}
+              </button>
+            </div>
+
+            {/* Code display + actions */}
+            <div className="flex-1 min-w-0">
+              {/* Big code display */}
+              <div className="flex justify-center sm:justify-start mb-5">
+                <div className="inline-block bg-gray-50 border-2 border-gray-200 rounded-2xl px-8 py-4 text-center">
+                  <p className="text-xs text-gray-400 uppercase tracking-widest mb-1 font-medium">
+                    {t('joinCodeTitle')}
+                  </p>
+                  <span className="font-mono text-4xl font-bold tracking-[0.3em] text-gray-900">
+                    {joinCode}
+                  </span>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex flex-wrap gap-2 mb-5">
+                <button
+                  onClick={() => copy(joinCode, 'code')}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-purple text-white rounded-lg text-sm font-medium hover:bg-brand-purple/90 transition-colors"
+                >
+                  {copied === 'code' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  {copied === 'code' ? t('codeCopied') : t('copyCode')}
+                </button>
+
+                <button
+                  onClick={() => copy(registerUrl, 'reglink')}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                >
+                  {copied === 'reglink' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  {copied === 'reglink' ? t('codeCopied') : t('copyLink')}
+                </button>
+              </div>
+
+              {/* Register URL display */}
+              <div className="flex items-center gap-2 mb-5">
+                <div className="flex-1 min-w-0 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg font-mono text-xs text-gray-600 truncate">
+                  {registerUrl}
+                </div>
+                <a
+                  href={registerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 p-2.5 text-gray-500 hover:text-brand-purple border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  title={t('openApp')}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </div>
+
+              {/* Share tip */}
+              <div className="p-4 bg-brand-purple/5 border border-brand-purple/10 rounded-xl">
+                <p className="text-sm text-gray-600">{t('shareCodeTip')}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── JOIN LINK CARD (original slug QR) ────────────────────────────── */}
       <div className="bg-white rounded-xl border p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-1">{t('title')}</h2>
-        <p className="text-sm text-gray-500 mb-6">
-          {t('subtitle')}
-        </p>
+        <p className="text-sm text-gray-500 mb-6">{t('subtitle')}</p>
 
         <div className="flex flex-col sm:flex-row gap-8 items-start">
           {/* QR Code */}
@@ -114,9 +208,8 @@ export function MemberAppTab() {
             <div className="rounded-2xl border-2 border-gray-100 p-3 bg-white shadow-sm">
               <canvas ref={canvasRef} className="rounded-lg" />
             </div>
-
             <button
-              onClick={handleDownload}
+              onClick={() => handleDownload(canvasRef.current, `qr-${slug}.png`)}
               className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
             >
               <Download className="h-4 w-4" />
@@ -128,17 +221,16 @@ export function MemberAppTab() {
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-700 mb-2">{t('accessLink')}</p>
 
-            {/* URL display */}
             <div className="flex items-center gap-2 mb-4">
               <div className="flex-1 min-w-0 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg font-mono text-sm text-gray-700 truncate">
                 {joinUrl}
               </div>
               <button
-                onClick={handleCopy}
+                onClick={() => copy(joinUrl, 'link')}
                 title={t('copyTitle')}
                 className="shrink-0 flex items-center gap-1.5 px-3 py-2.5 bg-brand-purple text-white rounded-lg text-sm font-medium hover:bg-brand-purple-700 transition-colors"
               >
-                {copied ? (
+                {copied === 'link' ? (
                   <>
                     <Check className="h-4 w-4" />
                     <span className="hidden sm:inline">{t('copied')}</span>
@@ -162,26 +254,17 @@ export function MemberAppTab() {
               {t('openApp')}
             </a>
 
-            {/* How to use */}
             <div className="mt-6 p-4 bg-gray-50 rounded-xl">
               <p className="text-sm font-medium text-gray-800 mb-3">{t('howToUse')}</p>
               <ol className="space-y-2 text-sm text-gray-600">
-                <li className="flex gap-2">
-                  <span className="shrink-0 w-5 h-5 rounded-full bg-brand-purple-100 text-brand-purple-700 text-xs font-semibold flex items-center justify-center">1</span>
-                  {t('step1')}
-                </li>
-                <li className="flex gap-2">
-                  <span className="shrink-0 w-5 h-5 rounded-full bg-brand-purple-100 text-brand-purple-700 text-xs font-semibold flex items-center justify-center">2</span>
-                  {t('step2')}
-                </li>
-                <li className="flex gap-2">
-                  <span className="shrink-0 w-5 h-5 rounded-full bg-brand-purple-100 text-brand-purple-700 text-xs font-semibold flex items-center justify-center">3</span>
-                  {t('step3')}
-                </li>
-                <li className="flex gap-2">
-                  <span className="shrink-0 w-5 h-5 rounded-full bg-brand-purple-100 text-brand-purple-700 text-xs font-semibold flex items-center justify-center">4</span>
-                  {t('step4')}
-                </li>
+                {(['step1', 'step2', 'step3', 'step4'] as const).map((step, i) => (
+                  <li key={step} className="flex gap-2">
+                    <span className="shrink-0 w-5 h-5 rounded-full bg-brand-purple-100 text-brand-purple-700 text-xs font-semibold flex items-center justify-center">
+                      {i + 1}
+                    </span>
+                    {t(step)}
+                  </li>
+                ))}
               </ol>
             </div>
           </div>
@@ -194,9 +277,7 @@ export function MemberAppTab() {
           <QrCode className="h-4 w-4 text-brand-purple" />
           {t('printTip')}
         </h3>
-        <p className="text-sm text-gray-600">
-          {t('printTipDesc')}
-        </p>
+        <p className="text-sm text-gray-600">{t('printTipDesc')}</p>
       </div>
     </div>
   );

@@ -379,6 +379,13 @@
     "step2": "Your customers scan the QR with their phone camera.",
     "step3": "They enter their email and receive a magic link to access.",
     "step4": "Done! The customer is registered and can start earning points.",
+    "joinCodeTitle": "Join Code",
+    "joinCodeSubtitle": "Share this code so customers can register directly without scanning a QR.",
+    "copyCode": "Copy code",
+    "codeCopied": "Copied!",
+    "downloadQr": "Download QR",
+    "scanToJoin": "Scan to join {name}",
+    "shareCodeTip": "Share this code on social media, printed flyers, or display it at your counter so customers can register manually.",
     "printTip": "Print tip",
     "printTipDesc": "Download the QR as a high-resolution PNG and add it to your marketing materials, signage or business cards. We recommend printing it at no less than 4×4 cm to ensure phones can scan it correctly."
   },

@@ -379,6 +379,13 @@
     "step2": "Tus clientes escanean el QR con la cámara del celular.",
     "step3": "Ingresan su email y reciben un link mágico para acceder.",
     "step4": "¡Listo! El cliente queda registrado y puede acumular puntos.",
+    "joinCodeTitle": "Código de acceso",
+    "joinCodeSubtitle": "Compartí este código para que los clientes se registren sin escanear un QR.",
+    "copyCode": "Copiar código",
+    "codeCopied": "¡Copiado!",
+    "downloadQr": "Descargar QR",
+    "scanToJoin": "Escaneá para unirte a {name}",
+    "shareCodeTip": "Compartí este código en redes sociales, folletos impresos o mostralo en tu mostrador para que los clientes se registren manualmente.",
     "printTip": "Consejo para imprimir",
     "printTipDesc": "Descargá el QR en PNG de alta resolución y agregalo a tus materiales de marketing, cartelería o tarjetas de presentación. Recomendamos imprimirlo a no menos de 4×4 cm para asegurar que los celulares puedan escanearlo correctamente."
   },
