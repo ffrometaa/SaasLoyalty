@@ -141,6 +141,16 @@ function parseEmailBodies(campaign?: Campaign) {
   }
 }
 
+function parsePushBilingual(campaign?: Campaign) {
+  if (!campaign?.description) return { subjectEs: '', pushBodyEs: '' };
+  try {
+    const parsed = JSON.parse(campaign.description) as { subject_es?: string; body_es?: string };
+    return { subjectEs: parsed.subject_es || '', pushBodyEs: parsed.body_es || '' };
+  } catch {
+    return { subjectEs: '', pushBodyEs: '' };
+  }
+}
+
 // ─── MAIN FORM ────────────────────────────────────────────────────────────────
 
 export default function CampaignForm({
@@ -159,12 +169,15 @@ export default function CampaignForm({
   const defaultType = campaign?.type ?? 'push';
   const defaultSchedule = searchParams.get('schedule') === '1' ? 'later' : 'now';
   const { bodyEn: initialBodyEn, bodyEs: initialBodyEs } = parseEmailBodies(campaign);
+  const { subjectEs: initialSubjectEs, pushBodyEs: initialPushBodyEs } = parsePushBilingual(campaign);
 
   const [type, setType] = useState(defaultType);
   const [subject, setSubject] = useState(campaign?.subject ?? '');
+  const [subjectEs, setSubjectEs] = useState(initialSubjectEs);
   const [body, setBody] = useState(campaign?.body ?? '');
   const [bodyEn, setBodyEn] = useState(initialBodyEn);
   const [bodyEs, setBodyEs] = useState(initialBodyEs);
+  const [pushBodyEs, setPushBodyEs] = useState(initialPushBodyEs);
   const [imageUrl, setImageUrl] = useState(campaign?.image_url ?? '');
   const [ctaText, setCtaText] = useState(campaign?.cta_text ?? '');
   const [ctaUrl, setCtaUrl] = useState(campaign?.cta_url ?? '');
@@ -179,6 +192,7 @@ export default function CampaignForm({
 
   const showSubject = type === 'push' || type === 'email';
   const isEmailType = type === 'email';
+  const isPushType = type === 'push';
   const maxBody = type === 'push' ? 200 : undefined;
 
   const buildFormData = (name: string) => {
@@ -190,6 +204,11 @@ export default function CampaignForm({
       fd.set('body', bodyEn || bodyEs || '');
       fd.set('body_en', bodyEn);
       fd.set('body_es', bodyEs);
+    } else if (isPushType) {
+      fd.set('body', body);
+      fd.set('body_en', '');
+      fd.set('body_es', pushBodyEs);
+      fd.set('subject_es', subjectEs);
     } else {
       fd.set('body', body);
       fd.set('body_en', '');
@@ -334,15 +353,35 @@ export default function CampaignForm({
 
               {/* Subject */}
               {showSubject && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('fieldSubject')} *</label>
-                  <input
-                    type="text"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    placeholder={t('fieldSubjectPlaceholder')}
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple/30"
-                  />
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      {isPushType && <span className="text-xs font-bold text-gray-400 bg-gray-100 rounded px-1.5 py-0.5 uppercase tracking-wider">EN</span>}
+                      <label className="text-sm font-medium text-gray-700">{t('fieldSubject')} *</label>
+                    </div>
+                    <input
+                      type="text"
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      placeholder={t('fieldSubjectPlaceholder')}
+                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple/30"
+                    />
+                  </div>
+                  {isPushType && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="text-xs font-bold text-gray-400 bg-gray-100 rounded px-1.5 py-0.5 uppercase tracking-wider">ES</span>
+                        <label className="text-sm font-medium text-gray-700">{t('fieldSubject')} (Español)</label>
+                      </div>
+                      <input
+                        type="text"
+                        value={subjectEs}
+                        onChange={(e) => setSubjectEs(e.target.value)}
+                        placeholder="Título en español..."
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple/30"
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -390,23 +429,51 @@ export default function CampaignForm({
                   )}
                 </div>
               ) : (
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-sm font-medium text-gray-700">{t('fieldBody')} *</label>
-                    {maxBody && (
-                      <span className={`text-xs ${body.length > maxBody ? 'text-red-500' : 'text-gray-400'}`}>
-                        {t('charCount', { count: body.length, max: maxBody })}
-                      </span>
-                    )}
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        {isPushType && <span className="text-xs font-bold text-gray-400 bg-gray-100 rounded px-1.5 py-0.5 uppercase tracking-wider">EN</span>}
+                        <label className="text-sm font-medium text-gray-700">{t('fieldBody')} *</label>
+                      </div>
+                      {maxBody && (
+                        <span className={`text-xs ${body.length > maxBody ? 'text-red-500' : 'text-gray-400'}`}>
+                          {t('charCount', { count: body.length, max: maxBody })}
+                        </span>
+                      )}
+                    </div>
+                    <textarea
+                      value={body}
+                      onChange={(e) => setBody(e.target.value)}
+                      placeholder={t('fieldBodyPlaceholder')}
+                      rows={4}
+                      maxLength={maxBody}
+                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple/30 resize-none"
+                    />
                   </div>
-                  <textarea
-                    value={body}
-                    onChange={(e) => setBody(e.target.value)}
-                    placeholder={t('fieldBodyPlaceholder')}
-                    rows={4}
-                    maxLength={maxBody}
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple/30 resize-none"
-                  />
+                  {isPushType && (
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-gray-400 bg-gray-100 rounded px-1.5 py-0.5 uppercase tracking-wider">ES</span>
+                          <label className="text-sm font-medium text-gray-700">{t('fieldBody')} (Español)</label>
+                        </div>
+                        {maxBody && (
+                          <span className={`text-xs ${pushBodyEs.length > maxBody ? 'text-red-500' : 'text-gray-400'}`}>
+                            {t('charCount', { count: pushBodyEs.length, max: maxBody })}
+                          </span>
+                        )}
+                      </div>
+                      <textarea
+                        value={pushBodyEs}
+                        onChange={(e) => setPushBodyEs(e.target.value)}
+                        placeholder="Cuerpo del mensaje en español..."
+                        rows={4}
+                        maxLength={maxBody}
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple/30 resize-none"
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 

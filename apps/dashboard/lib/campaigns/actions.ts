@@ -46,6 +46,7 @@ function validateCampaignInput(input: {
   body: string;
   body_en: string | null;
   body_es: string | null;
+  subject_es?: string | null;
   type: string;
   subject: string | null;
   segment: string;
@@ -80,6 +81,7 @@ export async function createCampaign(formData: FormData) {
     name: formData.get('name') as string,
     type,
     subject: formData.get('subject') as string | null,
+    subject_es: formData.get('subject_es') as string | null,
     body: formData.get('body') as string,
     body_en: formData.get('body_en') as string | null,
     body_es: formData.get('body_es') as string | null,
@@ -100,6 +102,14 @@ export async function createCampaign(formData: FormData) {
     return { error: (e as Error).message };
   }
 
+  const buildDescription = (i: typeof input) => {
+    if (i.type === 'email') return JSON.stringify({ body_en: i.body_en, body_es: i.body_es });
+    if (i.type === 'push' && (i.subject_es || i.body_es)) {
+      return JSON.stringify({ subject_es: i.subject_es || '', body_es: i.body_es || '' });
+    }
+    return null;
+  };
+
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('campaigns')
@@ -110,9 +120,7 @@ export async function createCampaign(formData: FormData) {
       type: input.type,
       subject: input.subject || null,
       body: input.body ? input.body.trim() : (input.body_en || input.body_es || ''),
-      description: input.type === 'email'
-        ? JSON.stringify({ body_en: input.body_en, body_es: input.body_es })
-        : null,
+      description: buildDescription(input),
       image_url: input.image_url || null,
       cta_text: input.cta_text || null,
       cta_url: input.cta_url || null,
@@ -154,6 +162,7 @@ export async function updateCampaign(campaignId: string, formData: FormData) {
     name: formData.get('name') as string,
     type: updateType,
     subject: formData.get('subject') as string | null,
+    subject_es: formData.get('subject_es') as string | null,
     body: formData.get('body') as string,
     body_en: formData.get('body_en') as string | null,
     body_es: formData.get('body_es') as string | null,
@@ -168,6 +177,14 @@ export async function updateCampaign(campaignId: string, formData: FormData) {
   const validationError = validateCampaignInput(input);
   if (validationError) return { error: validationError };
 
+  const buildDescription = (i: typeof input) => {
+    if (i.type === 'email') return JSON.stringify({ body_en: i.body_en, body_es: i.body_es });
+    if (i.type === 'push' && (i.subject_es || i.body_es)) {
+      return JSON.stringify({ subject_es: i.subject_es || '', body_es: i.body_es || '' });
+    }
+    return null;
+  };
+
   const { error } = await supabase
     .from('campaigns')
     .update({
@@ -175,9 +192,7 @@ export async function updateCampaign(campaignId: string, formData: FormData) {
       type: input.type,
       subject: input.subject || null,
       body: input.body ? input.body.trim() : (input.body_en || input.body_es || ''),
-      description: input.type === 'email'
-        ? JSON.stringify({ body_en: input.body_en, body_es: input.body_es })
-        : null,
+      description: buildDescription(input),
       image_url: input.image_url || null,
       cta_text: input.cta_text || null,
       cta_url: input.cta_url || null,
@@ -294,6 +309,17 @@ export async function sendCampaignNow(campaignId: string) {
       sendError = 'OneSignal credentials are not configured.';
     } else {
       try {
+        // Parse bilingual push content stored in description
+        let pushSubjectEs: string | null = null;
+        let pushBodyEs: string | null = null;
+        if (campaign.description) {
+          try {
+            const pushDesc = JSON.parse(campaign.description) as { subject_es?: string; body_es?: string };
+            pushSubjectEs = pushDesc.subject_es || null;
+            pushBodyEs = pushDesc.body_es || null;
+          } catch { /* not bilingual JSON — use EN only */ }
+        }
+
         const res = await fetch('https://onesignal.com/api/v1/notifications', {
           method: 'POST',
           headers: {
@@ -303,8 +329,14 @@ export async function sendCampaignNow(campaignId: string) {
           body: JSON.stringify({
             app_id: appId,
             include_external_user_ids: memberIds,
-            headings: { en: campaign.subject ?? campaign.name },
-            contents: { en: campaign.body },
+            headings: {
+              en: campaign.subject ?? campaign.name,
+              ...(pushSubjectEs ? { es: pushSubjectEs } : {}),
+            },
+            contents: {
+              en: campaign.body,
+              ...(pushBodyEs ? { es: pushBodyEs } : {}),
+            },
             data: {
               campaignId,
               bonusPoints: campaign.bonus_points,
