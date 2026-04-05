@@ -58,52 +58,54 @@ export default async function PricingPage() {
 
             <div
               style={{
-                background: '#0d0d14',
                 border: '1px solid rgba(255,255,255,0.07)',
                 borderRadius: '16px',
                 overflow: 'hidden',
               }}
             >
-              {/* Header */}
-              <div className="hidden md:grid grid-cols-5 gap-4 px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                <div className="text-white/40 text-xs font-semibold tracking-wide uppercase">{t('featureLabel')}</div>
-                {['Starter', 'Pro', 'Scale'].map((p) => (
-                  <div key={p} className="text-center text-white font-semibold text-sm">{p}</div>
-                ))}
-                <div className="text-center font-semibold text-sm" style={{ color: '#a5b4fc' }}>Enterprise</div>
-              </div>
+              <div className="overflow-x-auto" style={{ background: '#0d0d14' }}>
+                <div style={{ minWidth: '560px' }}>
+                  {/* Header */}
+                  <div className="grid grid-cols-5 gap-4 px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div className="text-white/40 text-xs font-semibold tracking-wide uppercase">{t('featureLabel')}</div>
+                    {['Starter', 'Pro', 'Scale'].map((p) => (
+                      <div key={p} className="text-center text-white font-semibold text-sm">{p}</div>
+                    ))}
+                    <div className="text-center font-semibold text-sm" style={{ color: '#a5b4fc' }}>Enterprise</div>
+                  </div>
 
-              {TABLE_ROWS.map((row, i) => (
-                <div
-                  key={i}
-                  className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-4 px-4 md:px-6 py-4"
-                  style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-                >
-                  <div className="text-white/60 text-sm">{row.feature}</div>
-                  {[row.starter, row.pro, row.scale, row.enterprise].map((val, j) => (
-                    <div key={j} className={`text-center ${j >= 2 ? 'col-span-2 md:col-span-1' : ''}`}>
-                      <span className="md:hidden text-white/40 text-xs mr-2">{['Starter', 'Pro', 'Scale', 'Enterprise'][j]}:</span>
-                      {val === true ? (
-                        <svg
-                          className={`w-4 h-4 mx-auto ${j === 3 ? 'text-indigo-400' : 'text-purple-400'}`}
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth="2.5"
-                        >
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      ) : val === false ? (
-                        <svg className="w-4 h-4 mx-auto text-white/15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                          <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      ) : (
-                        <span className={`text-xs ${j === 3 ? 'text-indigo-300' : 'text-white/60'}`}>{val as string}</span>
-                      )}
+                  {TABLE_ROWS.map((row, i) => (
+                    <div
+                      key={i}
+                      className="grid grid-cols-5 gap-4 px-6 py-4"
+                      style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                    >
+                      <div className="text-white/60 text-sm">{row.feature}</div>
+                      {[row.starter, row.pro, row.scale, row.enterprise].map((val, j) => (
+                        <div key={j} className="text-center">
+                          {val === true ? (
+                            <svg
+                              className={`w-4 h-4 mx-auto ${j === 3 ? 'text-indigo-400' : 'text-purple-400'}`}
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          ) : val === false ? (
+                            <svg className="w-4 h-4 mx-auto text-white/15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                          ) : (
+                            <span className={`text-xs ${j === 3 ? 'text-indigo-300' : 'text-white/60'}`}>{val as string}</span>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   ))}
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </section>

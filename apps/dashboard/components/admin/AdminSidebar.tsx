@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-function NavItem({ href = '', label = '', icon = <></> }) {
+function NavItem({ href = '', label = '', icon = <></>, onClose = () => {} }) {
   const pathname = usePathname();
   const isActive = pathname === href || (href !== '/admin' && pathname.startsWith(href));
 
   return (
     <Link
       href={href}
+      onClick={onClose}
       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
         isActive
           ? 'bg-[#7c3aed]/15 text-[#a78bfa]'
@@ -67,9 +68,9 @@ const IconSignOut = (
   </svg>
 );
 
-export function AdminSidebar({ admin = { id: '', full_name: '', email: '' } }) {
+export function AdminSidebar({ admin = { id: '', full_name: '', email: '' }, onClose = () => {} }) {
   return (
-    <aside className="w-64 min-h-screen bg-[#0f172a] border-r border-white/[0.06] flex flex-col fixed inset-y-0 left-0 z-40">
+    <aside className="w-64 h-full min-h-screen bg-[#0f172a] border-r border-white/[0.06] flex flex-col">
       {/* Logo */}
       <div className="px-6 py-5 border-b border-white/[0.06]">
         <div className="flex items-center gap-2">
@@ -82,11 +83,11 @@ export function AdminSidebar({ admin = { id: '', full_name: '', email: '' } }) {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-0.5">
-        <NavItem href="/admin" label="Overview" icon={IconOverview} />
-        <NavItem href="/admin/tenants" label="Tenants" icon={IconTenants} />
-        <NavItem href="/admin/revenue" label="Revenue" icon={IconRevenue} />
-        <NavItem href="/admin/logs" label="System Logs" icon={IconLogs} />
-        <NavItem href="/admin/settings" label="Settings" icon={IconSettings} />
+        <NavItem href="/admin" label="Overview" icon={IconOverview} onClose={onClose} />
+        <NavItem href="/admin/tenants" label="Tenants" icon={IconTenants} onClose={onClose} />
+        <NavItem href="/admin/revenue" label="Revenue" icon={IconRevenue} onClose={onClose} />
+        <NavItem href="/admin/logs" label="System Logs" icon={IconLogs} onClose={onClose} />
+        <NavItem href="/admin/settings" label="Settings" icon={IconSettings} onClose={onClose} />
       </nav>
 
       {/* Footer */}
