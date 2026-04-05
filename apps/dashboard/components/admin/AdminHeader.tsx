@@ -35,7 +35,7 @@ export async function AdminHeader({ admin = { id: '', full_name: '', email: '' }
   return (
     <div className="sticky top-0 z-30">
       {previewPlan && <PlanPreviewBanner plan={previewPlan} />}
-      <header className="bg-[#0f172a]/95 backdrop-blur border-b border-white/[0.06] px-8 py-4 flex items-center justify-between">
+      <header className="bg-[#0a0a0f]/85 backdrop-blur-[12px] border-b border-white/[0.06] px-8 py-4 flex items-center justify-between">
         <h1 className="text-lg font-semibold text-white">{title ?? 'Admin'}</h1>
         <div className="flex items-center gap-4">
           {/* At-risk notification bell */}

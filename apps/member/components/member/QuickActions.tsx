@@ -121,8 +121,8 @@ export function QuickActions({ memberCode, shareUrl }: QuickActionsProps) {
       {/* Toast */}
       {toast.visible && (
         <div
-          className="absolute left-5 right-5 rounded-xl px-4 py-3 text-[13px] text-white text-center z-50 animate-slide-up"
-          style={{ background: 'var(--text)', bottom: '-52px' }}
+          className="fixed left-5 right-5 max-w-md mx-auto rounded-xl px-4 py-3 text-[13px] text-white text-center z-[60] animate-slide-up"
+          style={{ background: 'var(--text)', bottom: '80px' }}
         >
           {toast.message}
         </div>

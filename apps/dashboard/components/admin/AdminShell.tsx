@@ -33,7 +33,7 @@ export function AdminShell({ admin, header, children }: AdminShellProps) {
       </div>
 
       {/* Main area */}
-      <div className="flex-1 flex flex-col lg:pl-64 min-w-0">
+      <div className="flex-1 flex flex-col lg:pl-64 min-w-0 bg-[#0a0a0f]">
         {/* Mobile top bar */}
         <div className="lg:hidden sticky top-0 z-20 flex items-center gap-3 px-4 py-3 bg-[#0f172a]/95 backdrop-blur border-b border-white/[0.06]">
           <button

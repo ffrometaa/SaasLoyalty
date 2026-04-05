@@ -33,8 +33,8 @@ export function MemberHero({ member }: MemberHeroProps) {
           width: 220,
           height: 220,
           background: 'rgba(255,255,255,0.04)',
-          top: -60,
-          right: -60,
+          top: -80,
+          right: -80,
         }}
       />
       <div
@@ -43,8 +43,8 @@ export function MemberHero({ member }: MemberHeroProps) {
           width: 140,
           height: 140,
           background: 'rgba(255,255,255,0.03)',
-          bottom: -20,
-          left: 30,
+          bottom: -50,
+          left: 10,
         }}
       />
 

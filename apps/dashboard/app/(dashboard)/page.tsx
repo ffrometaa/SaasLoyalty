@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Users, Gift, TrendingUp, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { MetricCard } from '../../components/MetricCard';
@@ -43,6 +43,7 @@ export default function DashboardPage() {
   const t = useTranslations('dashboard');
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [activity, setActivity] = useState<ActivityItem[] | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch('/api/analytics')
@@ -54,16 +55,26 @@ export default function DashboardPage() {
       .then(data => { if (data?.activity) setActivity(data.activity); });
   }, []);
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+      { threshold: 0.1 }
+    );
+    const els = scrollRef.current?.querySelectorAll('.animate-on-scroll') ?? [];
+    els.forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, [metrics, activity]);
+
   return (
-    <div className="p-6 lg:p-8">
+    <div className="p-6 lg:p-8" ref={scrollRef}>
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 animate-on-scroll">
         <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
         <p className="text-gray-600 mt-1">{t('subtitle')}</p>
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8 animate-on-scroll">
         <MetricCard
           title={t('activeMembers')}
           value={metrics ? String(metrics.activeMembers) : '—'}
@@ -91,10 +102,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="mb-8">
+      <div className="mb-8 animate-on-scroll">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('quickActions')}</h2>
         <div className="grid gap-4 md:grid-cols-3">
-          <button onClick={() => router.push('/members')} className="p-4 bg-white rounded-lg border hover:border-brand-purple hover:shadow-md transition-all text-left">
+          <button onClick={() => router.push('/members')} className="p-4 bg-white rounded-lg border hover:border-brand-purple hover:shadow-md card-hover transition-all text-left">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-brand-purple-100 rounded-lg">
                 <Users className="h-5 w-5 text-brand-purple" />
@@ -105,7 +116,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </button>
-          <button onClick={() => router.push('/rewards')} className="p-4 bg-white rounded-lg border hover:border-brand-purple hover:shadow-md transition-all text-left">
+          <button onClick={() => router.push('/rewards')} className="p-4 bg-white rounded-lg border hover:border-brand-purple hover:shadow-md card-hover transition-all text-left">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-lg">
                 <Gift className="h-5 w-5 text-green-600" />
@@ -116,7 +127,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </button>
-          <button onClick={() => router.push('/redemptions')} className="p-4 bg-white rounded-lg border hover:border-brand-purple hover:shadow-md transition-all text-left">
+          <button onClick={() => router.push('/redemptions')} className="p-4 bg-white rounded-lg border hover:border-brand-purple hover:shadow-md card-hover transition-all text-left">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-amber-100 rounded-lg">
                 <TrendingUp className="h-5 w-5 text-amber-600" />
@@ -131,7 +142,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-white rounded-lg border">
+      <div className="bg-white rounded-lg border animate-on-scroll">
         <div className="px-6 py-4 border-b">
           <h2 className="text-lg font-semibold text-gray-900">{t('recentActivity')}</h2>
         </div>

@@ -233,17 +233,18 @@ export default function JoinPage() {
 
   const inputClass = [
     'w-full px-4 py-3.5 rounded-[14px] text-sm outline-none transition-all',
-    'bg-white border border-[#e8e4dc] text-[#2c2c2a]',
-    'focus:border-[#4a5440]',
+    'bg-white/5 border border-white/10 text-white placeholder:text-white/30',
+    'focus:border-[#7c3aed]/60 focus:bg-white/8',
   ].join(' ');
 
   const selectClass = inputClass + ' appearance-none';
 
   const btnClass = [
-    'w-full py-4 rounded-[14px] text-[15px] font-medium text-white',
-    'flex items-center justify-center gap-2 transition-opacity',
-    'bg-[#4a5440]',
+    'w-full py-4 rounded-[14px] text-[15px] font-semibold text-white',
+    'flex items-center justify-center gap-2 transition-all',
   ].join(' ');
+
+  const btnStyle = { background: 'linear-gradient(135deg, #e11d48, #7c3aed)' };
 
   const Spinner = () => (
     <svg className="animate-spin" width="18" height="18" fill="none" viewBox="0 0 24 24">
@@ -256,8 +257,7 @@ export default function JoinPage() {
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-1.5 text-sm mb-8"
-      style={{ color: '#8a887f' }}
+      className="flex items-center gap-1.5 text-sm mb-8 text-white/40 hover:text-white/70 transition-colors"
     >
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
         <polyline points="15 18 9 12 15 6" />
@@ -267,9 +267,9 @@ export default function JoinPage() {
   );
 
   const TenantChip = () => tenant ? (
-    <div className="flex items-center gap-2 mb-6 px-3 py-2 rounded-xl bg-white border border-[#e8e4dc] w-fit">
-      <span className="text-xs text-[#8a887f]">Negocio:</span>
-      <span className="text-sm font-medium text-[#2c2c2a]">{tenant.name}</span>
+    <div className="flex items-center gap-2 mb-6 px-3 py-2 rounded-xl bg-white/5 border border-white/10 w-fit">
+      <span className="text-xs text-white/40">Negocio:</span>
+      <span className="text-sm font-medium text-white">{tenant.name}</span>
     </div>
   ) : null;
 
@@ -278,7 +278,7 @@ export default function JoinPage() {
   return (
     <main
       className="min-h-screen flex flex-col items-center justify-center px-6"
-      style={{ background: '#faf8f4' }}
+      style={{ background: '#0a0a0f' }}
     >
       <div className="w-full max-w-sm">
 
@@ -286,17 +286,17 @@ export default function JoinPage() {
         <div className="mb-8 text-center">
           <h1
             style={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: 36,
-              fontWeight: 300,
-              color: '#2c2c2a',
-              letterSpacing: '0.02em',
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: 32,
+              fontWeight: 700,
+              color: 'white',
+              letterSpacing: '-0.02em',
             }}
           >
             {tenant?.name ?? 'Bienvenido'}
           </h1>
           {!tenant && (
-            <p className="text-sm mt-1" style={{ color: '#8a887f' }}>
+            <p className="text-sm mt-2 text-white/45">
               Ingresá el código de tu negocio para comenzar
             </p>
           )}
@@ -306,7 +306,7 @@ export default function JoinPage() {
         {step === 'code' && (
           <form onSubmit={handleCodeSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: '#2c2c2a' }}>
+              <label className="block text-sm font-medium mb-1.5 text-white/70">
                 Código del negocio
               </label>
               <input
@@ -321,19 +321,19 @@ export default function JoinPage() {
                 className={inputClass}
                 style={{ letterSpacing: '0.1em', fontWeight: 600 }}
               />
-              <p className="text-xs mt-1.5" style={{ color: '#8a887f' }}>
+              <p className="text-xs mt-1.5 text-white/35">
                 Pedíselo al negocio o escaneá su código QR
               </p>
             </div>
 
             {error && (
-              <p className="text-sm px-3 py-2 rounded-lg" style={{ background: '#fef2f2', color: '#dc2626' }}>
+              <p className="text-sm px-3 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20">
                 {error}
               </p>
             )}
 
             <button type="submit" disabled={loading || !code.trim()} className={btnClass}
-              style={{ opacity: loading || !code.trim() ? 0.6 : 1 }}>
+              style={{ ...btnStyle, opacity: loading || !code.trim() ? 0.6 : 1 }}>
               {loading ? <><Spinner /> Verificando...</> : 'Continuar'}
             </button>
           </form>
@@ -346,7 +346,7 @@ export default function JoinPage() {
             <TenantChip />
 
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: '#2c2c2a' }}>
+              <label className="block text-sm font-medium mb-1.5 text-white/70">
                 Correo electrónico
               </label>
               <input
@@ -362,13 +362,13 @@ export default function JoinPage() {
             </div>
 
             {error && (
-              <p className="text-sm px-3 py-2 rounded-lg" style={{ background: '#fef2f2', color: '#dc2626' }}>
+              <p className="text-sm px-3 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20">
                 {error}
               </p>
             )}
 
             <button type="submit" disabled={loading || !email.trim()} className={btnClass}
-              style={{ opacity: loading || !email.trim() ? 0.6 : 1 }}>
+              style={{ ...btnStyle, opacity: loading || !email.trim() ? 0.6 : 1 }}>
               {loading ? <><Spinner /> Verificando...</> : 'Continuar'}
             </button>
           </form>
@@ -380,21 +380,21 @@ export default function JoinPage() {
             <BackBtn onClick={() => { setStep('email'); setError(''); }} />
             <TenantChip />
 
-            <p className="text-sm mb-2" style={{ color: '#8a887f' }}>
+            <p className="text-sm mb-2 text-white/45">
               Completá tus datos para crear tu cuenta
             </p>
 
             {/* First + Last name */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: '#2c2c2a' }}>
+                <label className="block text-sm font-medium mb-1.5 text-white/70">
                   Nombre *
                 </label>
                 <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)}
                   placeholder="Ana" autoComplete="given-name" required className={inputClass} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: '#2c2c2a' }}>
+                <label className="block text-sm font-medium mb-1.5 text-white/70">
                   Apellido
                 </label>
                 <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)}
@@ -404,8 +404,8 @@ export default function JoinPage() {
 
             {/* Phone */}
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: '#2c2c2a' }}>
-                Teléfono <span style={{ color: '#8a887f', fontWeight: 400 }}>(opcional)</span>
+              <label className="block text-sm font-medium mb-1.5 text-white/70">
+                Teléfono <span className="text-white/35 font-normal">(opcional)</span>
               </label>
               <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
                 placeholder="+1 555 0000" autoComplete="tel" className={inputClass} />
@@ -413,8 +413,8 @@ export default function JoinPage() {
 
             {/* Birthday */}
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: '#2c2c2a' }}>
-                Cumpleaños <span style={{ color: '#8a887f', fontWeight: 400 }}>(para ofertas especiales)</span>
+              <label className="block text-sm font-medium mb-1.5 text-white/70">
+                Cumpleaños <span className="text-white/35 font-normal">(para ofertas especiales)</span>
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <select value={birthMonth} onChange={(e) => setBirthMonth(e.target.value)} className={selectClass}>
@@ -434,14 +434,14 @@ export default function JoinPage() {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: '#2c2c2a' }}>
+              <label className="block text-sm font-medium mb-1.5 text-white/70">
                 Contraseña *
               </label>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mínimo 6 caracteres" autoComplete="new-password" required className={inputClass} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: '#2c2c2a' }}>
+              <label className="block text-sm font-medium mb-1.5 text-white/70">
                 Confirmá la contraseña *
               </label>
               <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
@@ -449,23 +449,23 @@ export default function JoinPage() {
             </div>
 
             {error && (
-              <p className="text-sm px-3 py-2 rounded-lg" style={{ background: '#fef2f2', color: '#dc2626' }}>
+              <p className="text-sm px-3 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20">
                 {error}
               </p>
             )}
 
             <button type="submit" disabled={loading || !firstName.trim() || !password || !confirmPassword}
-              className={btnClass} style={{ opacity: loading || !firstName.trim() || !password || !confirmPassword ? 0.6 : 1 }}>
+              className={btnClass} style={{ ...btnStyle, opacity: loading || !firstName.trim() || !password || !confirmPassword ? 0.6 : 1 }}>
               {loading ? <><Spinner /> Creando cuenta...</> : 'Crear cuenta'}
             </button>
 
-            <p className="text-xs text-center" style={{ color: '#8a887f' }}>
+            <p className="text-xs text-center text-white/30">
               Al registrarte aceptás los{' '}
-              <a href="https://loyalbase.dev/terms" target="_blank" rel="noopener noreferrer" className="underline">
+              <a href="https://loyalbase.dev/terms" target="_blank" rel="noopener noreferrer" className="underline text-[#a78bfa]">
                 Términos de servicio
               </a>
               {' '}y la{' '}
-              <a href="https://loyalbase.dev/privacy" target="_blank" rel="noopener noreferrer" className="underline">
+              <a href="https://loyalbase.dev/privacy" target="_blank" rel="noopener noreferrer" className="underline text-[#a78bfa]">
                 Política de privacidad
               </a>.
             </p>
@@ -478,17 +478,17 @@ export default function JoinPage() {
             <BackBtn onClick={() => { setStep('email'); setError(''); setLoginPassword(''); }} />
             <TenantChip />
 
-            <div className="px-4 py-3 rounded-xl mb-2" style={{ background: '#f0f0eb' }}>
-              <p className="text-xs" style={{ color: '#8a887f' }}>Iniciando sesión como</p>
-              <p className="text-sm font-medium" style={{ color: '#2c2c2a' }}>{email}</p>
+            <div className="px-4 py-3 rounded-xl mb-2 bg-white/5 border border-white/10">
+              <p className="text-xs text-white/40">Iniciando sesión como</p>
+              <p className="text-sm font-medium text-white">{email}</p>
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-1.5">
-                <label className="text-sm font-medium" style={{ color: '#2c2c2a' }}>
+                <label className="text-sm font-medium text-white/70">
                   Contraseña
                 </label>
-                <a href="/forgot-password" className="text-xs underline" style={{ color: '#4a5440' }}>
+                <a href="/forgot-password" className="text-xs underline text-[#a78bfa]">
                   ¿Olvidaste tu contraseña?
                 </a>
               </div>
@@ -497,13 +497,13 @@ export default function JoinPage() {
             </div>
 
             {error && (
-              <p className="text-sm px-3 py-2 rounded-lg" style={{ background: '#fef2f2', color: '#dc2626' }}>
+              <p className="text-sm px-3 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20">
                 {error}
               </p>
             )}
 
             <button type="submit" disabled={loading || !loginPassword} className={btnClass}
-              style={{ opacity: loading || !loginPassword ? 0.6 : 1 }}>
+              style={{ ...btnStyle, opacity: loading || !loginPassword ? 0.6 : 1 }}>
               {loading ? <><Spinner /> Ingresando...</> : 'Ingresar'}
             </button>
           </form>

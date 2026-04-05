@@ -86,39 +86,42 @@ export function InstallPrompt() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 p-4 z-50 animate-slide-up">
-      <div className="bg-white rounded-xl shadow-2xl border border-gray-200 p-4 max-w-md mx-auto">
+    <div className="fixed bottom-0 left-0 right-0 p-4 z-[60] animate-slide-up">
+      <div className="rounded-xl shadow-2xl p-4 max-w-md mx-auto" style={{ background: '#1a1a2e', border: '1px solid rgba(124,58,237,0.25)' }}>
         <div className="flex items-start gap-4">
-          <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
-            <Smartphone className="h-6 w-6 text-indigo-600" />
+          <div className="h-12 w-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(124,58,237,0.2)' }}>
+            <Smartphone className="h-6 w-6" style={{ color: '#a78bfa' }} />
           </div>
-          
+
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900">Install App</h3>
-            <p className="text-sm text-gray-600 mt-1">
-              Add to your home screen for a faster experience and offline access.
+            <h3 className="font-semibold text-white">Instalar aplicación</h3>
+            <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              Agregá a tu pantalla de inicio para acceso rápido sin conexión.
             </p>
-            
+
             <div className="flex gap-2 mt-3">
               <button
                 onClick={handleInstall}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 text-white text-sm font-medium rounded-lg transition-opacity"
+                style={{ background: 'linear-gradient(135deg, #e11d48, #7c3aed)' }}
               >
                 <Download className="h-4 w-4" />
-                Install
+                Instalar
               </button>
               <button
                 onClick={handleDismiss}
-                className="px-4 py-2 text-gray-600 text-sm font-medium hover:text-gray-900 transition-colors"
+                className="px-4 py-2 text-sm font-medium transition-colors"
+                style={{ color: 'rgba(255,255,255,0.4)' }}
               >
-                Not now
+                Ahora no
               </button>
             </div>
           </div>
-          
+
           <button
             onClick={handleDismiss}
-            className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-1 transition-colors"
+            style={{ color: 'rgba(255,255,255,0.3)' }}
           >
             <X className="h-5 w-5" />
           </button>
