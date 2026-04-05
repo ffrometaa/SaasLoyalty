@@ -86,9 +86,16 @@ export function Testimonials() {
               <blockquote className="text-white/80 text-sm italic leading-relaxed mb-6">
                 &ldquo;{item.quote}&rdquo;
               </blockquote>
-              <div>
-                <div className="font-semibold text-white text-sm">{item.name}</div>
-                <div className="text-white/40 text-xs mt-0.5">{item.business}</div>
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-indigo-600 flex items-center justify-center text-white font-semibold text-sm"
+                >
+                  {item.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                </div>
+                <div>
+                  <div className="font-semibold text-white text-sm">{item.name}</div>
+                  <div className="text-white/40 text-xs mt-0.5">{item.business}</div>
+                </div>
               </div>
             </div>
           ))}

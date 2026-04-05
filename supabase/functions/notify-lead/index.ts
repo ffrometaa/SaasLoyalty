@@ -3,17 +3,34 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!;
-const OWNER_EMAIL = 'felixdfrometa@gmail.com';
-const FROM_EMAIL = 'LoyaltyOS <leads@loyalbase.dev>';
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? '';
+const OWNER_EMAIL = Deno.env.get('LEAD_NOTIFICATION_EMAIL') ?? 'felixdfrometa@gmail.com';
+
+
 
 serve(async (req) => {
   try {
+    if (!RESEND_API_KEY || !OWNER_EMAIL) {
+      console.error('Missing environment variables: RESEND_API_KEY or LEAD_NOTIFICATION_EMAIL');
+      return new Response('Server misconfiguration', { status: 500 });
+    }
+
+    const contentType = req.headers.get('content-type');
+    if (!contentType?.includes('application/json')) {
+      return new Response('Invalid content type', { status: 400 });
+    }
+
     const payload = await req.json();
 
-    // Supabase webhook sends { type, table, record, old_record }
-    const record = payload.record;
+    if (!payload.type || !payload.record) {
+      return new Response('Invalid webhook payload', { status: 400 });
+    }
 
+    if (payload.type !== 'INSERT') {
+      return new Response('Only INSERT events are handled', { status: 200 });
+    }
+
+    const record = payload.record;
     if (!record) {
       return new Response('No record in payload', { status: 400 });
     }

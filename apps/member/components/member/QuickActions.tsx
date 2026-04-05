@@ -8,12 +8,41 @@ interface ToastState {
   message: string;
 }
 
-export function QuickActions() {
+interface QuickActionsProps {
+  memberCode?: string;
+  shareUrl?: string;
+}
+
+export function QuickActions({ memberCode, shareUrl }: QuickActionsProps) {
   const [toast, setToast] = useState<ToastState>({ visible: false, message: '' });
 
   function showToast(message: string) {
     setToast({ visible: true, message });
     setTimeout(() => setToast({ visible: false, message: '' }), 2500);
+  }
+
+  async function handleShareReferral() {
+    const shareData = {
+      title: 'Join my loyalty program!',
+      text: `Use my code ${memberCode || 'REFCODE'} to join and earn points!`,
+      url: shareUrl || window.location.origin,
+    };
+
+    if (navigator.share && navigator.canShare?.(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+          showToast('Code copied to clipboard!');
+        }
+      }
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+      showToast('Referral link copied!');
+    } else {
+      showToast('Sharing not available');
+    }
   }
 
   return (
@@ -66,7 +95,7 @@ export function QuickActions() {
 
         {/* Referir */}
         <button
-          onClick={() => showToast('Compartiendo tu código de referido...')}
+          onClick={handleShareReferral}
           className="flex flex-col items-center gap-1.5 rounded-[14px] p-3.5 cursor-pointer transition-colors w-full"
           style={{
             background: 'white',

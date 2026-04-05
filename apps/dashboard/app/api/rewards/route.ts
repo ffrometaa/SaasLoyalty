@@ -97,6 +97,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerSupabaseClient();
+    const { data: { session } } = await (supabase.auth as any).getSession();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { name, description, points_required, max_redemptions, valid_from, valid_until, is_active } = body;
 
@@ -115,12 +120,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get tenant ID from header (set by middleware)
-    const tenantId = request.headers.get('x-tenant-id');
+    // Get tenant ID from user's session
+    const { data: ownerTenant } = await supabase
+      .from('tenants')
+      .select('id')
+      .eq('auth_user_id', session.user.id)
+      .is('deleted_at', null)
+      .single();
+
+    let tenantId: string | null = ownerTenant?.id ?? null;
+
+    if (!tenantId) {
+      const { data: staffRecord } = await supabase
+        .from('tenant_users')
+        .select('tenant_id')
+        .eq('auth_user_id', session.user.id)
+        .single();
+      tenantId = staffRecord?.tenant_id ?? null;
+    }
+
     if (!tenantId) {
       return NextResponse.json(
-        { error: 'Tenant context required' },
-        { status: 401 }
+        { error: 'Tenant not found' },
+        { status: 404 }
       );
     }
 

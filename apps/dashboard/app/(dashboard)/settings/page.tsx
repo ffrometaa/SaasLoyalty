@@ -333,6 +333,23 @@ export default function SettingsPage() {
     }
   };
 
+  const handleSaveBranding = async () => {
+    const res = await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        primaryColor: branding.primaryColor,
+        accentColor: branding.accentColor,
+      }),
+    });
+    if (res.ok) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } else {
+      alert('Failed to save branding colors. Please try again.');
+    }
+  };
+
   const handleExportData = () => {
     const exportData = {
       business: profile,
@@ -716,7 +733,7 @@ export default function SettingsPage() {
 
                 <div className="pt-4 border-t">
                   <button
-                    onClick={() => alert('Branding customization coming soon!')}
+                    onClick={handleSaveBranding}
                     className="px-4 py-2 bg-brand-purple text-white rounded-lg text-sm font-medium hover:bg-brand-purple-700 transition-colors"
                   >
                     Apply Branding

@@ -116,5 +116,12 @@
     "joinProgram": "Unirme al programa",
     "alreadyHaveAccount": "¿Ya tienes cuenta?",
     "signIn": "Iniciar sesión"
+  },
+  "offline": {
+    "title": "Estás sin conexión",
+    "description": "Por favor verifica tu conexión a internet e intenta de nuevo. Parte del contenido puede estar disponible en caché.",
+    "tryAgain": "Reintentar",
+    "goHome": "Ir al inicio",
+    "syncedNote": "Tus datos de fidelidad se sincronizan cuando vuelvas a tener conexión."
   }
 }

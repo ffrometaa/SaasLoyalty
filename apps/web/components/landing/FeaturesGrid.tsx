@@ -68,6 +68,7 @@ export function FeaturesGrid() {
 
   return (
     <section
+      id="features"
       ref={sectionRef}
       className="py-24 px-6"
       style={{ background: 'linear-gradient(180deg, #0a0a0f 0%, #0d0d18 100%)' }}

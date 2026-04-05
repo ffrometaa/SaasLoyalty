@@ -19,5 +19,7 @@ CREATE INDEX IF NOT EXISTS member_invitations_email_idx     ON public.member_inv
 ALTER TABLE public.member_invitations ENABLE ROW LEVEL SECURITY;
 
 -- Tenant operators can manage their own invitations
+DROP POLICY IF EXISTS "tenant_manage_invitations" ON public.member_invitations;
+
 CREATE POLICY "tenant_manage_invitations" ON public.member_invitations
   FOR ALL USING (tenant_id = auth_tenant_id());

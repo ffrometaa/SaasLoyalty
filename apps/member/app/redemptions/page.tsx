@@ -1,34 +1,34 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { QrCode, ChevronLeft, CheckCircle, Clock, Gift } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { QrCode, ChevronLeft, CheckCircle, Clock, Gift, Loader2 } from 'lucide-react';
 
-// Mock data
-const mockRedemptions = [
-  { 
-    id: '1', 
-    reward: '10% Off Next Visit', 
-    status: 'pending', 
-    code: 'ABC123',
-    expiresAt: '2024-04-15',
-    usedAt: null 
-  },
-  { 
-    id: '2', 
-    reward: 'Free Massage (30 min)', 
-    status: 'used', 
-    code: 'DEF456',
-    expiresAt: '2024-03-01',
-    usedAt: '2024-02-28'
-  },
-];
+type Redemption = {
+  id: string;
+  reward_name: string;
+  status: 'pending' | 'used' | 'expired';
+  alphanumeric_code: string;
+  expires_at: string;
+  used_at: string | null;
+};
 
 export default function MyRedemptionsPage() {
-  const [selectedRedemption, setSelectedRedemption] = useState<typeof mockRedemptions[0] | null>(null);
+  const [redemptions, setRedemptions] = useState<Redemption[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedRedemption, setSelectedRedemption] = useState<Redemption | null>(null);
   
-  const pendingRedemptions = mockRedemptions.filter(r => r.status === 'pending');
-  const usedRedemptions = mockRedemptions.filter(r => r.status === 'used');
+  useEffect(() => {
+    fetch('/api/member/redemptions')
+      .then(r => r.json())
+      .then(data => {
+        if (data.redemptions) setRedemptions(data.redemptions);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const pendingRedemptions = redemptions.filter(r => r.status === 'pending');
+  const usedRedemptions = redemptions.filter(r => r.status === 'used');
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -48,6 +48,12 @@ export default function MyRedemptionsPage() {
       </header>
 
       <div className="p-4 space-y-6">
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+          </div>
+        ) : (
+        <>
         {/* Pending Redemptions */}
         {pendingRedemptions.length > 0 && (
           <section>
@@ -67,10 +73,10 @@ export default function MyRedemptionsPage() {
                         <QrCode className="h-6 w-6 text-indigo-600" />
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-900">{redemption.reward}</p>
+                        <p className="font-semibold text-gray-900">{redemption.reward_name}</p>
                         <p className="text-sm text-gray-500 flex items-center gap-1">
                           <Clock className="h-4 w-4" />
-                          Expires {new Date(redemption.expiresAt).toLocaleDateString()}
+                          Expires {new Date(redemption.expires_at).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
@@ -102,10 +108,10 @@ export default function MyRedemptionsPage() {
                         <Gift className="h-6 w-6 text-gray-400" />
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-900">{redemption.reward}</p>
+                        <p className="font-semibold text-gray-900">{redemption.reward_name}</p>
                         <p className="text-sm text-gray-500 flex items-center gap-1">
                           <CheckCircle className="h-4 w-4" />
-                          Used on {new Date(redemption.usedAt!).toLocaleDateString()}
+                          Used on {new Date(redemption.used_at!).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
@@ -120,7 +126,7 @@ export default function MyRedemptionsPage() {
         )}
 
         {/* Empty State */}
-        {mockRedemptions.length === 0 && (
+        {redemptions.length === 0 && (
           <div className="text-center py-12">
             <QrCode className="mx-auto h-16 w-16 text-gray-300" />
             <h3 className="mt-4 text-lg font-medium text-gray-900">No redemptions yet</h3>
@@ -135,6 +141,8 @@ export default function MyRedemptionsPage() {
               Browse Rewards
             </Link>
           </div>
+        )}
+        </>
         )}
       </div>
 
@@ -160,13 +168,13 @@ export default function MyRedemptionsPage() {
             <div className="mt-6 p-4 bg-indigo-50 rounded-xl">
               <p className="text-sm text-indigo-600">Or enter code:</p>
               <p className="text-3xl font-mono font-bold text-indigo-700 tracking-widest mt-1">
-                {selectedRedemption.code}
+                {selectedRedemption.alphanumeric_code}
               </p>
             </div>
             
             {/* Expiration */}
             <p className="mt-4 text-sm text-gray-500">
-              Valid until {new Date(selectedRedemption.expiresAt).toLocaleDateString()}
+              Valid until {new Date(selectedRedemption.expires_at).toLocaleDateString()}
             </p>
             
             <button

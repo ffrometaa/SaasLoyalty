@@ -116,5 +116,12 @@
     "joinProgram": "Join the program",
     "alreadyHaveAccount": "Already have an account?",
     "signIn": "Sign in"
+  },
+  "offline": {
+    "title": "You're Offline",
+    "description": "Please check your internet connection and try again. Some cached content may still be available.",
+    "tryAgain": "Try Again",
+    "goHome": "Go to Home",
+    "syncedNote": "Your loyalty data is synced when you're back online."
   }
 }

@@ -1,26 +1,98 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, MoreVertical, Gift, Edit, Trash2, Check, X, Eye, EyeOff } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-const mockRewards = [
-  { id: '1', name: 'Free Massage (30 min)', description: 'Relaxing full body massage', pointsRequired: 5000, redemptions: 24, isActive: true },
-  { id: '2', name: '10% Off Next Visit', description: 'Get 10% off your next service', pointsRequired: 1000, redemptions: 156, isActive: true },
-  { id: '3', name: 'Free Product Sample', description: 'Complimentary skincare product', pointsRequired: 2500, redemptions: 89, isActive: true },
-  { id: '4', name: 'VIP Treatment', description: 'Premium service experience', pointsRequired: 10000, redemptions: 5, isActive: true },
-  { id: '5', name: 'Birthday Special', description: 'Free treatment on birthday month', pointsRequired: 3000, redemptions: 0, isActive: false },
-];
+type Reward = {
+  id: string;
+  name: string;
+  description: string | null;
+  points_required: number;
+  redemption_count: number;
+  is_active: boolean;
+  max_redemptions: number | null;
+  valid_until: string | null;
+  created_at: string;
+};
 
 export default function RewardsPage() {
   const t = useTranslations('rewards');
 
-  const [rewards, setRewards] = useState(mockRewards);
+  const [rewards, setRewards] = useState<Reward[]>([]);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingReward, setEditingReward] = useState<typeof mockRewards[0] | null>(null);
+  const [editingReward, setEditingReward] = useState<Reward | null>(null);
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadRewards();
+  }, []);
+
+  const loadRewards = async () => {
+    setInitialLoading(true);
+    try {
+      const res = await fetch('/api/rewards');
+      if (res.ok) {
+        const data = await res.json();
+        setRewards(data.rewards || []);
+      } else {
+        setError('Failed to load rewards');
+      }
+    } catch {
+      setError('Failed to load rewards');
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
+  const handleCreate = async (formData: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/rewards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (res.ok) {
+        await loadRewards();
+        setIsCreateModalOpen(false);
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Failed to create reward');
+      }
+    } catch {
+      setError('Failed to create reward');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdate = async (id: string, updates: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/rewards/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      if (res.ok) {
+        await loadRewards();
+        setEditingReward(null);
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Failed to update reward');
+      }
+    } catch {
+      setError('Failed to update reward');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredRewards = rewards.filter(reward => {
     if (filter === 'active') return reward.isActive;
@@ -61,12 +133,12 @@ export default function RewardsPage() {
   const handleToggleActive = async (id: string) => {
     const reward = rewards.find(r => r.id === id);
     if (reward) {
-      await handleUpdate(id, { isActive: !reward.isActive });
+      await handleUpdate(id, { is_active: !reward.is_active });
     }
   };
 
-  const activeCount = rewards.filter(r => r.isActive).length;
-  const inactiveCount = rewards.filter(r => !r.isActive).length;
+  const activeCount = rewards.filter(r => r.is_active).length;
+  const inactiveCount = rewards.filter(r => !r.is_active).length;
 
   return (
     <div className="p-6 lg:p-8">
@@ -122,32 +194,37 @@ export default function RewardsPage() {
       </div>
 
       {/* Rewards Grid */}
+      {initialLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-purple border-t-transparent" />
+        </div>
+      ) : (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredRewards.map((reward) => (
           <div
             key={reward.id}
             className={`bg-white rounded-xl border overflow-hidden transition-all ${
-              !reward.isActive ? 'opacity-60 bg-gray-50' : 'hover:shadow-lg'
+              !reward.is_active ? 'opacity-60 bg-gray-50' : 'hover:shadow-lg'
             }`}
           >
             <div className="p-6">
               <div className="flex items-start justify-between">
                 <div className={`p-3 rounded-lg ${
-                  reward.isActive ? 'bg-brand-purple-100' : 'bg-gray-100'
+                  reward.is_active ? 'bg-brand-purple-100' : 'bg-gray-100'
                 }`}>
-                  <Gift className={`h-6 w-6 ${reward.isActive ? 'text-brand-purple' : 'text-gray-400'}`} />
+                  <Gift className={`h-6 w-6 ${reward.is_active ? 'text-brand-purple' : 'text-gray-400'}`} />
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleToggleActive(reward.id)}
                     className={`p-1.5 rounded-lg transition-colors ${
-                      reward.isActive
+                      reward.is_active
                         ? 'text-green-600 hover:bg-green-50'
                         : 'text-gray-400 hover:bg-gray-100'
                     }`}
-                    title={reward.isActive ? t('deactivate') : t('activate')}
+                    title={reward.is_active ? t('deactivate') : t('activate')}
                   >
-                    {reward.isActive ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+                    {reward.is_active ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
                   </button>
                   <button
                     onClick={() => setEditingReward(reward)}
@@ -162,15 +239,15 @@ export default function RewardsPage() {
               <p className="mt-1 text-sm text-gray-500 line-clamp-2">{reward.description}</p>
 
               <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-brand-purple">{reward.pointsRequired.toLocaleString()}</span>
+                <span className="text-2xl font-bold text-brand-purple">{reward.points_required.toLocaleString()}</span>
                 <span className="text-gray-500">{t('points')}</span>
               </div>
 
               <div className="mt-4 pt-4 border-t flex items-center justify-between">
                 <span className="text-sm text-gray-500">
-                  {reward.redemptions} {t('redeemed')}
+                  {reward.redemption_count} {t('redeemed')}
                 </span>
-                {reward.redemptions > 0 && (
+                {reward.redemption_count > 0 && (
                   <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
                     {t('popular')}
                   </span>
@@ -180,9 +257,10 @@ export default function RewardsPage() {
           </div>
         ))}
       </div>
+      )}
 
       {/* Empty State */}
-      {filteredRewards.length === 0 && (
+      {!initialLoading && filteredRewards.length === 0 && (
         <div className="text-center py-12 bg-white rounded-lg border">
           <Gift className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-4 text-lg font-medium text-gray-900">{t('noRewardsFound')}</h3>
@@ -226,7 +304,7 @@ function RewardModal({
   onSubmit,
   loading
 }: {
-  reward: typeof mockRewards[0] | null;
+  reward: Reward | null;
   onClose: () => void;
   onSubmit: (data: any) => void;
   loading: boolean;
@@ -237,21 +315,21 @@ function RewardModal({
   const [formData, setFormData] = useState({
     name: reward?.name || '',
     description: reward?.description || '',
-    pointsRequired: reward?.pointsRequired || '',
-    maxRedemptions: '',
-    validUntil: '',
-    isActive: reward?.isActive ?? true,
+    points_required: reward?.points_required || '',
+    max_redemptions: '',
+    valid_until: '',
+    is_active: reward?.is_active ?? true,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
       name: formData.name,
-      description: formData.description,
-      pointsRequired: parseInt(String(formData.pointsRequired)),
-      maxRedemptions: formData.maxRedemptions ? parseInt(String(formData.maxRedemptions)) : null,
-      validUntil: formData.validUntil || null,
-      isActive: formData.isActive,
+      description: formData.description || null,
+      points_required: parseInt(String(formData.points_required)),
+      max_redemptions: formData.max_redemptions ? parseInt(String(formData.max_redemptions)) : null,
+      valid_until: formData.valid_until || null,
+      is_active: formData.is_active,
     });
   };
 
