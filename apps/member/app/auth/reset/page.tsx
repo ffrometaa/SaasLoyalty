@@ -40,22 +40,24 @@ export default function AuthResetPage() {
     router.refresh();
   }
 
+  const darkInput = 'w-full px-4 py-3.5 rounded-[14px] text-sm outline-none transition-all bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-[#7c3aed]/60';
+
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: 'var(--cream, #faf8f4)' }}>
+    <main className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: '#0a0a0f' }}>
       <div className="w-full max-w-sm">
         <h1
-          className="mb-2"
-          style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 32, fontWeight: 300, color: 'var(--text, #2c2c2a)' }}
+          className="mb-2 text-white"
+          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em' }}
         >
           Nueva contraseña
         </h1>
-        <p className="text-sm mb-8" style={{ color: 'var(--muted, #8a887f)' }}>
+        <p className="text-sm mb-8 text-white/45">
           Elige una contraseña segura para tu cuenta.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text, #2c2c2a)' }}>
+            <label className="block text-sm font-medium mb-1.5 text-white/70">
               Nueva contraseña
             </label>
             <input
@@ -67,15 +69,12 @@ export default function AuthResetPage() {
               minLength={8}
               autoFocus
               required
-              className="w-full px-4 py-3.5 rounded-[14px] text-sm outline-none transition-all"
-              style={{ background: 'white', border: '1px solid var(--border, #e8e4dc)', color: 'var(--text, #2c2c2a)' }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--sage-dark, #4a5440)')}
-              onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border, #e8e4dc)')}
+              className={darkInput}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text, #2c2c2a)' }}>
+            <label className="block text-sm font-medium mb-1.5 text-white/70">
               Confirmar contraseña
             </label>
             <input
@@ -85,15 +84,12 @@ export default function AuthResetPage() {
               placeholder="Repite tu contraseña"
               autoComplete="new-password"
               required
-              className="w-full px-4 py-3.5 rounded-[14px] text-sm outline-none transition-all"
-              style={{ background: 'white', border: '1px solid var(--border, #e8e4dc)', color: 'var(--text, #2c2c2a)' }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--sage-dark, #4a5440)')}
-              onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border, #e8e4dc)')}
+              className={darkInput}
             />
           </div>
 
           {error && (
-            <p className="text-sm px-3 py-2 rounded-lg" style={{ background: '#fef2f2', color: '#dc2626' }}>
+            <p className="text-sm px-3 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20">
               {error}
             </p>
           )}
@@ -101,9 +97,9 @@ export default function AuthResetPage() {
           <button
             type="submit"
             disabled={loading || !password || !confirm}
-            className="w-full py-4 rounded-[14px] text-[15px] font-medium text-white flex items-center justify-center gap-2 transition-opacity"
+            className="w-full py-4 rounded-[14px] text-[15px] font-semibold text-white flex items-center justify-center gap-2 transition-opacity"
             style={{
-              background: 'var(--sage-dark, #4a5440)',
+              background: 'linear-gradient(135deg, #e11d48, #7c3aed)',
               opacity: loading || !password || !confirm ? 0.6 : 1,
             }}
           >

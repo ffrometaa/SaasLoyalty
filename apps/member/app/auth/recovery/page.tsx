@@ -40,12 +40,12 @@ export default function AuthRecoveryPage() {
 
   if (error) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: 'var(--cream, #faf8f4)' }}>
+      <main className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: '#0a0a0f' }}>
         <div className="w-full max-w-sm text-center">
-          <p className="text-sm px-4 py-3 rounded-lg mb-6" style={{ background: '#fef2f2', color: '#dc2626' }}>
+          <p className="text-sm px-4 py-3 rounded-lg mb-6 bg-red-500/10 text-red-400 border border-red-500/20">
             {error}
           </p>
-          <a href="/forgot-password" className="text-sm underline" style={{ color: 'var(--sage-dark, #4a5440)' }}>
+          <a href="/forgot-password" className="text-sm underline text-[#a78bfa]">
             Solicitar nuevo link
           </a>
         </div>
@@ -54,8 +54,8 @@ export default function AuthRecoveryPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: 'var(--cream, #faf8f4)' }}>
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" style={{ borderColor: 'var(--sage-dark, #4a5440)', borderTopColor: 'transparent' }} />
+    <main className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: '#0a0a0f' }}>
+      <div className="h-8 w-8 animate-spin rounded-full border-2" style={{ borderColor: 'rgba(124,58,237,0.3)', borderTopColor: '#7c3aed' }} />
     </main>
   );
 }

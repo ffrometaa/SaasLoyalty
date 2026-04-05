@@ -69,7 +69,7 @@ export default function DashboardPage() {
     <div className="p-6 lg:p-8" ref={scrollRef}>
       {/* Header */}
       <div className="mb-8 animate-on-scroll">
-        <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
+        <h1 className="text-2xl font-bold gradient-text">{t('title')}</h1>
         <p className="text-gray-600 mt-1">{t('subtitle')}</p>
       </div>
 
@@ -103,7 +103,7 @@ export default function DashboardPage() {
 
       {/* Quick Actions */}
       <div className="mb-8 animate-on-scroll">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('quickActions')}</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 font-display">{t('quickActions')}</h2>
         <div className="grid gap-4 md:grid-cols-3">
           <button onClick={() => router.push('/members')} className="p-4 bg-white rounded-lg border hover:border-brand-purple hover:shadow-md card-hover transition-all text-left">
             <div className="flex items-center gap-3">
@@ -144,7 +144,7 @@ export default function DashboardPage() {
       {/* Recent Activity */}
       <div className="bg-white rounded-lg border animate-on-scroll">
         <div className="px-6 py-4 border-b">
-          <h2 className="text-lg font-semibold text-gray-900">{t('recentActivity')}</h2>
+          <h2 className="text-lg font-semibold text-gray-900 font-display">{t('recentActivity')}</h2>
         </div>
         <div className="divide-y">
           {activity === null ? (

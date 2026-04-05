@@ -35,31 +35,33 @@ export default function ForgotPasswordPage() {
     setSent(true);
   }
 
+  const darkInput = 'w-full px-4 py-3.5 rounded-[14px] text-sm outline-none transition-all bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-[#7c3aed]/60';
+  const gradientBtn = { background: 'linear-gradient(135deg, #e11d48, #7c3aed)' };
+
   if (sent) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: 'var(--cream, #faf8f4)' }}>
+      <main className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: '#0a0a0f' }}>
         <div className="w-full max-w-sm text-center">
           <div
             className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-            style={{ background: 'var(--sage-light, #eef0eb)', border: '2px solid var(--sage, #7d8c6e)' }}
+            style={{ background: 'rgba(124,58,237,0.15)', border: '2px solid rgba(124,58,237,0.3)' }}
           >
-            <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="var(--sage-dark, #4a5440)" strokeWidth="1.5">
+            <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="#a78bfa" strokeWidth="1.5">
               <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
           <h1
-            className="mb-2"
-            style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 28, fontWeight: 400, color: 'var(--text, #2c2c2a)' }}
+            className="mb-2 text-white"
+            style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 28, fontWeight: 700, letterSpacing: '-0.02em' }}
           >
             {t('forgotPassword.checkEmail')}
           </h1>
-          <p className="text-sm leading-relaxed mb-8" style={{ color: 'var(--muted, #8a887f)' }}>
+          <p className="text-sm leading-relaxed mb-8 text-white/45">
             {t('forgotPassword.checkEmailDesc', { email })}
           </p>
           <Link
             href="/login"
-            className="text-sm underline"
-            style={{ color: 'var(--sage-dark, #4a5440)' }}
+            className="text-sm underline text-[#a78bfa]"
           >
             {t('backToLogin')}
           </Link>
@@ -69,12 +71,11 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: 'var(--cream, #faf8f4)' }}>
+    <main className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: '#0a0a0f' }}>
       <div className="w-full max-w-sm">
         <Link
           href="/login"
-          className="flex items-center gap-1.5 text-sm mb-8"
-          style={{ color: 'var(--muted, #8a887f)' }}
+          className="flex items-center gap-1.5 text-sm mb-8 text-white/40 hover:text-white/70 transition-colors"
         >
           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
             <polyline points="15 18 9 12 15 6" />
@@ -83,18 +84,18 @@ export default function ForgotPasswordPage() {
         </Link>
 
         <h1
-          className="mb-2"
-          style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 32, fontWeight: 300, color: 'var(--text, #2c2c2a)' }}
+          className="mb-2 text-white"
+          style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em' }}
         >
           {t('forgotPassword.title')}
         </h1>
-        <p className="text-sm mb-8" style={{ color: 'var(--muted, #8a887f)' }}>
+        <p className="text-sm mb-8 text-white/45">
           {t('forgotPassword.subtitle')}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text, #2c2c2a)' }}>
+            <label className="block text-sm font-medium mb-1.5 text-white/70">
               {t('email')}
             </label>
             <input
@@ -105,15 +106,12 @@ export default function ForgotPasswordPage() {
               autoComplete="email"
               autoFocus
               required
-              className="w-full px-4 py-3.5 rounded-[14px] text-sm outline-none transition-all"
-              style={{ background: 'white', border: '1px solid var(--border, #e8e4dc)', color: 'var(--text, #2c2c2a)' }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--sage-dark, #4a5440)')}
-              onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border, #e8e4dc)')}
+              className={darkInput}
             />
           </div>
 
           {error && (
-            <p className="text-sm px-3 py-2 rounded-lg" style={{ background: '#fef2f2', color: '#dc2626' }}>
+            <p className="text-sm px-3 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20">
               {error}
             </p>
           )}
@@ -121,11 +119,8 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             disabled={loading || !email.trim()}
-            className="w-full py-4 rounded-[14px] text-[15px] font-medium text-white flex items-center justify-center gap-2 transition-opacity"
-            style={{
-              background: 'var(--sage-dark, #4a5440)',
-              opacity: loading || !email.trim() ? 0.6 : 1,
-            }}
+            className="w-full py-4 rounded-[14px] text-[15px] font-semibold text-white flex items-center justify-center gap-2 transition-opacity"
+            style={{ ...gradientBtn, opacity: loading || !email.trim() ? 0.6 : 1 }}
           >
             {loading ? (
               <>

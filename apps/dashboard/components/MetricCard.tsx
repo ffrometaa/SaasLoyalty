@@ -16,7 +16,7 @@ export function MetricCard({ title, value, change, icon: Icon, description }: Me
   const t = useTranslations('dashboard');
 
   return (
-    <Card>
+    <Card className="card-hover">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-gray-600">{title}</CardTitle>
         <Icon className="h-5 w-5 text-gray-400" />

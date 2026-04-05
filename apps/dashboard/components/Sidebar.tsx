@@ -134,10 +134,10 @@ export function Sidebar() {
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`
-                  flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                  flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150
                   ${isActive
-                    ? 'bg-brand-purple-50 text-brand-purple'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ? 'bg-brand-purple-50 text-brand-purple shadow-sm'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:translate-x-0.5'
                   }
                 `}
               >
