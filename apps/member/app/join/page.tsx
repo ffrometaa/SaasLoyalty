@@ -41,12 +41,15 @@ export default function JoinPage() {
 
   const codeInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-validate cached code on mount
+  // Auto-validate code on mount — URL param takes priority over localStorage
   useEffect(() => {
-    const cached = localStorage.getItem(BIZ_CODE_KEY);
-    if (cached) {
-      setCode(cached);
-      validateCode(cached, true);
+    const params = new URLSearchParams(window.location.search);
+    const codeFromUrl = params.get('code')?.trim().toUpperCase();
+    const codeFromStorage = localStorage.getItem(BIZ_CODE_KEY) ?? '';
+    const initial = codeFromUrl ?? codeFromStorage;
+    if (initial) {
+      setCode(initial);
+      validateCode(initial, true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -76,17 +79,18 @@ export default function JoinPage() {
 
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!email.trim() || !tenant) return;
     setLoading(true);
     setError('');
     const res = await fetch('/api/auth/check-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      body: JSON.stringify({ email: email.trim().toLowerCase(), tenantId: tenant.id }),
     });
     const data = await res.json();
     setLoading(false);
-    setStep(data.exists ? 'login' : 'register');
+    // 'new_user' → register | 'existing_user_new_tenant' | 'existing_member' → login
+    setStep(data.status === 'new_user' ? 'register' : 'login');
   }
 
   async function handleRegister(e: React.FormEvent) {
