@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@loyalty-os/lib';
 import Link from 'next/link';
 
 export default function RegisterPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const tenantSlug = searchParams.get('tenant') ?? '';
   const invitationToken = searchParams.get('token') ?? '';
 
@@ -48,7 +49,7 @@ export default function RegisterPage() {
     const supabase = getSupabaseClient();
     const callbackUrl = `${window.location.origin}/auth/callback?redirect=/`;
 
-    const { error: authError } = await supabase.auth.signUp({
+    const { data, error: authError } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password,
       options: {
@@ -70,6 +71,14 @@ export default function RegisterPage() {
       return;
     }
 
+    // Email confirmation disabled — session returned immediately
+    if (data?.session) {
+      await fetch('/api/auth/link-member', { method: 'POST' });
+      router.push('/');
+      return;
+    }
+
+    // Email confirmation enabled — ask user to check inbox
     setSent(true);
   }
 
