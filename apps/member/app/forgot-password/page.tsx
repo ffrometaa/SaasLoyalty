@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { getSupabaseClient } from '@loyalty-os/lib';
 import Link from 'next/link';
 
 export default function ForgotPasswordPage() {
@@ -17,21 +16,20 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError('');
 
-    const supabase = getSupabaseClient();
-    const callbackUrl = `${window.location.origin}/auth/callback?type=recovery`;
-
-    const { error: authError } = await supabase.auth.resetPasswordForEmail(
-      email.trim().toLowerCase(),
-      { redirectTo: callbackUrl }
-    );
-
-    setLoading(false);
-
-    if (authError) {
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setLoading(false);
       setError('Hubo un problema al enviar el email. Intenta de nuevo.');
       return;
     }
 
+    setLoading(false);
     setSent(true);
   }
 
