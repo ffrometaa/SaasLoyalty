@@ -29,11 +29,11 @@ export async function POST(request: NextRequest) {
   } else {
     const supabase = await createServerSupabaseClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) return NextResponse.json({ error: 'No session' }, { status: 401 });
-    userId = session.user.id;
-    userEmail = session.user.email ?? '';
-    meta = (session.user as any).user_metadata ?? {};
+    const { data: { user } } = await (supabase.auth as any).getUser();
+    if (!user) return NextResponse.json({ error: 'No session' }, { status: 401 });
+    userId = user.id;
+    userEmail = user.email ?? '';
+    meta = (user as any).user_metadata ?? {};
   }
 
   const body = await request.json().catch(() => ({}));

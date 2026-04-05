@@ -96,6 +96,11 @@ export async function updatePassword(newPassword: string) {
   return { data };
 }
 
+/**
+ * @deprecated Use getUser() instead. getSession() reads from local storage and
+ * does not validate with the Supabase server — tokens may be expired.
+ * Safe only in browser contexts where the client auto-refreshes.
+ */
 export async function getSession() {
   const supabase = getSupabaseClient();
   const { data: { session }, error } = await supabase.auth.getSession();

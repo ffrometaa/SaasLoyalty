@@ -86,16 +86,13 @@ const TYPE_ICONS: Record<string, string> = {
 };
 
 export default async function HomePage() {
-  // Use getSession (cookie read, no network call) instead of getUser (network call that can fail).
-  // Middleware already guarantees this page is only reached by authenticated users,
-  // so a null session here means an expired/invalid cookie — redirect to login once.
   const supabase = await createServerSupabaseClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: { session } } = await (supabase.auth as any).getSession();
-  if (!session) redirect('/join');
+  const { data: { user } } = await (supabase.auth as any).getUser();
+  if (!user) redirect('/join');
 
   const tenantId = cookies().get('loyalty_tenant_id')?.value;
-  const member = await getMemberWithTenant(session.user.id, tenantId);
+  const member = await getMemberWithTenant(user.id, tenantId);
   if (!member) {
     redirect('/join');
   }

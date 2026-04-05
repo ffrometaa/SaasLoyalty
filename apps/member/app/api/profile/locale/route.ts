@@ -12,9 +12,9 @@ export async function PATCH(request: NextRequest) {
   }
 
   const supabase = await createServerSupabaseClient();
-  const { data: { session } } = await (supabase.auth as any).getSession();
+  const { data: { user } } = await (supabase.auth as any).getUser();
 
-  if (!session?.user) {
+  if (!user) {
     // Not logged in — silently ignore (guest browsing locale change)
     return NextResponse.json({ ok: true });
   }
@@ -23,7 +23,7 @@ export async function PATCH(request: NextRequest) {
   await service
     .from('members')
     .update({ locale })
-    .eq('auth_user_id', session.user.id);
+    .eq('auth_user_id', user.id);
 
   return NextResponse.json({ ok: true });
 }
