@@ -7,11 +7,33 @@ function generateMemberCode(): string {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = await createServerSupabaseClient();
+  const serviceClient = createServiceRoleClient();
+
+  // Prefer Bearer token from Authorization header (avoids cookie race condition
+  // when called immediately after signInWithPassword/signUp from the browser).
+  // Fall back to cookie-based session for the email confirmation flow (auth/callback).
+  const authHeader = request.headers.get('Authorization');
+  const accessToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+  let userId: string;
+  let userEmail: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: { session } } = await (supabase.auth as any).getSession();
-  if (!session?.user) {
-    return NextResponse.json({ error: 'No session' }, { status: 401 });
+  let meta: Record<string, any>;
+
+  if (accessToken) {
+    const { data: { user } } = await serviceClient.auth.getUser(accessToken);
+    if (!user) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    userId = user.id;
+    userEmail = user.email ?? '';
+    meta = user.user_metadata ?? {};
+  } else {
+    const supabase = await createServerSupabaseClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: { session } } = await (supabase.auth as any).getSession();
+    if (!session?.user) return NextResponse.json({ error: 'No session' }, { status: 401 });
+    userId = session.user.id;
+    userEmail = session.user.email ?? '';
+    meta = (session.user as any).user_metadata ?? {};
   }
 
   const body = await request.json().catch(() => ({}));
@@ -25,18 +47,11 @@ export async function POST(request: NextRequest) {
   };
 
   // tenantId can also come from user_metadata (email confirmation flow)
-  const resolvedTenantId = tenantId
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ?? (session.user as any).user_metadata?.tenant_id;
+  const resolvedTenantId = tenantId ?? meta.tenant_id;
 
   if (!resolvedTenantId) {
     return NextResponse.json({ ok: true, note: 'no tenant' });
   }
-
-  const userId = session.user.id;
-  const userEmail = session.user.email ?? '';
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const meta = (session.user as any).user_metadata ?? {};
   const resolvedFirstName = firstName ?? meta.first_name ?? '';
   const resolvedLastName = lastName ?? meta.last_name ?? '';
   const fullName = [resolvedFirstName, resolvedLastName].filter(Boolean).join(' ')

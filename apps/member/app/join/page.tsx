@@ -105,7 +105,7 @@ export default function JoinPage() {
     const supabase = getSupabaseClient();
     const fullName = [firstName.trim(), lastName.trim()].filter(Boolean).join(' ');
 
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password,
       options: {
@@ -128,10 +128,15 @@ export default function JoinPage() {
       return;
     }
 
-    // Create member record (works when email confirmation is disabled)
+    // Create member record — pass access token directly to avoid cookie race condition
     await fetch('/api/auth/create-member', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(signUpData.session?.access_token
+          ? { Authorization: `Bearer ${signUpData.session.access_token}` }
+          : {}),
+      },
       body: JSON.stringify({
         tenantId: tenant!.id,
         firstName: firstName.trim(),
@@ -153,7 +158,7 @@ export default function JoinPage() {
     setError('');
 
     const supabase = getSupabaseClient();
-    const { error: loginError } = await supabase.auth.signInWithPassword({
+    const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
       password: loginPassword,
     });
@@ -164,9 +169,15 @@ export default function JoinPage() {
       return;
     }
 
+    // Pass access token directly — avoids cookie race condition right after sign-in
     await fetch('/api/auth/create-member', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(loginData.session?.access_token
+          ? { Authorization: `Bearer ${loginData.session.access_token}` }
+          : {}),
+      },
       body: JSON.stringify({ tenantId: tenant!.id }),
     });
 
