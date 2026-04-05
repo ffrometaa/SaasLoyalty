@@ -52,7 +52,7 @@
     "lastNamePlaceholder": "Tu apellido",
     "phone": "Teléfono (opcional)",
     "phonePlaceholder": "+1 234 567 8900",
-    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "forgotPasswordLink": "¿Olvidaste tu contraseña?",
     "terms": "Al continuar aceptas los",
     "termsLink": "términos de servicio",
     "and": "y la",

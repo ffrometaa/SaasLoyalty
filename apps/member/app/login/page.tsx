@@ -115,7 +115,7 @@ export default function LoginPage() {
                 className="text-xs underline"
                 style={{ color: 'var(--sage-dark, #4a5440)' }}
               >
-                {t('forgotPassword')}
+                {t('forgotPasswordLink')}
               </Link>
             </div>
             <input
