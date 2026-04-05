@@ -95,40 +95,10 @@ export default function RewardsPage() {
   };
 
   const filteredRewards = rewards.filter(reward => {
-    if (filter === 'active') return reward.isActive;
-    if (filter === 'inactive') return !reward.isActive;
+    if (filter === 'active') return reward.is_active;
+    if (filter === 'inactive') return !reward.is_active;
     return true;
   });
-
-  const handleCreate = async (formData: any) => {
-    setLoading(true);
-    setError(null);
-
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const newReward = {
-      id: Date.now().toString(),
-      ...formData,
-      redemptions: 0,
-    };
-
-    setRewards(prev => [newReward, ...prev]);
-    setIsCreateModalOpen(false);
-    setLoading(false);
-  };
-
-  const handleUpdate = async (id: string, updates: any) => {
-    setLoading(true);
-    setError(null);
-
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    setRewards(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
-    setEditingReward(null);
-    setLoading(false);
-  };
 
   const handleToggleActive = async (id: string) => {
     const reward = rewards.find(r => r.id === id);
@@ -376,8 +346,8 @@ function RewardModal({
               type="number"
               required
               min="1"
-              value={formData.pointsRequired}
-              onChange={(e) => setFormData(prev => ({ ...prev, pointsRequired: e.target.value }))}
+              value={formData.points_required}
+              onChange={(e) => setFormData(prev => ({ ...prev, points_required: e.target.value }))}
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
               placeholder={t('pointsRequiredPlaceholder')}
             />
@@ -389,8 +359,8 @@ function RewardModal({
               <input
                 type="number"
                 min="1"
-                value={formData.maxRedemptions}
-                onChange={(e) => setFormData(prev => ({ ...prev, maxRedemptions: e.target.value }))}
+                value={formData.max_redemptions}
+                onChange={(e) => setFormData(prev => ({ ...prev, max_redemptions: e.target.value }))}
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
                 placeholder={t('maxRedemptionsPlaceholder')}
               />
@@ -401,8 +371,8 @@ function RewardModal({
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('validUntil')}</label>
               <input
                 type="date"
-                value={formData.validUntil}
-                onChange={(e) => setFormData(prev => ({ ...prev, validUntil: e.target.value }))}
+                value={formData.valid_until}
+                onChange={(e) => setFormData(prev => ({ ...prev, valid_until: e.target.value }))}
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
               />
             </div>
@@ -411,19 +381,19 @@ function RewardModal({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setFormData(prev => ({ ...prev, isActive: !prev.isActive }))}
+              onClick={() => setFormData(prev => ({ ...prev, is_active: !prev.is_active }))}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                formData.isActive ? 'bg-brand-purple' : 'bg-gray-200'
+                formData.is_active ? 'bg-brand-purple' : 'bg-gray-200'
               }`}
             >
               <span
                 className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  formData.isActive ? 'translate-x-6' : 'translate-x-1'
+                  formData.is_active ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
             </button>
             <label className="text-sm text-gray-700">
-              {formData.isActive ? t('activeVisible') : t('inactiveHidden')}
+              {formData.is_active ? t('activeVisible') : t('inactiveHidden')}
             </label>
           </div>
 
