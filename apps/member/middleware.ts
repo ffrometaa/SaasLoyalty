@@ -59,10 +59,9 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: { session } } = await (supabase.auth as any).getSession();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     // No session — redirect to login, preserving tenant context
     const tenantSlug = request.cookies.get('loyalty_tenant')?.value;
     const loginUrl = request.nextUrl.clone();
