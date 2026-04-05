@@ -105,7 +105,7 @@ async function sendInviteEmail(
         body: JSON.stringify({
           from: `${tenant.business_name} <noreply@loyalbase.dev>`,
           to: [member.email],
-          subject: `${tenant.business_name} te invita a su programa de fidelidad`,
+          subject: `${tenant.business_name} invites you to their loyalty program / te invita a su programa de fidelidad`,
           html: buildInviteEmail({ memberName: member.name, businessName: tenant.business_name, registerUrl }),
         }),
       });
@@ -132,10 +132,28 @@ function buildInviteEmail({
 <body style="font-family: sans-serif; background: #faf8f4; margin: 0; padding: 40px 20px;">
   <div style="max-width: 480px; margin: 0 auto; background: white; border-radius: 16px; padding: 40px; border: 1px solid #e8e4dc;">
     <h1 style="font-size: 24px; font-weight: 400; color: #2c2c2a; margin: 0 0 8px;">${businessName}</h1>
-    <p style="color: #8a887f; font-size: 14px; margin: 0 0 32px;">Programa de fidelidad</p>
+    <p style="color: #8a887f; font-size: 14px; margin: 0 0 32px;">Loyalty Program / Programa de fidelidad</p>
 
+    <!-- English -->
+    <p style="color: #2c2c2a; font-size: 15px; margin: 0 0 8px;">Hi ${memberName},</p>
+    <p style="color: #555; font-size: 14px; line-height: 1.6; margin: 0 0 24px;">
+      You've been invited to activate your account in the <strong>${businessName}</strong> loyalty program.
+      Create your password to access your points and rewards.
+    </p>
+
+    <a href="${registerUrl}"
+       style="display: block; background: #4a5440; color: white; text-align: center;
+              padding: 14px 24px; border-radius: 12px; text-decoration: none;
+              font-size: 15px; font-weight: 500; margin-bottom: 32px;">
+      Activate my account
+    </a>
+
+    <!-- Divider -->
+    <hr style="border: none; border-top: 1px solid #e8e4dc; margin: 0 0 32px;" />
+
+    <!-- Spanish -->
     <p style="color: #2c2c2a; font-size: 15px; margin: 0 0 8px;">Hola ${memberName},</p>
-    <p style="color: #555; font-size: 14px; line-height: 1.6; margin: 0 0 32px;">
+    <p style="color: #555; font-size: 14px; line-height: 1.6; margin: 0 0 24px;">
       Te invitamos a activar tu cuenta en el programa de fidelidad de <strong>${businessName}</strong>.
       Crea tu contraseña para acceder a tus puntos y recompensas.
     </p>
@@ -148,6 +166,7 @@ function buildInviteEmail({
     </a>
 
     <p style="color: #8a887f; font-size: 12px; text-align: center; margin: 0;">
+      This link expires in 7 days. If you weren't expecting this invitation, you can ignore this message.<br />
       Este link expira en 7 días. Si no esperabas esta invitación, puedes ignorar este mensaje.
     </p>
   </div>
