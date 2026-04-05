@@ -62,12 +62,34 @@ export default function RegisterPage() {
 
     if (authError) {
       if (authError.status === 422) {
-        setError('Este email ya tiene una cuenta. Inicia sesión.');
+        // Email already exists — try to sign in and link to this tenant
+        setLoading(true);
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password,
+        });
+
+        setLoading(false);
+
+        if (signInError) {
+          setError('Ya tienes cuenta con este email. Inicia sesión con tu contraseña correcta.');
+          return;
+        }
+
+        if (signInData?.session) {
+          await fetch('/api/auth/link-member', { method: 'POST' });
+          router.push('/');
+          return;
+        }
+
+        setError('Ya tienes cuenta con este email. Inicia sesión.');
+        return;
       } else if (authError.status === 429) {
         setError('Demasiados intentos. Espera un momento e intenta de nuevo.');
       } else {
         setError('Hubo un problema al crear tu cuenta. Intenta de nuevo.');
       }
+      setLoading(false);
       return;
     }
 

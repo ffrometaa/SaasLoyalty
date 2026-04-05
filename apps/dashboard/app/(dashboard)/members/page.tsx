@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, ChevronLeft, ChevronRight, UserPlus, CheckCircle, Upload, Users, FileText, Link2 } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, UserPlus, CheckCircle, Upload, Users, FileText, Link2, Send } from 'lucide-react';
 import { LimitWarningBanner } from '../../../components/dashboard/LimitWarningBanner';
 import { canAddMember } from '../../../lib/plans/features';
 import type { Plan } from '../../../lib/plans/features';
@@ -30,6 +30,7 @@ type Member = {
   tier: string;
   status: string;
   last_visit_at: string | null;
+  auth_user_id: string | null;
 };
 
 export default function MembersPage() {
@@ -55,6 +56,8 @@ export default function MembersPage() {
   const [success, setSuccess] = useState(false);
 
   const [newMember, setNewMember] = useState({ name: '', email: '', phone: '', sendInvite: false });
+  const [invitingId, setInvitingId] = useState<string | null>(null);
+  const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
 
   const itemsPerPage = 20;
 
@@ -151,6 +154,18 @@ export default function MembersPage() {
     }
   };
 
+  const handleInvite = async (memberId: string) => {
+    setInvitingId(memberId);
+    try {
+      const res = await fetch(`/api/members/${memberId}/invite`, { method: 'POST' });
+      if (res.ok) {
+        setInvitedIds(prev => new Set(prev).add(memberId));
+      }
+    } finally {
+      setInvitingId(null);
+    }
+  };
+
   const atMemberLimit = !canAddMember(tenantPlan, totalMembers);
   const totalPages = Math.ceil(totalMembers / itemsPerPage);
 
@@ -241,6 +256,7 @@ export default function MembersPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('points')}</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('tier')}</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('status')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">App</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('lastVisit')}</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('actions')}</th>
                 </tr>
@@ -270,16 +286,42 @@ export default function MembersPage() {
                         {member.status}
                       </span>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {member.auth_user_id ? (
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">Activa</span>
+                      ) : (
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-500">Sin cuenta</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {member.last_visit_at ? new Date(member.last_visit_at).toLocaleDateString() : '—'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <Link
-                        href={`/members/${member.id}`}
-                        className="text-sm text-brand-purple hover:text-brand-purple-700"
-                      >
-                        {t('viewMember')}
-                      </Link>
+                      <div className="flex items-center justify-end gap-3">
+                        {!member.auth_user_id && !invitedIds.has(member.id) && (
+                          <button
+                            onClick={() => handleInvite(member.id)}
+                            disabled={invitingId === member.id}
+                            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-purple disabled:opacity-50 transition-colors"
+                            title="Enviar invitación"
+                          >
+                            <Send className="h-3.5 w-3.5" />
+                            {invitingId === member.id ? 'Enviando...' : 'Invitar'}
+                          </button>
+                        )}
+                        {invitedIds.has(member.id) && (
+                          <span className="inline-flex items-center gap-1 text-xs text-green-600">
+                            <CheckCircle className="h-3.5 w-3.5" />
+                            Enviado
+                          </span>
+                        )}
+                        <Link
+                          href={`/members/${member.id}`}
+                          className="text-sm text-brand-purple hover:text-brand-purple-700"
+                        >
+                          {t('viewMember')}
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

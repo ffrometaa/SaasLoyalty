@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
-import { requireMemberSlot } from '../../../lib/plans/guardFeature';
+import { canAddMember } from '../../../lib/plans/features';
+import type { Plan } from '../../../lib/plans/features';
 import { buildBilingualEmail, buildMemberInviteEmail } from '@loyalty-os/email';
 
 // GET /api/members - List members
@@ -122,7 +123,7 @@ export async function POST(request: NextRequest) {
 
     const { data: tenant } = await supabase
       .from('tenants')
-      .select('id, slug, business_name, brand_logo_url, brand_color_primary')
+      .select('id, slug, business_name, brand_logo_url, brand_color_primary, plan, plan_status')
       .eq('auth_user_id', session.user.id)
       .is('deleted_at', null)
       .single();
@@ -132,13 +133,21 @@ export async function POST(request: NextRequest) {
     }
 
     const tenantId = tenant.id;
+    const tenantPlan = ((tenant.plan as string) || 'starter') as Plan;
 
-    // Enforce plan member limit (server-side guard)
-    try {
-      await requireMemberSlot(tenantId);
-    } catch (limitError: unknown) {
-      const message = limitError instanceof Error ? limitError.message : 'Member limit reached';
-      return NextResponse.json({ error: message }, { status: 403 });
+    // Enforce plan member limit using service role to avoid RLS issues
+    if (tenant.plan_status !== 'active' && tenant.plan_status !== 'trialing') {
+      return NextResponse.json({ error: 'Subscription is not active' }, { status: 403 });
+    }
+
+    const { count: memberCount } = await createServiceRoleClient()
+      .from('members')
+      .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .is('deleted_at', null);
+
+    if (!canAddMember(tenantPlan, memberCount ?? 0)) {
+      return NextResponse.json({ error: `Member limit reached for your ${tenantPlan} plan. Please upgrade.` }, { status: 403 });
     }
 
     // Generate unique member code
