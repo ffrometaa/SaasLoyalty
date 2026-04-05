@@ -42,7 +42,7 @@ export async function POST() {
 
   const userId = user.id;
   const userEmail = user.email ?? '';
-  const memberName = (user.user_metadata?.name as string | undefined) ?? userEmail.split('@')[0];
+  const memberName = ((user as any).user_metadata?.name as string | undefined) ?? userEmail.split('@')[0];
 
   // 1. Already linked?
   const { data: linked } = await serviceClient
