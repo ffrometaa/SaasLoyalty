@@ -1,17 +1,21 @@
 import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 import type { MemberProfile, RewardItem, TransactionItem } from './types';
 
-export async function getMemberWithTenant(userId: string): Promise<MemberProfile | null> {
+export async function getMemberWithTenant(userId: string, tenantId?: string): Promise<MemberProfile | null> {
   // Use service role to bypass RLS. Two separate queries to avoid !inner join
   // ambiguity that was silently returning null.
   const supabase = createServiceRoleClient();
 
-  const { data: member } = await supabase
+  let query = supabase
     .from('members')
     .select('id, tenant_id, name, email, tier, points_balance, points_lifetime, member_code, avatar_url')
     .eq('auth_user_id', userId)
-    .eq('status', 'active')
-    .single();
+    .eq('status', 'active');
+
+  // Filter by tenant when provided — required when user has members in multiple tenants
+  if (tenantId) query = query.eq('tenant_id', tenantId);
+
+  const { data: member } = await query.limit(1).single();
 
   if (!member) return null;
 

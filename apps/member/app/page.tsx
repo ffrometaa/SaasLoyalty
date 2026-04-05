@@ -10,6 +10,7 @@ import { BrandTheme } from '@/components/member/BrandTheme';
 import { OneSignalInit } from '@/components/member/OneSignalInit';
 import { getTierProgress, TIER_NEXT } from '@/lib/member/types';
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { cookies } from 'next/headers';
 import Link from 'next/link';
 
 const TIER_LABELS: Record<string, string> = {
@@ -91,9 +92,10 @@ export default async function HomePage() {
   const supabase = await createServerSupabaseClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: { session } } = await (supabase.auth as any).getSession();
-  if (!session) redirect('/login');
+  if (!session) redirect('/join');
 
-  const member = await getMemberWithTenant(session.user.id);
+  const tenantId = cookies().get('loyalty_tenant_id')?.value;
+  const member = await getMemberWithTenant(session.user.id, tenantId);
   if (!member) {
     redirect('/join');
   }

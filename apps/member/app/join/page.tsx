@@ -68,6 +68,8 @@ export default function JoinPage() {
       return;
     }
     localStorage.setItem(BIZ_CODE_KEY, trimmed);
+    // Persist tenant_id in a cookie so Server Components can read it
+    document.cookie = `loyalty_tenant_id=${data.tenantId}; path=/; max-age=2592000; SameSite=Lax`;
     setTenant({ id: data.tenantId, name: data.tenantName });
     setStep('email');
   }
