@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   keywords:
     'loyalty program software, customer retention, white label loyalty app, membership management, local business loyalty, spa loyalty program, restaurant rewards, gym membership app',
   metadataBase: new URL('https://loyalbase.dev'),
+  alternates: {
+    canonical: 'https://loyalbase.dev',
+  },
   openGraph: {
     title: 'LoyaltyOS — Loyalty Platform for Local Businesses',
     description: 'Turn every visit into a reason to come back.',
@@ -31,10 +34,10 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/og-image.png',
+        url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'LoyaltyOS - Loyalty Platform',
+        alt: 'LoyaltyOS - Loyalty Platform for Local Businesses',
       },
     ],
   },
@@ -42,7 +45,57 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'LoyaltyOS',
     description: 'Turn every visit into a reason to come back.',
+    images: ['/opengraph-image'],
   },
+};
+
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'LoyaltyOS',
+  url: 'https://loyalbase.dev',
+  logo: 'https://loyalbase.dev/logo.png',
+  description:
+    'White-label loyalty and membership platform for local businesses. Branded member app, automated retention campaigns, and real-time analytics.',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'West Palm Beach',
+    addressRegion: 'FL',
+    addressCountry: 'US',
+  },
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'customer support',
+    email: 'support@loyaltyos.com',
+  },
+};
+
+const softwareApplicationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'LoyaltyOS',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web, iOS, Android (PWA)',
+  url: 'https://loyalbase.dev',
+  description:
+    'White-label loyalty platform for local businesses. Branded member PWA, points & rewards engine, automated retention campaigns, and real-time analytics. Ready in days, not months.',
+  offers: {
+    '@type': 'AggregateOffer',
+    priceCurrency: 'USD',
+    lowPrice: '49',
+    highPrice: '299',
+    offerCount: '4',
+  },
+  featureList: [
+    'Branded Member App (PWA)',
+    'Points & Rewards Engine',
+    'Automated Retention Campaigns',
+    'Real-time Analytics Dashboard',
+    'QR Code Onboarding',
+    'Push Notifications & Email',
+    'White-label Customization',
+    'Gamification Engine',
+  ],
 };
 
 export default async function RootLayout({
@@ -59,6 +112,14 @@ export default async function RootLayout({
         <meta name="theme-color" content="#0a0a0f" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema) }}
+        />
       </head>
       <body className="min-h-screen bg-brand-dark antialiased font-sans">
         <NextIntlClientProvider messages={messages}>
