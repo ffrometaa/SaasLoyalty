@@ -12,8 +12,6 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 const PUBLIC_PATHS = [
   '/join',
-  '/login',
-  '/register',
   '/forgot-password',
   '/reset-password',
   '/auth',
