@@ -4,7 +4,7 @@ import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 export async function GET() {
   try {
     const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
+    const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -37,7 +37,16 @@ export async function GET() {
       .in('status', ['pending', 'used'])
       .order('created_at', { ascending: false });
 
-    const formattedRedemptions = (redemptions || []).map((r: any) => ({
+    type RedemptionRow = {
+      id: string;
+      status: string;
+      alphanumeric_code: string | null;
+      expires_at: string | null;
+      used_at: string | null;
+      rewards: { name: string } | null;
+    };
+
+    const formattedRedemptions = (redemptions || []).map((r: RedemptionRow) => ({
       id: r.id,
       reward_name: r.rewards?.name || 'Reward',
       status: r.status,

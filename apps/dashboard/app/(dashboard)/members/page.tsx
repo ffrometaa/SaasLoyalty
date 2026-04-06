@@ -266,10 +266,10 @@ export default function MembersPage() {
                 {members.map((member) => (
                   <tr key={member.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <Link href={`/members/${member.id}`} className="block hover:text-brand-purple">
+                      <div>
                         <p className="font-medium text-gray-900">{member.name}</p>
                         <p className="text-sm text-gray-500">{member.email}</p>
-                      </Link>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm text-gray-600 font-mono">{member.member_code}</span>
@@ -316,12 +316,6 @@ export default function MembersPage() {
                             Enviado
                           </span>
                         )}
-                        <Link
-                          href={`/members/${member.id}`}
-                          className="text-sm text-brand-purple hover:text-brand-purple-700"
-                        >
-                          {t('viewMember')}
-                        </Link>
                       </div>
                     </td>
                   </tr>
