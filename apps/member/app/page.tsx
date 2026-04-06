@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { getMemberWithTenant, getRewardsForTenant, getMemberTransactions } from '@/lib/member/queries';
+import { getMemberWithTenant, getMembersByUserId, getRewardsForTenant, getMemberTransactions } from '@/lib/member/queries';
 import { MemberHero } from '@/components/member/MemberHero';
 import { TierBadge } from '@/components/member/TierBadge';
 import { QuickActions } from '@/components/member/QuickActions';
@@ -91,7 +91,20 @@ export default async function HomePage() {
   const { data: { user } } = await (supabase.auth as any).getUser();
   if (!user) redirect('/join');
 
-  const tenantId = cookies().get('loyalty_tenant_id')?.value;
+  let tenantId = cookies().get('loyalty_tenant_id')?.value;
+
+  if (!tenantId) {
+    const memberships = await getMembersByUserId(user.id);
+    if (memberships.length === 1) {
+      redirect(`/api/auth/set-tenant?tenantId=${memberships[0].tenant_id}`);
+    } else if (memberships.length > 1) {
+      // TODO: /select-tenant
+      redirect('/join');
+    } else {
+      redirect('/join');
+    }
+  }
+
   const member = await getMemberWithTenant(user.id, tenantId);
   if (!member) {
     redirect('/join');

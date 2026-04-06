@@ -30,6 +30,16 @@ export async function getMemberWithTenant(userId: string, tenantId?: string): Pr
   return { ...member, tenant } as unknown as MemberProfile;
 }
 
+export async function getMembersByUserId(userId: string): Promise<Array<{ id: string; tenant_id: string }>> {
+  const supabase = createServiceRoleClient();
+  const { data } = await supabase
+    .from('members')
+    .select('id, tenant_id')
+    .eq('auth_user_id', userId)
+    .eq('status', 'active');
+  return data ?? [];
+}
+
 export async function getRewardsForTenant(
   tenantId: string,
   memberPoints: number,
