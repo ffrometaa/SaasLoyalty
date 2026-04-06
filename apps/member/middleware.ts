@@ -17,6 +17,7 @@ const PUBLIC_PATHS = [
   '/auth',
   '/api/auth',
   '/api/invitations',
+  '/impersonate',
   '/offline',
   '/manifest.json',
   '/sw.js',

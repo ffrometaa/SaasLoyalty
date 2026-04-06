@@ -115,14 +115,20 @@ export function ImpersonatePanel({ tenants, members, recentLogs }: Props) {
           setError(data.error ?? 'Impersonation failed');
           return;
         }
-        setActiveSession({
-          token:      data.accessToken,
-          targetType: data.targetType,
-          targetName: data.targetName,
+        const session: ActiveSession = {
+          token:       data.accessToken,
+          targetType:  data.targetType,
+          targetName:  data.targetName,
           targetEmail: data.targetEmail,
-          expiresIn:  data.expiresIn,
-          startedAt:  Date.now(),
-        });
+          expiresIn:   data.expiresIn,
+          startedAt:   Date.now(),
+        };
+        setActiveSession(session);
+
+        if (targetType === 'member') {
+          const memberAppUrl = process.env.NEXT_PUBLIC_MEMBER_APP_URL ?? '';
+          window.open(`${memberAppUrl}/impersonate?token=${data.accessToken}`, '_blank');
+        }
       } catch {
         setError('Network error — could not reach impersonation API');
       }
@@ -161,13 +167,26 @@ export function ImpersonatePanel({ tenants, members, recentLogs }: Props) {
               Token expires in {secondsToMinutes(activeSession.expiresIn)}
             </p>
           </div>
-          <button
-            onClick={handleEndSession}
-            disabled={isPending}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 hover:bg-yellow-500/30 transition-colors disabled:opacity-50"
-          >
-            End Session
-          </button>
+          <div className="flex items-center gap-2">
+            {activeSession.targetType === 'member' && (
+              <button
+                onClick={() => {
+                  const memberAppUrl = process.env.NEXT_PUBLIC_MEMBER_APP_URL ?? '';
+                  window.open(`${memberAppUrl}/impersonate?token=${activeSession.token}`, '_blank');
+                }}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-colors"
+              >
+                Reopen app
+              </button>
+            )}
+            <button
+              onClick={handleEndSession}
+              disabled={isPending}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 hover:bg-yellow-500/30 transition-colors disabled:opacity-50"
+            >
+              End Session
+            </button>
+          </div>
         </div>
       )}
 
@@ -175,26 +194,6 @@ export function ImpersonatePanel({ tenants, members, recentLogs }: Props) {
       {error && (
         <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
           {error}
-        </div>
-      )}
-
-      {/* Token display (copy for member app use) */}
-      {activeSession && (
-        <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
-          <p className="text-xs font-medium text-slate-400 mb-2 uppercase tracking-wider">
-            Impersonation JWT · use in member app Authorization header
-          </p>
-          <div className="flex items-center gap-2">
-            <code className="flex-1 text-[10px] font-mono text-slate-300 bg-white/[0.05] rounded-lg px-3 py-2 truncate">
-              {activeSession.token}
-            </code>
-            <button
-              onClick={() => navigator.clipboard.writeText(activeSession.token)}
-              className="px-3 py-2 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/5 border border-white/[0.08] transition-colors"
-            >
-              Copy
-            </button>
-          </div>
         </div>
       )}
 

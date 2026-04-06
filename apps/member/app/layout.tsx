@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getLocale } from 'next-intl/server';
 import './globals.css';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
+import { ImpersonationBanner } from '@/components/ImpersonationBanner';
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -56,6 +57,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         style={{ fontFamily: "var(--font-jost, 'Jost', sans-serif)" }}
       >
         <NextIntlClientProvider messages={messages}>
+          <ImpersonationBanner />
           <OfflineIndicator />
           {children}
         </NextIntlClientProvider>
