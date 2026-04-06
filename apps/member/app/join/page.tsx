@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@loyalty-os/lib';
 
 type Step = 'code' | 'email' | 'register' | 'login';
@@ -14,8 +13,6 @@ const MONTHS = [
 const BIZ_CODE_KEY = 'loyalty_biz_code';
 
 export default function JoinPage() {
-  const router = useRouter();
-
   const [step, setStep] = useState<Step>('code');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -184,8 +181,8 @@ export default function JoinPage() {
     });
 
     setLoading(false);
-    router.push('/');
-    router.refresh();
+    // Full browser navigation — guarantees session cookies reach the server
+    window.location.href = '/';
   }
 
   async function handleLogin(e: React.FormEvent) {
@@ -225,8 +222,8 @@ export default function JoinPage() {
     }
 
     setLoading(false);
-    router.push('/');
-    router.refresh();
+    // Full browser navigation — guarantees session cookies reach the server
+    window.location.href = '/';
   }
 
   // ─── STYLES ──────────────────────────────────────────────────────────────────
