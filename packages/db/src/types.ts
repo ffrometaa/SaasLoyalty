@@ -228,3 +228,51 @@ export function getPointsForNextTier(lifetimePoints: number): number | null {
   if (lifetimePoints >= TIER_THRESHOLDS.silver) return TIER_THRESHOLDS.gold - lifetimePoints;
   return TIER_THRESHOLDS.silver - lifetimePoints;
 }
+
+// ─── IMPERSONATION SYSTEM ─────────────────────────────────────────────────────
+
+export type ImpersonationLevel =
+  | 'super_admin_to_tenant'
+  | 'super_admin_to_member';
+
+export interface ImpersonationLog {
+  id: string;
+  super_admin_id: string;         // FK super_admins.id
+  target_auth_user_id: string;    // auth.users.id of the impersonated user
+  target_tenant_id: string | null;
+  target_member_id: string | null;
+  impersonation_level: ImpersonationLevel;
+  token_hash: string;
+  started_at: string;
+  ended_at: string | null;
+  ip_address: string | null;
+  user_agent: string | null;
+  reason: string | null;
+  created_at: string;
+}
+
+export interface MemberActivityLog {
+  id: string;
+  member_id: string;
+  tenant_id: string;
+  action: string;
+  resource_type: string;
+  resource_id: string | null;
+  points_delta: number | null;
+  details: Record<string, unknown> | null;
+  ip_address: string | null;
+  user_agent: string | null;
+  created_at: string;
+}
+
+export interface ImpersonationJWT {
+  sub: string;                      // auth_user_id of impersonated user
+  aud: 'authenticated';
+  role: 'authenticated';
+  email: string;
+  tenant_id: string;
+  impersonated_by: string;          // auth.users.id of the super admin
+  impersonation_level: ImpersonationLevel;
+  iat: number;
+  exp: number;
+}
