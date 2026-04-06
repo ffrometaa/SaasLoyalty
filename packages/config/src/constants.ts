@@ -49,7 +49,7 @@ export const PLANS = {
     name: 'Pro',
     price: 199,
     maxMembers: 2000,
-    campaignsPerMonth: -1, // unlimited
+    campaignsPerMonth: 10,
     features: {
       whiteLabel: 'logo+domain',
       support: 'priority',
