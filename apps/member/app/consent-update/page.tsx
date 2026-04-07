@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 interface PendingDocument {
@@ -13,7 +12,6 @@ interface PendingDocument {
 
 export default function ConsentUpdatePage() {
   const t = useTranslations('consent');
-  const router = useRouter();
 
   const [pending, setPending] = useState<PendingDocument[]>([]);
   const [accepted, setAccepted] = useState<Record<string, boolean>>({});
@@ -62,7 +60,9 @@ export default function ConsentUpdatePage() {
       return;
     }
 
-    router.push('/');
+    // Hard navigation — forces a fresh server render so ConsentGuard
+    // picks up pendingCount = 0 and doesn't redirect back here
+    window.location.href = '/';
   }
 
   const btnStyle = { background: 'linear-gradient(135deg, #e11d48, #7c3aed)' };
