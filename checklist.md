@@ -9,7 +9,7 @@
 
 | Fecha | Tarea | Estado | Evidencia |
 |-------|-------|--------|-----------|
-| 2026-04-07 (Lun) | 🔧 Tarea 1: Git Author Config | `[ ] VENCIDA ⚠️` | — |
+| 2026-04-07 (Lun) | 🔧 Tarea 1: Git Author Config | `[x] Completada` | git config verificado |
 | 2026-04-07 (Lun) | 🗄️ Tarea 2: Regenerar tipos Supabase | `[x] Completada` | `2d472be` |
 | 2026-04-08 (Mar) | 🔴 Tarea 3a: Fix no-explicit-any (parte 1) | `[ ] Pendiente` | — |
 | 2026-04-09 (Mié) | 🔴 Tarea 3b: Fix no-explicit-any (parte 2) | `[ ] Pendiente` | — |

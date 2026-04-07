@@ -638,6 +638,7 @@ Auditoría completa de RLS, middlewares y políticas. Resumen de lo resuelto y l
 |------|-----------|-----------------|
 | **Spend Cap en Supabase Billing** | HIGH | Configurar en Supabase Dashboard → Billing → Spend Cap. Limitar gasto máximo mensual antes de abrir registro público. No requiere código. |
 | **Rate limiting en API routes críticas** | Medium | Implementar según estrategia documentada en sección 9.1. Mínimo: auth y redención de puntos antes de go-live. |
+| **Bug UX: tenant incorrecto en sub-páginas con múltiples membresías** | Low | Ver sección 9.7. |
 
 #### Arquitectura de seguridad actual (post-auditoría)
 
@@ -718,6 +719,37 @@ Sin riesgo nuevo. El endpoint `/api/auth/my-tenants` requiere sesión válida y 
 - Picker usa branding del tenant (color, logo, nombre del app) para facilitar identificación visual
 
 **Estado:** Implementado en producción (2026-04-07).
+
+---
+
+### 9.7 Bug Pendiente: Tenant Incorrecto en Sub-páginas con Múltiples Membresías
+
+**Contexto:** Introducido como consecuencia del flujo de login directo (sección 9.6). Con la implementación actual, un usuario con membresías en múltiples negocios puede iniciar sesión correctamente, pero las sub-páginas del Member App llaman a `getMemberWithTenant(user.id)` sin pasar `tenantId`.
+
+#### El problema
+
+`getMemberWithTenant` sin `tenantId` hace `.limit(1)` en la tabla `members` filtrada solo por `auth_user_id`. El orden de retorno de Supabase no está garantizado — puede devolver cualquier tenant del usuario, no necesariamente el que seleccionó en el picker.
+
+**Impacto:** Si el usuario tiene membresías en 2 negocios y Supabase retorna el tenant "incorrecto", la home y sub-páginas mostrarían puntos, rewards y datos del negocio equivocado. El cookie `loyalty_tenant_id` está seteado correctamente, pero las Server Components que llaman `getMemberWithTenant` sin leerlo lo ignoran.
+
+**Afecta a:** Solo usuarios con membresías en más de un negocio (caso poco frecuente en MVP).
+
+#### Fix requerido
+
+Todas las Server Components que llaman `getMemberWithTenant(user.id)` deben pasar también el `tenantId` leído de la cookie:
+
+```ts
+// Patrón actual (incorrecto para multi-tenant users):
+const member = await getMemberWithTenant(user.id);
+
+// Patrón correcto:
+const tenantId = cookies().get('loyalty_tenant_id')?.value;
+const member = await getMemberWithTenant(user.id, tenantId);
+```
+
+**Archivos afectados:** Todas las pages de `apps/member/app/` que resuelven el perfil del miembro — ya tienen soporte para el parámetro `tenantId` en `getMemberWithTenant` (la función ya acepta el segundo parámetro opcional).
+
+**Prioridad:** Low — solo afecta usuarios con membresías en múltiples negocios, que en el MVP es un caso edge. Priorizar antes de abrir el Member App a negocios con usuarios compartidos.
 
 ---
 

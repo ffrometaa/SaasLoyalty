@@ -27,7 +27,7 @@ Criterios de "completada":
 
 #### 🔧 Tarea 1: Git Author Config
 - **Fecha**: 2026-04-07
-- **Estado**: `[ ] Pendiente`
+- **Estado**: `[x] Completada`
 - **Esfuerzo**: 5-10 min
 - **Descripción**:
   Configurar git author global para que los commits muestren nombre real.
