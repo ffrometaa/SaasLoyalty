@@ -2,15 +2,6 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { createClient } from '@supabase/supabase-js';
-
-// Use plain client (no session management) so the insert always runs
-// as anon regardless of any active dashboard session in the browser
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  { auth: { persistSession: false, autoRefreshToken: false } }
-);
 
 interface FieldErrors {
   business_name?: string;
@@ -71,19 +62,21 @@ export function ContactForm() {
 
     setLoading(true);
     try {
-      const { error: dbError } = await supabase.from('demo_requests').insert([{
-        business_name: form.business_name.trim(),
-        business_type: form.business_type,
-        owner_name: form.owner_name.trim(),
-        email: form.email.trim().toLowerCase(),
-        phone: form.phone.trim() || null,
-        message: form.message.trim() || null,
-        status: 'new',
-      }]);
+      const res = await fetch('/api/demo-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          business_name: form.business_name.trim(),
+          business_type: form.business_type,
+          owner_name: form.owner_name.trim(),
+          email: form.email.trim().toLowerCase(),
+          phone: form.phone.trim() || null,
+          message: form.message.trim() || null,
+        }),
+      });
 
-      if (dbError) {
-        console.error('Supabase error:', dbError);
-        throw dbError;
+      if (!res.ok) {
+        throw new Error('Request failed');
       }
 
       setSuccess(true);

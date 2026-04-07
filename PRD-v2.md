@@ -482,4 +482,47 @@ Los siguientes features quedan explícitamente fuera del alcance de Phase 3 y so
 
 ---
 
+---
+
+## 9. Notas Técnicas y Decisiones Pendientes
+
+### 9.1 Rate Limiting — Estrategia por Endpoint
+
+**Contexto:** Se evaluó implementar rate limiting con `@upstash/ratelimit`. La recomendación genérica de "60 req/min por IP en middleware" no aplica de forma uniforme a LoyaltyOS — cada tipo de endpoint tiene un perfil de riesgo distinto.
+
+**Decisión de arquitectura:**
+
+Rate limiting debe ser **por capa, por endpoint y por identificador contextual** — no un único número global.
+
+#### Clasificación de endpoints por riesgo
+
+| Capa | Endpoint | Identificador | Límite sugerido | Algoritmo |
+|------|----------|---------------|-----------------|-----------|
+| Auth | `POST /api/auth/login` | IP | 5/min | Fixed window |
+| Auth | `POST /api/auth/register` | IP | 3/min | Fixed window |
+| Auth | `POST /api/auth/reset-password` | IP | 3/10min | Fixed window |
+| Transaccional | `POST /api/points/redeem` | user_id + tenant_id | 10/min | Sliding window |
+| Transaccional | `POST /api/points/add` | tenant_id (admin) | 30/min | Sliding window |
+| Member App | `GET /api/member/profile` | user_id | 60/min | Sliding window |
+| Member App | `POST /api/member/join` (join code) | IP | 5/min | Fixed window |
+| Impersonation | `POST /api/admin/impersonate` | super_admin_id | 10/min | Fixed window |
+| Webhooks inbound | `POST /api/webhooks/*` | IP + secret | 100/min | Token bucket |
+
+#### Consideraciones de implementación
+
+- **Endpoints autenticados → identificar por user_id o tenant_id**, no por IP. La IP puede ser compartida (NAT, oficinas, malls). Un tenant con 500 miembros en el mismo Wi-Fi rompería un límite por IP.
+- **Endpoints de auth → sí por IP**, ya que el usuario no está autenticado aún.
+- **Middleware de Next.js**: útil solo para protección perimetral de auth routes. Para lógica transaccional, el rate limit va dentro del route handler específico con el contexto de sesión disponible.
+- **Algoritmo**: Fixed window para auth (más estricto, predecible). Sliding window para operaciones legítimas frecuentes (evita ráfagas sin bloquear usuarios normales).
+
+#### Stack recomendado
+
+- `@upstash/ratelimit` — free tier suficiente para MVP. Integra con Vercel Edge natively.
+- Redis de Upstash (ya en el stack si se usa para sesiones u otras cosas).
+- Headers de respuesta: incluir `X-RateLimit-Remaining` y `Retry-After` para que el member app pueda manejar el error con UX adecuada.
+
+**Prioridad:** Phase 2 — antes del go-live con tenants reales. Implementar mínimamente en auth y redención de puntos antes de abrir registro público.
+
+---
+
 *LoyaltyOS PRD v2.0 — Documentación interna. No distribuir.*
