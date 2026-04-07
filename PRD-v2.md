@@ -838,4 +838,42 @@ La página fue construida antes de que se estableciera el sistema de i18n comple
 
 ---
 
+### 9.10 PWA Offline — Redención sin Conexión (Deuda Técnica, Phase 3)
+
+**Contexto:** Evaluación estratégica de modo offline agresivo para negocios con zonas de baja señal (spas, gimnasios, recepciones). El escenario real: miembro intenta mostrar su QR de redención sin conexión.
+
+#### Estado actual
+
+El Member App ya tiene:
+- Service Worker con Workbox (cache de assets estáticos)
+- Página `/offline` de fallback
+- Cache de shell de la app
+
+Lo que NO está cacheado: los datos dinámicos de redención. El código QR viene del servidor (`redemptions.code`). Si el miembro no cargó la pantalla antes de perder señal, no hay QR disponible.
+
+#### Por qué el offline "agresivo" requiere trabajo real
+
+El QR de redención es generado en el servidor y entregado por API. Sin precaching explícito de datos, el modo offline es solo visual — el miembro ve la app pero sin el QR que necesita. Mostrar una pantalla bonita "sin conexión" sin datos útiles no resuelve el problema del negocio.
+
+#### Implementación correcta (cuando se priorice)
+
+| Paso | Qué hacer | Dónde |
+|------|-----------|-------|
+| 1 | Al hacer login o entrar a `/redemptions`, guardar canjes activos en `IndexedDB` | `apps/member/app/redemptions` |
+| 2 | Generar el QR en el cliente con `qrcode` (ya instalado) a partir del dato cacheado | Client component |
+| 3 | Mostrar banner "Sin conexión — mostrando datos guardados" para que el staff sepa que el código es válido | UI layer |
+| 4 | Expirar cache local cuando el canje se marque como usado (requiere sync al recuperar conexión) | Background sync |
+
+#### Limitación crítica
+
+El cuello de botella no es el miembro — es la verificación del lado del negocio. Si el staff tampoco tiene señal para escanear el QR desde el Dashboard, el sistema falla de igual manera. El offline del miembro solo agrega valor si el scanner del Dashboard puede funcionar offline también, o si el staff verifica el código alfanumérico manualmente.
+
+#### Prioridad
+
+**Medium-Low — Phase 3.** Implementar después de:
+1. Rate limiting en APIs críticas (sección 9.1)
+2. Spend Cap en Supabase Billing (sección 9.4)
+
+---
+
 *LoyaltyOS PRD v2.0 — Documentación interna. No distribuir.*
