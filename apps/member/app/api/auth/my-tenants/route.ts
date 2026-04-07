@@ -3,7 +3,8 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: { user } } = await (supabase.auth as any).getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const admin = createServiceRoleClient();
