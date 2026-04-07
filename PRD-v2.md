@@ -679,4 +679,46 @@ Activar en Supabase Dashboard → Organization → Billing → Subscription.
 
 ---
 
+### 9.6 Member App — Flujo Alternativo de Login (Sin Join Code)
+
+**Contexto:** El flujo actual de login de miembros requiere el join code del negocio como primer paso. Si el miembro lo pierde (borró el chat, cambió de dispositivo), queda completamente bloqueado sin recovery path — deuda operacional real que genera tickets de soporte.
+
+#### Problema
+
+El join code es un single point of failure para el acceso de miembros existentes. Un usuario que ya tiene cuenta y membresía activa debería poder ingresar directamente por email + contraseña, sin pasar por el wizard de incorporación.
+
+#### Solución implementada
+
+Nueva ruta `/login` con flujo directo de autenticación:
+
+1. **Credenciales** — el usuario ingresa email + contraseña
+2. **Resolución de tenant:**
+   - **Cookie presente** (`loyalty_tenant_id`) → redirect directo a `/` sin picker
+   - **1 membresía activa** → auto-select, set cookie, redirect a `/`
+   - **N membresías activas** → picker UI con lista de negocios (nombre, logo, puntos, tier)
+   - **0 membresías** → redirect a `/join` (usuario autenticado pero sin membresías activas)
+
+#### Archivos creados/modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `apps/member/app/login/page.tsx` | Nueva página de login con flujo de 2 pasos |
+| `apps/member/app/api/auth/my-tenants/route.ts` | Endpoint autenticado que devuelve membresías activas del usuario con datos del tenant |
+| `apps/member/middleware.ts` | `/login` agregado a PUBLIC_PATHS |
+| `apps/member/app/join/page.tsx` | Link "¿Ya tenés cuenta? Iniciá sesión" en paso del código |
+
+#### Seguridad
+
+Sin riesgo nuevo. El endpoint `/api/auth/my-tenants` requiere sesión válida y filtra por `auth_user_id` del JWT — los resultados son estrictamente los del usuario autenticado. El cookie manipulation sigue siendo seguro por las mismas razones documentadas en 9.2.
+
+#### UX
+
+- `/join` → "¿Ya tenés cuenta? Iniciá sesión" → `/login`
+- `/login` → "¿Primera vez? Ingresá el código de tu negocio" → `/join`
+- Picker usa branding del tenant (color, logo, nombre del app) para facilitar identificación visual
+
+**Estado:** Implementado en producción (2026-04-07).
+
+---
+
 *LoyaltyOS PRD v2.0 — Documentación interna. No distribuir.*

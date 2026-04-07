@@ -333,6 +333,13 @@ export default function JoinPage() {
               style={{ ...btnStyle, opacity: loading || !code.trim() ? 0.6 : 1 }}>
               {loading ? <><Spinner /> Verificando...</> : 'Continuar'}
             </button>
+
+            <p className="mt-5 text-center text-sm text-white/35">
+              ¿Ya tenés cuenta?{' '}
+              <a href="/login" className="underline text-[#a78bfa]">
+                Iniciá sesión
+              </a>
+            </p>
           </form>
         )}
 
