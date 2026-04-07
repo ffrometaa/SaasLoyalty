@@ -127,12 +127,20 @@
     "accept_button": "Aceptar y continuar",
     "loading": "Cargando..."
   },
+  "qr_scanner": {
+    "title": "Escanear código QR",
+    "close": "Cerrar",
+    "hint": "Apuntá la cámara al código QR del negocio",
+    "camera_error": "No se pudo acceder a la cámara. Verificá los permisos del navegador.",
+    "camera_hint": "Permitir el acceso a la cámara en la configuración del navegador e intentá de nuevo."
+  },
   "join_page": {
     "welcome": "Bienvenido",
     "welcome_subtitle": "Ingresá el código de tu negocio para comenzar",
     "business_label": "Negocio",
     "code_label": "Código del negocio",
     "code_placeholder": "Ej: ABC12345",
+    "scan_button": "Escanear código QR",
     "code_hint": "Pedíselo al negocio o escaneá su código QR",
     "continue": "Continuar",
     "verifying": "Verificando...",

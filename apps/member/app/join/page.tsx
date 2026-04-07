@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { getSupabaseClient } from '@loyalty-os/lib';
 import { ConsentCheckbox } from '@/components/consent-checkbox';
+import { QrScannerModal } from '@/components/qr-scanner-modal';
 
 type Step = 'code' | 'email' | 'register' | 'login';
 
@@ -31,6 +32,9 @@ export default function JoinPage() {
   const [birthDay, setBirthDay] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  // QR scanner
+  const [showScanner, setShowScanner] = useState(false);
 
   // Consent
   const [consented, setConsented] = useState(false);
@@ -324,6 +328,18 @@ export default function JoinPage() {
           )}
         </div>
 
+        {/* QR scanner modal */}
+        {showScanner && (
+          <QrScannerModal
+            onScan={(scanned) => {
+              setShowScanner(false);
+              setCode(scanned);
+              validateCode(scanned);
+            }}
+            onClose={() => setShowScanner(false)}
+          />
+        )}
+
         {/* ── STEP 1: Business code ── */}
         {step === 'code' && (
           <form onSubmit={handleCodeSubmit} className="space-y-4">
@@ -331,18 +347,35 @@ export default function JoinPage() {
               <label className="block text-sm font-medium mb-1.5 text-white/70">
                 {t('code_label')}
               </label>
-              <input
-                ref={codeInputRef}
-                type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder={t('code_placeholder')}
-                autoCapitalize="characters"
-                autoComplete="off"
-                required
-                className={inputClass}
-                style={{ letterSpacing: '0.1em', fontWeight: 600 }}
-              />
+              <div className="relative flex items-center gap-2">
+                <input
+                  ref={codeInputRef}
+                  type="text"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  placeholder={t('code_placeholder')}
+                  autoCapitalize="characters"
+                  autoComplete="off"
+                  required
+                  className={inputClass}
+                  style={{ letterSpacing: '0.1em', fontWeight: 600 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowScanner(true)}
+                  className="flex-shrink-0 flex items-center justify-center w-[52px] h-[52px] rounded-[14px] border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+                  aria-label={t('scan_button')}
+                >
+                  <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.6">
+                    <path strokeLinecap="round" strokeLinejoin="round"
+                      d="M3 8V5a2 2 0 012-2h3M3 16v3a2 2 0 002 2h3M16 3h3a2 2 0 012 2v3M16 21h3a2 2 0 002-2v-3" />
+                    <rect x="7" y="7" width="4" height="4" rx="0.5" />
+                    <rect x="13" y="7" width="4" height="4" rx="0.5" />
+                    <rect x="7" y="13" width="4" height="4" rx="0.5" />
+                    <path strokeLinecap="round" d="M13 13h1v1M15 13h2v2h-1M13 15h1v2h2" />
+                  </svg>
+                </button>
+              </div>
               <p className="text-xs mt-1.5 text-white/35">
                 {t('code_hint')}
               </p>
