@@ -140,7 +140,15 @@ Desde el PRD v1.0, el producto pasó de concepto a plataforma funcional en produ
 3. Sistema valida si ya existe o crea cuenta nueva
 4. Valida join code del negocio
 5. Confirma identidad y completa perfil
-6. Redirigido a home con balance y tier
+6. Acepta Términos de Servicio y Política de Privacidad (checkbox requerido)
+7. Redirigido a home con balance y tier
+
+**Sistema de consentimiento legal:**
+- Checkbox de T&C requerido en el registro (deshabilitado por defecto, submit bloqueado)
+- Consentimiento registrado en DB con IP y user-agent para auditoría
+- Re-aceptación forzada si se publican nuevas versiones de documentos (`/consent-update`)
+- Páginas legales en inglés hardcoded (sin i18n): `/legal/member-terms` + `/legal/privacy-policy`
+- `ConsentGuard` en root layout verifica pendientes en cada carga y redirige si corresponde
 
 **Features del miembro:**
 - **Home:** balance de puntos, tier actual con barra de progreso, actividad reciente
@@ -185,6 +193,8 @@ Desde el PRD v1.0, el producto pasó de concepto a plataforma funcional en produ
 | `demo_requests` | Tracking de demos con atribución |
 | `stripe_events` | Idempotencia de webhooks Stripe |
 | `otp_codes` | Códigos OTP de verificación |
+| `legal_documents` | Documentos legales versionados (global o por tenant) |
+| `member_consents` | Registro de aceptaciones por miembro y versión de documento |
 
 **Seguridad:**
 - Row Level Security (RLS) en todas las tablas multi-tenant
@@ -750,6 +760,55 @@ const member = await getMemberWithTenant(user.id, tenantId);
 **Archivos afectados:** Todas las pages de `apps/member/app/` que resuelven el perfil del miembro — ya tienen soporte para el parámetro `tenantId` en `getMemberWithTenant` (la función ya acepta el segundo parámetro opcional).
 
 **Prioridad:** Low — solo afecta usuarios con membresías en múltiples negocios, que en el MVP es un caso edge. Priorizar antes de abrir el Member App a negocios con usuarios compartidos.
+
+---
+
+### 9.8 Sistema de Consentimiento Legal (2026-04-07)
+
+**Contexto:** Implementación de tracking de consentimientos legales versionados para cumplimiento regulatorio. Cubre GDPR/CCPA en cuanto a registro auditable de aceptación de T&C y política de privacidad.
+
+#### Arquitectura
+
+| Componente | Ubicación | Función |
+|------------|-----------|---------|
+| Migración | `supabase/migrations/20260407000002_member_consent_system.sql` | Tablas, RLS, función helper, seed |
+| API | `apps/member/app/api/consent/route.ts` | GET pendientes / POST registro |
+| Checkbox | `apps/member/components/consent-checkbox.tsx` | UI de aceptación con i18n |
+| Guard | `apps/member/components/consent-guard.tsx` | Client component, detecta pendientes y redirige |
+| Re-aceptación | `apps/member/app/consent-update/page.tsx` | Página para versiones nuevas |
+| Términos | `apps/member/app/legal/member-terms/page.tsx` | Hardcoded EN |
+| Privacidad | `apps/member/app/legal/privacy-policy/page.tsx` | Hardcoded EN |
+
+#### Modelo de datos
+
+```
+legal_documents
+  id, tenant_id (NULL = global), type (terms_of_service | privacy_policy),
+  version, content, is_active, effective_at, created_at
+
+member_consents
+  id, member_id → members, document_id → legal_documents,
+  accepted_at, ip_address, user_agent
+  UNIQUE(member_id, document_id)
+```
+
+**Función:** `get_pending_consents(p_member_id uuid)` — SECURITY DEFINER + SET search_path = public. Devuelve documentos activos no aceptados por el miembro.
+
+#### Decisiones de diseño
+
+- **Documentos legales siempre en inglés:** Los textos de T&C y Privacy Policy son hardcoded en inglés, sin i18n. La UI que los referencia (checkbox, botones) sí usa i18n.
+- **Seed de documentos globales:** Se insertan dos documentos con UUIDs fijos (`00000000-0000-0000-0000-000000000001` y `...002`) como base. Para publicar nuevas versiones: insertar un nuevo registro con `is_active = true` y desactivar el anterior.
+- **Re-aceptación sin redirect loop:** `ConsentGuard` whitelist `/consent-update`, `/legal/`, `/api/` — nunca redirige desde esas rutas. Si el fetch falla, muestra error en lugar de redirigir.
+- **Bearer token fallback en API:** POST /api/consent soporta Authorization: Bearer para el caso de race condition post-signup (el mismo patrón que `/api/auth/create-member`).
+- **RLS de `member_consents`:** Solo INSERT y SELECT propios vía `current_member_id()`. La escritura real se hace con `service_role` desde la API para evitar el problema de session vars no seteadas.
+
+#### Flujo de versioning
+
+1. Super Admin inserta nuevo documento en `legal_documents` con `is_active = true` y versión incrementada
+2. El documento anterior se marca `is_active = false`
+3. `get_pending_consents` detecta automáticamente que los miembros no aceptaron la nueva versión
+4. `ConsentGuard` en el root layout redirige a `/consent-update` en la próxima visita
+5. Miembro acepta → registro en `member_consents` → redirect a `/`
 
 ---
 
