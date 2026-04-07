@@ -812,4 +812,30 @@ member_consents
 
 ---
 
+### 9.9 i18n en /join — Corrección y Cobertura Completa (2026-04-07)
+
+**Contexto:** La página `/join` del Member App estaba completamente hardcodeada en español, violando la regla de idioma principal inglés. Un miembro sin preferencia configurada veía la UI en español sin opción de cambio.
+
+#### Problema raíz
+
+La página fue construida antes de que se estableciera el sistema de i18n completo. Al ser un componente `'use client'`, se asumió erróneamente que `useTranslations` no aplicaba — pero next-intl funciona perfectamente en Client Components.
+
+#### Solución
+
+- Reemplazados todos los strings hardcodeados con `useTranslations('join_page')`
+- Nuevo namespace `join_page` en `en.json` y `es.json` con cobertura total:
+  - Labels e inputs (código, email, nombre, apellido, teléfono, contraseña)
+  - Meses del calendario (January–December / Enero–Diciembre)
+  - Mensajes de error (código inválido, contraseña incorrecta, ya registrado, etc.)
+  - Textos de navegación (Volver/Back, ¿Ya tenés cuenta?/Already have an account?)
+  - Estados de loading (Verificando.../Verifying..., Creando cuenta.../Creating account...)
+
+#### Regla establecida
+
+- **Idioma principal: inglés** — un miembro sin preferencia configurada ve `/join` en inglés
+- **Español disponible** — si el miembro ya configuró su preferencia en Settings (cookie `NEXT_LOCALE=es`), la página aparece en español neutro
+- **Documentos legales: siempre en inglés** — las páginas `/legal/*` no usan i18n (hardcoded)
+
+---
+
 *LoyaltyOS PRD v2.0 — Documentación interna. No distribuir.*
