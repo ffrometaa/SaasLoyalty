@@ -28,7 +28,7 @@ Desde el PRD v1.0, el producto pasó de concepto a plataforma funcional en produ
 - **Frontend:** Next.js 14.2 + TypeScript + Tailwind CSS + shadcn/ui
 - **Base de datos:** Supabase PostgreSQL con RLS multi-tenant (21 migraciones aplicadas)
 - **Auth:** Supabase Auth — email/password + OTP de dispositivo + tokens de invitación
-- **Pagos:** Stripe Billing (Starter $79 / Pro $199 / Scale $399 por mes)
+- **Pagos:** Stripe Billing (Starter $199 / Pro $399 / Scale $599 por mes)
 - **Email:** Resend — 18 templates bilingüe (EN/ES)
 - **Push:** OneSignal — integrado en Member app
 - **Monorepo:** Turborepo + pnpm workspaces (5 packages compartidos)
@@ -195,7 +195,7 @@ Desde el PRD v1.0, el producto pasó de concepto a plataforma funcional en produ
 
 ### 2.6 Planes y Límites
 
-| Feature | Starter ($79/mo) | Pro ($199/mo) | Scale ($399/mo) | Enterprise |
+| Feature | Starter ($199/mo) | Pro ($399/mo) | Scale ($599/mo) | Enterprise |
 |---------|-----------------|---------------|-----------------|------------|
 | Miembros | 500 | 2.000 | Ilimitado | Ilimitado |
 | Campañas/mes | 2 | 10 | Ilimitado | Ilimitado |

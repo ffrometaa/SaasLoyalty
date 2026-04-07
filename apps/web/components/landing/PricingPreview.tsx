@@ -12,8 +12,8 @@ export function PricingPreview() {
   const PLANS = [
     {
       name: t('plan0_name'),
-      monthly: 79,
-      annual: 66,
+      monthly: 199,
+      annual: 166,
       subtitle: t('plan0_subtitle'),
       features: [t('plan0_f0'), t('plan0_f1'), t('plan0_f2'), t('plan0_f3'), t('plan0_f4')],
       highlight: false,
@@ -21,8 +21,8 @@ export function PricingPreview() {
     },
     {
       name: t('plan1_name'),
-      monthly: 199,
-      annual: 166,
+      monthly: 399,
+      annual: 332,
       subtitle: t('plan1_subtitle'),
       features: [t('plan1_f0'), t('plan1_f1'), t('plan1_f2'), t('plan1_f3'), t('plan1_f4'), t('plan1_f5')],
       highlight: true,
@@ -30,8 +30,8 @@ export function PricingPreview() {
     },
     {
       name: t('plan2_name'),
-      monthly: 399,
-      annual: 332,
+      monthly: 599,
+      annual: 499,
       subtitle: t('plan2_subtitle'),
       features: [t('plan2_f0'), t('plan2_f1'), t('plan2_f2'), t('plan2_f3'), t('plan2_f4'), t('plan2_f5')],
       highlight: false,

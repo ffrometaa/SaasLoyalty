@@ -210,9 +210,9 @@ async function notifyNewCustomer({
   }
 
   const planNames: Record<string, string> = {
-    starter: 'Starter ($79/mo)',
-    pro: 'Pro ($199/mo)',
-    scale: 'Scale ($399/mo)',
+    starter: 'Starter ($199/mo)',
+    pro: 'Pro ($399/mo)',
+    scale: 'Scale ($599/mo)',
   };
 
   const planLabel = planNames[plan] || plan;

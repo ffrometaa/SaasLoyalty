@@ -370,9 +370,9 @@ export default function SettingsPage() {
   };
 
   const PLAN_INFO: Record<string, { price: string; memberLimit: string; features: string[] }> = {
-    starter: { price: '$79', memberLimit: '500', features: ['Up to 500 members', 'Basic analytics', '2 campaigns/month', 'Email support'] },
-    pro: { price: '$199', memberLimit: '2,000', features: ['Up to 2,000 members', 'Advanced analytics', 'Unlimited campaigns', 'Priority support'] },
-    scale: { price: '$399', memberLimit: 'Unlimited', features: ['Unlimited members', 'Full analytics & export', 'Unlimited campaigns', 'Account manager'] },
+    starter: { price: '$199', memberLimit: '500', features: ['Up to 500 members', 'Basic analytics', '2 campaigns/month', 'Email support'] },
+    pro: { price: '$399', memberLimit: '2,000', features: ['Up to 2,000 members', 'Advanced analytics', 'Unlimited campaigns', 'Priority support'] },
+    scale: { price: '$599', memberLimit: 'Unlimited', features: ['Unlimited members', 'Full analytics & export', 'Unlimited campaigns', 'Account manager'] },
   };
   const planInfo = PLAN_INFO[plan] ?? PLAN_INFO.starter;
   const currentPlan = {

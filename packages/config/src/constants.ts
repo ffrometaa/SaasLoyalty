@@ -35,7 +35,7 @@ export const REACTIVATION_DAYS = {
 export const PLANS = {
   starter: {
     name: 'Starter',
-    price: 79,
+    price: 199,
     maxMembers: 500,
     campaignsPerMonth: 2,
     features: {
@@ -47,7 +47,7 @@ export const PLANS = {
   },
   pro: {
     name: 'Pro',
-    price: 199,
+    price: 399,
     maxMembers: 2000,
     campaignsPerMonth: 10,
     features: {
@@ -59,7 +59,7 @@ export const PLANS = {
   },
   scale: {
     name: 'Scale',
-    price: 399,
+    price: 599,
     maxMembers: -1, // unlimited
     campaignsPerMonth: -1,
     features: {

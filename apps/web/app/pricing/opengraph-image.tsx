@@ -6,9 +6,9 @@ export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 const PLANS = [
-  { name: 'Starter', price: '$49', color: 'rgba(255,255,255,0.1)' },
-  { name: 'Pro', price: '$99', color: 'rgba(124,58,237,0.4)', highlight: true },
-  { name: 'Scale', price: '$199', color: 'rgba(255,255,255,0.1)' },
+  { name: 'Starter', price: '$199', color: 'rgba(255,255,255,0.1)' },
+  { name: 'Pro', price: '$399', color: 'rgba(124,58,237,0.4)', highlight: true },
+  { name: 'Scale', price: '$599', color: 'rgba(255,255,255,0.1)' },
 ];
 
 export default function Image() {

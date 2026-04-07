@@ -68,8 +68,8 @@ export const PLAN_CONFIGS: Record<Plan, PlanConfig> = {
   starter: {
     id: 'starter',
     name: 'Starter',
-    monthlyPrice: 79,
-    annualPrice: 66,
+    monthlyPrice: 199,
+    annualPrice: 166,
     maxMembers: 500,
     maxCampaignsPerMonth: 2,
     features: [
@@ -83,8 +83,8 @@ export const PLAN_CONFIGS: Record<Plan, PlanConfig> = {
   pro: {
     id: 'pro',
     name: 'Pro',
-    monthlyPrice: 199,
-    annualPrice: 166,
+    monthlyPrice: 399,
+    annualPrice: 332,
     maxMembers: 2000,
     maxCampaignsPerMonth: 10,
     features: [
@@ -100,8 +100,8 @@ export const PLAN_CONFIGS: Record<Plan, PlanConfig> = {
   scale: {
     id: 'scale',
     name: 'Scale',
-    monthlyPrice: 399,
-    annualPrice: 332,
+    monthlyPrice: 599,
+    annualPrice: 499,
     maxMembers: null,
     maxCampaignsPerMonth: null,
     features: [

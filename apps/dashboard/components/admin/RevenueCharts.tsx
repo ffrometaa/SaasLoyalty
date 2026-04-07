@@ -6,9 +6,9 @@ import {
 import Link from 'next/link';
 
 const PLAN_MRR = Object.fromEntries(Object.entries({
-  starter: 79,
-  pro: 199,
-  scale: 399,
+  starter: 199,
+  pro: 399,
+  scale: 599,
   enterprise: 0,
 }));
 
