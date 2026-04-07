@@ -876,4 +876,57 @@ El cuello de botella no es el miembro — es la verificación del lado del negoc
 
 ---
 
+### 9.11 Sistema de Feedback Bidireccional (Planificado, Phase 3)
+
+**Contexto:** Decisión estratégica de abrir canales directos de feedback entre los actores del sistema y el equipo de LoyaltyOS, sin depender de canales externos (email, WhatsApp, formularios de terceros).
+
+#### Actores y flujos
+
+**Canal 1 — Tenant → LoyaltyOS**
+
+Los tenants (dueños de negocio) necesitan un canal para reportar problemas, sugerir features o pedir soporte desde adentro del Dashboard, sin salir de la app.
+
+- **Dónde:** Panel de Settings del Dashboard → sección "Feedback & Soporte"
+- **Tipos:** Bug report / Feature request / Consulta / Otro
+- **Datos automáticos adjuntos:** plan actual, tenant_id, fecha, URL donde ocurrió el problema
+- **Destino:** Super Admin Dashboard (`/admin`) — nueva sección "Feedback" con lista de tickets
+- **Respuesta:** El Super Admin puede responder desde el Dashboard; el tenant recibe la respuesta por email (Resend) y/o notificación in-app
+
+**Canal 2 — Member → LoyaltyOS**
+
+Los miembros del programa de fidelización pueden reportar problemas con la app, errores en sus puntos o sugerir mejoras directamente desde el Member App.
+
+- **Dónde:** Member App → Perfil → "Enviar feedback"
+- **Tipos:** Problema con mis puntos / Error en la app / Sugerencia / Otro
+- **Datos automáticos adjuntos:** member_id, tenant_id del negocio activo, versión de app, URL
+- **Destino:** Super Admin Dashboard (`/admin`) — misma sección "Feedback", diferenciado por origen (tenant vs member)
+- **Respuesta:** Email al member vía Resend
+
+#### Modelo de datos propuesto
+
+```
+feedback_submissions
+  id, type (tenant | member), category, message,
+  submitter_id (tenant_id o member_id), origin_url,
+  status (open | in_progress | resolved | closed),
+  created_at, resolved_at
+
+feedback_responses
+  id, submission_id → feedback_submissions,
+  message, sent_by (super_admin_id),
+  sent_at, delivery_status
+```
+
+#### Por qué es estratégico
+
+- **Retención de tenants:** Un tenant que puede reportar un problema y recibe respuesta en 24h tiene mucho menos churn que uno que manda un email a soporte y no recibe respuesta
+- **Product discovery:** El feedback in-app es la fuente más rica de insights reales — más honesto que encuestas, más accionable que métricas
+- **Diferenciador vs competencia:** La mayoría de los SaaS de fidelización no tienen feedback loop integrado — el tenant usa Intercom o email desacoplado
+
+#### Prioridad
+
+**Medium — Phase 3.** Implementar después de rate limiting y automatizaciones programadas. El MVP del canal puede ser un formulario simple que genere un email interno, sin UI de respuesta en el Dashboard, y se refina en iteraciones posteriores.
+
+---
+
 *LoyaltyOS PRD v2.0 — Documentación interna. No distribuir.*
