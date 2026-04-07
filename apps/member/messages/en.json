@@ -117,6 +117,16 @@
     "alreadyHaveAccount": "Already have an account?",
     "signIn": "Sign in"
   },
+  "consent": {
+    "agree_prefix": "I agree to the",
+    "terms_link": "Terms of Service",
+    "and": "and",
+    "privacy_link": "Privacy Policy",
+    "update_title": "Updated Legal Documents",
+    "update_description": "We have updated our legal documents. Please review and accept to continue.",
+    "accept_button": "Accept and Continue",
+    "loading": "Loading..."
+  },
   "offline": {
     "title": "You're Offline",
     "description": "Please check your internet connection and try again. Some cached content may still be available.",

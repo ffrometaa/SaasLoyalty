@@ -117,6 +117,16 @@
     "alreadyHaveAccount": "¿Ya tienes cuenta?",
     "signIn": "Iniciar sesión"
   },
+  "consent": {
+    "agree_prefix": "Acepto los",
+    "terms_link": "Términos de Servicio",
+    "and": "y la",
+    "privacy_link": "Política de Privacidad",
+    "update_title": "Documentos legales actualizados",
+    "update_description": "Hemos actualizado nuestros documentos legales. Por favor revisá y aceptá para continuar.",
+    "accept_button": "Aceptar y continuar",
+    "loading": "Cargando..."
+  },
   "offline": {
     "title": "Estás sin conexión",
     "description": "Por favor verifica tu conexión a internet e intenta de nuevo. Parte del contenido puede estar disponible en caché.",

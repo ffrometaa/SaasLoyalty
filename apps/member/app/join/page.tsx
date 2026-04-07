@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { getSupabaseClient } from '@loyalty-os/lib';
+import { ConsentCheckbox } from '@/components/consent-checkbox';
 
 type Step = 'code' | 'email' | 'register' | 'login';
 
@@ -32,6 +33,10 @@ export default function JoinPage() {
   const [birthDay, setBirthDay] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Consent
+  const [consented, setConsented] = useState(false);
+  const [documentIds, setDocumentIds] = useState<string[]>([]);
 
   // Step 3 — login
   const [loginPassword, setLoginPassword] = useState('');
@@ -80,6 +85,26 @@ export default function JoinPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Fetch pending document IDs when entering the register step
+  useEffect(() => {
+    if (step !== 'register') return;
+    fetch('/api/consent')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.pending?.length) {
+          setDocumentIds(data.pending.map((d: { document_id: string }) => d.document_id));
+        } else {
+          // No pending docs — auto-consent so the button isn't blocked
+          setDocumentIds([]);
+          setConsented(true);
+        }
+      })
+      .catch(() => {
+        // On error, don't block the user
+        setConsented(true);
+      });
+  }, [step]);
 
   async function validateCode(value: string, silent = false) {
     const trimmed = value.trim().toUpperCase();
@@ -179,6 +204,18 @@ export default function JoinPage() {
         birthDay: birthDay ? parseInt(birthDay) : null,
       }),
     });
+
+    // Record consent for legal documents
+    if (documentIds.length > 0 && signUpData.session?.access_token) {
+      await fetch('/api/consent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${signUpData.session.access_token}`,
+        },
+        body: JSON.stringify({ document_ids: documentIds }),
+      }).catch(() => {}); // Non-blocking — don't fail registration over this
+    }
 
     setLoading(false);
     // Full browser navigation — guarantees session cookies reach the server
@@ -458,21 +495,14 @@ export default function JoinPage() {
               </p>
             )}
 
-            <button type="submit" disabled={loading || !firstName.trim() || !password || !confirmPassword}
-              className={btnClass} style={{ ...btnStyle, opacity: loading || !firstName.trim() || !password || !confirmPassword ? 0.6 : 1 }}>
+            {documentIds.length > 0 && (
+              <ConsentCheckbox checked={consented} onChange={setConsented} />
+            )}
+
+            <button type="submit" disabled={loading || !firstName.trim() || !password || !confirmPassword || (documentIds.length > 0 && !consented)}
+              className={btnClass} style={{ ...btnStyle, opacity: loading || !firstName.trim() || !password || !confirmPassword || (documentIds.length > 0 && !consented) ? 0.6 : 1 }}>
               {loading ? <><Spinner /> Creando cuenta...</> : 'Crear cuenta'}
             </button>
-
-            <p className="text-xs text-center text-white/30">
-              Al registrarte aceptás los{' '}
-              <a href="https://loyalbase.dev/terms" target="_blank" rel="noopener noreferrer" className="underline text-[#a78bfa]">
-                Términos de servicio
-              </a>
-              {' '}y la{' '}
-              <a href="https://loyalbase.dev/privacy" target="_blank" rel="noopener noreferrer" className="underline text-[#a78bfa]">
-                Política de privacidad
-              </a>.
-            </p>
           </form>
         )}
 
