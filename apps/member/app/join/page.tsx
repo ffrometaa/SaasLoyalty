@@ -1,19 +1,17 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { getSupabaseClient } from '@loyalty-os/lib';
 import { ConsentCheckbox } from '@/components/consent-checkbox';
 
 type Step = 'code' | 'email' | 'register' | 'login';
 
-const MONTHS = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-];
-
 const BIZ_CODE_KEY = 'loyalty_biz_code';
 
 export default function JoinPage() {
+  const t = useTranslations('join_page');
+
   const [step, setStep] = useState<Step>('code');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -71,7 +69,7 @@ export default function JoinPage() {
         })
         .catch(() => {
           setLoading(false);
-          setError('Error validando la invitación.');
+          setError(t('error_invitation'));
         });
       return;
     }
@@ -95,13 +93,11 @@ export default function JoinPage() {
         if (data.pending?.length) {
           setDocumentIds(data.pending.map((d: { document_id: string }) => d.document_id));
         } else {
-          // No pending docs — auto-consent so the button isn't blocked
           setDocumentIds([]);
           setConsented(true);
         }
       })
       .catch(() => {
-        // On error, don't block the user
         setConsented(true);
       });
   }, [step]);
@@ -116,11 +112,10 @@ export default function JoinPage() {
     if (!silent) setLoading(false);
     if (!data.valid) {
       localStorage.removeItem(BIZ_CODE_KEY);
-      setError('Código inválido. Verificá con tu negocio.');
+      setError(t('error_invalid_code'));
       return;
     }
     localStorage.setItem(BIZ_CODE_KEY, trimmed);
-    // Persist tenant_id in a cookie so Server Components can read it
     document.cookie = `loyalty_tenant_id=${data.tenantId}; path=/; max-age=2592000; SameSite=Lax`;
     setTenant({ id: data.tenantId, name: data.tenantName });
     setStep('email');
@@ -143,18 +138,17 @@ export default function JoinPage() {
     });
     const data = await res.json();
     setLoading(false);
-    // 'new_user' → register | 'existing_user_new_tenant' | 'existing_member' → login
     setStep(data.status === 'new_user' ? 'register' : 'login');
   }
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden.');
+      setError(t('error_password_mismatch'));
       return;
     }
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.');
+      setError(t('error_password_min'));
       return;
     }
     setLoading(true);
@@ -171,7 +165,6 @@ export default function JoinPage() {
           name: fullName,
           first_name: firstName.trim(),
           last_name: lastName.trim() || null,
-          // Store tenantId in metadata for email confirmation flow
           tenant_id: tenant!.id,
         },
       },
@@ -179,14 +172,13 @@ export default function JoinPage() {
 
     if (signUpError) {
       setError(signUpError.message === 'User already registered'
-        ? 'Ya tenés una cuenta con este email. Ingresá tu contraseña.'
+        ? t('error_already_registered')
         : signUpError.message);
       setLoading(false);
       if (signUpError.message === 'User already registered') setStep('login');
       return;
     }
 
-    // Create member record — pass access token directly to avoid cookie race condition
     await fetch('/api/auth/create-member', {
       method: 'POST',
       headers: {
@@ -205,7 +197,6 @@ export default function JoinPage() {
       }),
     });
 
-    // Record consent for legal documents
     if (documentIds.length > 0 && signUpData.session?.access_token) {
       await fetch('/api/consent', {
         method: 'POST',
@@ -214,11 +205,10 @@ export default function JoinPage() {
           Authorization: `Bearer ${signUpData.session.access_token}`,
         },
         body: JSON.stringify({ document_ids: documentIds }),
-      }).catch(() => {}); // Non-blocking — don't fail registration over this
+      }).catch(() => {});
     }
 
     setLoading(false);
-    // Full browser navigation — guarantees session cookies reach the server
     window.location.href = '/';
   }
 
@@ -234,12 +224,11 @@ export default function JoinPage() {
     });
 
     if (loginError) {
-      setError('Contraseña incorrecta.');
+      setError(t('error_wrong_password'));
       setLoading(false);
       return;
     }
 
-    // Pass access token directly — avoids cookie race condition right after sign-in
     const memberRes = await fetch('/api/auth/create-member', {
       method: 'POST',
       headers: {
@@ -253,13 +242,12 @@ export default function JoinPage() {
 
     if (!memberRes.ok) {
       const err = await memberRes.json().catch(() => ({}));
-      setError(`Error al crear tu perfil: ${err.error ?? memberRes.status}`);
+      setError(`${t('error_profile')}${err.error ?? memberRes.status}`);
       setLoading(false);
       return;
     }
 
     setLoading(false);
-    // Full browser navigation — guarantees session cookies reach the server
     window.location.href = '/';
   }
 
@@ -296,13 +284,13 @@ export default function JoinPage() {
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
         <polyline points="15 18 9 12 15 6" />
       </svg>
-      Volver
+      {t('back')}
     </button>
   );
 
   const TenantChip = () => tenant ? (
     <div className="flex items-center gap-2 mb-6 px-3 py-2 rounded-xl bg-white/5 border border-white/10 w-fit">
-      <span className="text-xs text-white/40">Negocio:</span>
+      <span className="text-xs text-white/40">{t('business_label')}:</span>
       <span className="text-sm font-medium text-white">{tenant.name}</span>
     </div>
   ) : null;
@@ -327,11 +315,11 @@ export default function JoinPage() {
               letterSpacing: '-0.02em',
             }}
           >
-            {tenant?.name ?? 'Bienvenido'}
+            {tenant?.name ?? t('welcome')}
           </h1>
           {!tenant && (
             <p className="text-sm mt-2 text-white/45">
-              Ingresá el código de tu negocio para comenzar
+              {t('welcome_subtitle')}
             </p>
           )}
         </div>
@@ -341,14 +329,14 @@ export default function JoinPage() {
           <form onSubmit={handleCodeSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1.5 text-white/70">
-                Código del negocio
+                {t('code_label')}
               </label>
               <input
                 ref={codeInputRef}
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder="Ej: ABC12345"
+                placeholder={t('code_placeholder')}
                 autoCapitalize="characters"
                 autoComplete="off"
                 required
@@ -356,7 +344,7 @@ export default function JoinPage() {
                 style={{ letterSpacing: '0.1em', fontWeight: 600 }}
               />
               <p className="text-xs mt-1.5 text-white/35">
-                Pedíselo al negocio o escaneá su código QR
+                {t('code_hint')}
               </p>
             </div>
 
@@ -368,13 +356,13 @@ export default function JoinPage() {
 
             <button type="submit" disabled={loading || !code.trim()} className={btnClass}
               style={{ ...btnStyle, opacity: loading || !code.trim() ? 0.6 : 1 }}>
-              {loading ? <><Spinner /> Verificando...</> : 'Continuar'}
+              {loading ? <><Spinner /> {t('verifying')}</> : t('continue')}
             </button>
 
             <p className="mt-5 text-center text-sm text-white/35">
-              ¿Ya tenés cuenta?{' '}
+              {t('have_account')}{' '}
               <a href="/login" className="underline text-[#a78bfa]">
-                Iniciá sesión
+                {t('sign_in_link')}
               </a>
             </p>
           </form>
@@ -388,13 +376,13 @@ export default function JoinPage() {
 
             <div>
               <label className="block text-sm font-medium mb-1.5 text-white/70">
-                Correo electrónico
+                {t('email_label')}
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="tu@correo.com"
+                placeholder={t('email_placeholder')}
                 autoComplete="email"
                 autoFocus
                 required
@@ -410,7 +398,7 @@ export default function JoinPage() {
 
             <button type="submit" disabled={loading || !email.trim()} className={btnClass}
               style={{ ...btnStyle, opacity: loading || !email.trim() ? 0.6 : 1 }}>
-              {loading ? <><Spinner /> Verificando...</> : 'Continuar'}
+              {loading ? <><Spinner /> {t('verifying')}</> : t('continue')}
             </button>
           </form>
         )}
@@ -422,50 +410,50 @@ export default function JoinPage() {
             <TenantChip />
 
             <p className="text-sm mb-2 text-white/45">
-              Completá tus datos para crear tu cuenta
+              {t('register_subtitle')}
             </p>
 
             {/* First + Last name */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium mb-1.5 text-white/70">
-                  Nombre *
+                  {t('first_name')} *
                 </label>
                 <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="Ana" autoComplete="given-name" required className={inputClass} />
+                  placeholder={t('first_name_placeholder')} autoComplete="given-name" required className={inputClass} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5 text-white/70">
-                  Apellido
+                  {t('last_name')}
                 </label>
                 <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)}
-                  placeholder="García" autoComplete="family-name" className={inputClass} />
+                  placeholder={t('last_name_placeholder')} autoComplete="family-name" className={inputClass} />
               </div>
             </div>
 
             {/* Phone */}
             <div>
               <label className="block text-sm font-medium mb-1.5 text-white/70">
-                Teléfono <span className="text-white/35 font-normal">(opcional)</span>
+                {t('phone')} <span className="text-white/35 font-normal">{t('phone_optional')}</span>
               </label>
               <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
-                placeholder="+1 555 0000" autoComplete="tel" className={inputClass} />
+                placeholder={t('phone_placeholder')} autoComplete="tel" className={inputClass} />
             </div>
 
             {/* Birthday */}
             <div>
               <label className="block text-sm font-medium mb-1.5 text-white/70">
-                Cumpleaños <span className="text-white/35 font-normal">(para ofertas especiales)</span>
+                {t('birthday')} <span className="text-white/35 font-normal">{t('birthday_hint')}</span>
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <select value={birthMonth} onChange={(e) => setBirthMonth(e.target.value)} className={selectClass}>
-                  <option value="">Mes</option>
-                  {MONTHS.map((m, i) => (
-                    <option key={m} value={String(i + 1)}>{m}</option>
+                  <option value="">{t('birth_month')}</option>
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((i) => (
+                    <option key={i} value={String(i)}>{t(`months.${i}`)}</option>
                   ))}
                 </select>
                 <select value={birthDay} onChange={(e) => setBirthDay(e.target.value)} className={selectClass}>
-                  <option value="">Día</option>
+                  <option value="">{t('birth_day')}</option>
                   {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                     <option key={d} value={String(d)}>{d}</option>
                   ))}
@@ -476,17 +464,17 @@ export default function JoinPage() {
             {/* Password */}
             <div>
               <label className="block text-sm font-medium mb-1.5 text-white/70">
-                Contraseña *
+                {t('password')} *
               </label>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres" autoComplete="new-password" required className={inputClass} />
+                placeholder={t('password_placeholder')} autoComplete="new-password" required className={inputClass} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1.5 text-white/70">
-                Confirmá la contraseña *
+                {t('confirm_password')} *
               </label>
               <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••" autoComplete="new-password" required className={inputClass} />
+                placeholder={t('confirm_password_placeholder')} autoComplete="new-password" required className={inputClass} />
             </div>
 
             {error && (
@@ -501,7 +489,7 @@ export default function JoinPage() {
 
             <button type="submit" disabled={loading || !firstName.trim() || !password || !confirmPassword || (documentIds.length > 0 && !consented)}
               className={btnClass} style={{ ...btnStyle, opacity: loading || !firstName.trim() || !password || !confirmPassword || (documentIds.length > 0 && !consented) ? 0.6 : 1 }}>
-              {loading ? <><Spinner /> Creando cuenta...</> : 'Crear cuenta'}
+              {loading ? <><Spinner /> {t('creating')}</> : t('create_account')}
             </button>
           </form>
         )}
@@ -513,21 +501,21 @@ export default function JoinPage() {
             <TenantChip />
 
             <div className="px-4 py-3 rounded-xl mb-2 bg-white/5 border border-white/10">
-              <p className="text-xs text-white/40">Iniciando sesión como</p>
+              <p className="text-xs text-white/40">{t('signing_in_as')}</p>
               <p className="text-sm font-medium text-white">{email}</p>
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <label className="text-sm font-medium text-white/70">
-                  Contraseña
+                  {t('password')}
                 </label>
                 <a href="/forgot-password" className="text-xs underline text-[#a78bfa]">
-                  ¿Olvidaste tu contraseña?
+                  {t('forgot_password')}
                 </a>
               </div>
               <input type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)}
-                placeholder="••••••••" autoComplete="current-password" autoFocus required className={inputClass} />
+                placeholder={t('confirm_password_placeholder')} autoComplete="current-password" autoFocus required className={inputClass} />
             </div>
 
             {error && (
@@ -538,7 +526,7 @@ export default function JoinPage() {
 
             <button type="submit" disabled={loading || !loginPassword} className={btnClass}
               style={{ ...btnStyle, opacity: loading || !loginPassword ? 0.6 : 1 }}>
-              {loading ? <><Spinner /> Ingresando...</> : 'Ingresar'}
+              {loading ? <><Spinner /> {t('signing_in')}</> : t('sign_in')}
             </button>
           </form>
         )}
