@@ -525,4 +525,158 @@ Rate limiting debe ser **por capa, por endpoint y por identificador contextual**
 
 ---
 
+### 9.2 Auth Context — Riesgos de `auth_member_id()` y `auth_tenant_id()`
+
+**Contexto:** Se evaluaron tres puntos de seguridad sobre cookies, RLS y timing de triggers. El hallazgo más relevante está en cómo funcionan las funciones helper de autenticación.
+
+#### Hallazgo: session settings, no JWT
+
+`auth_member_id()` y `auth_tenant_id()` leen de variables de sesión de PostgreSQL, **no de JWT claims**:
+
+```sql
+SELECT NULLIF(current_setting('app.member_id', true), '')::UUID;
+SELECT NULLIF(current_setting('app.tenant_id', true), '')::UUID;
+```
+
+Esto significa que todas las políticas RLS que usan estas funciones dependen de que el middleware setee `app.member_id` y `app.tenant_id` **antes de cada query**. Si hay un path de request donde el middleware no las setea, la función devuelve `NULL` silenciosamente y las políticas bloquean sin error visible — difícil de debuggear.
+
+#### Riesgo: paths sin middleware coverage
+
+Las tres apps (web, dashboard, member) tienen middlewares distintos. Un API route nuevo que no pase por el middleware correcto tendría `auth_member_id()` → NULL, lo que rompería cualquier política RLS que dependa de ella sin lanzar un error claro.
+
+#### Decisión pendiente: auditar cobertura de middleware
+
+Antes de agregar más políticas RLS basadas en `auth_member_id()` o `auth_tenant_id()`, verificar que los tres middlewares cubren todos los paths de API relevantes y setean ambas variables correctamente.
+
+**Prioridad:** Medium — auditar antes de Phase 2. No bloquea features actuales pero puede causar bugs silenciosos en features nuevas.
+
+#### Puntos descartados
+
+- **Cookies cross-subdomain:** No aplica mientras todo viva bajo `loyalbase.dev`. Revisitar en Phase 3 cuando se implementen subdominios por tenant.
+- **Race condition en trigger de invitación:** No aplica. El flow de aceptación (`apps/web/app/api/invite/accept/route.ts`) inserta en `tenant_users` de forma explícita y sincrónica con `service_role` antes de devolver la respuesta. Sin triggers, sin race condition.
+
+---
+
+### 9.3 RLS Decorativo — Deuda Técnica Crítica
+
+**Contexto:** Auditoría de los tres middlewares (web, dashboard, member) y las funciones helper de autenticación de PostgreSQL. Hallazgo confirmado por evidencia en código y migraciones propias del proyecto.
+
+#### El problema
+
+`auth_tenant_id()` y `auth_member_id()` leen de session settings de PostgreSQL:
+
+```sql
+SELECT NULLIF(current_setting('app.tenant_id', true), '')::UUID;
+SELECT NULLIF(current_setting('app.member_id', true), '')::UUID;
+```
+
+**Ninguno de los tres middlewares setea estas variables en ningún momento.** Resultado: ambas funciones siempre devuelven `NULL`. En SQL, `column = NULL` evalúa a NULL (no TRUE), por lo que todas las políticas RLS basadas en estas funciones siempre bloquean — son efectivamente decorativas.
+
+Esto ya fue documentado internamente:
+- `supabase/migrations/20260404000007_fix_tenants_rls.sql`: *"The previous policy relied on a session variable never set by the app, blocking all tenant queries for authenticated users."*
+- `apps/dashboard/app/api/members/route.ts:159`: *"use service role to bypass RLS (app.tenant_id session var not set)"*
+
+#### Estado actual por tabla
+
+| Tabla | Políticas con auth_tenant_id/member_id | Estado real | Protección efectiva |
+|-------|----------------------------------------|-------------|---------------------|
+| `tenants` | Reemplazadas en migración 007 | **Funcional** | `auth_user_id = auth.uid()` |
+| `members` | `members_select_tenant`, `members_insert_tenant`, `members_update_tenant`, `members_select_self`, `members_update_self` | **Decorativas** | service_role + filtros en app |
+| `transactions` | `transactions_select_own`, `transactions_insert_own`, `transactions_select_member` | **Decorativas** | service_role + filtros en app |
+| `rewards` | `rewards_select_own`, `rewards_insert_own`, `rewards_update_own` | **Decorativas** | service_role + filtros en app |
+| `redemptions` | `redemptions_select_tenant`, `redemptions_insert_own`, `redemptions_select_member` | **Decorativas** | service_role + filtros en app |
+| `campaigns` | `campaigns_select_own`, `campaigns_insert_own`, `campaigns_update_own` | **Decorativas** | service_role + filtros en app |
+| `visits` | Equivalentes | **Decorativas** | service_role + filtros en app |
+| `notifications` | Equivalentes | **Decorativas** | service_role + filtros en app |
+
+#### Por qué el app funciona igual
+
+Toda escritura y lectura cross-tenant pasa por `createServiceRoleClient()` que bypasea RLS completamente. Los filtros por tenant se aplican a nivel de query en el código de la app (`.eq('tenant_id', tenantId)`), no en la base de datos.
+
+#### El riesgo
+
+**No hay segunda línea de defensa.** Si un bug en el código de la app omite el filtro por tenant en una query con service_role, RLS no lo detiene. Un error en un solo route handler puede exponer datos de todos los tenants.
+
+#### Fix requerido
+
+Portar el mismo patrón que ya se aplicó a `tenants` — reemplazar `auth_tenant_id()` / `auth_member_id()` con joins o lookups directos vía `auth.uid()`:
+
+```sql
+-- Patrón correcto (ya aplicado en tenants):
+FOR SELECT USING (auth_user_id = auth.uid())
+
+-- Para tablas con tenant_id (members, transactions, rewards, etc.):
+FOR SELECT USING (
+  tenant_id IN (
+    SELECT id FROM tenants WHERE auth_user_id = auth.uid()
+  )
+)
+```
+
+**Prioridad:** HIGH — antes de Phase 2. Mientras el app sea el único cliente de la DB y el código de la app sea correcto, el riesgo es bajo. Pero cualquier integración externa, webhook, o script que acceda con user JWT quedaría sin protección RLS real.
+
+---
+
+### 9.4 Estado Post-Auditoría de Seguridad (2026-04-07)
+
+Auditoría completa de RLS, middlewares y políticas. Resumen de lo resuelto y lo pendiente.
+
+#### Resuelto en esta sesión
+
+| Item | Migración / Cambio | Estado |
+|------|-------------------|--------|
+| `super_admins_all` FOR ALL USING(true) | `20260406000002` | ✓ Cerrado |
+| `tenant_users` INSERT/UPDATE permisivos | `20260406000003` | ✓ Cerrado |
+| `invitations` INSERT/UPDATE permisivos | `20260406000003` | ✓ Cerrado |
+| `badges` cross-tenant catalog leak | `20260406000004` + `20260406000006` | ✓ Cerrado |
+| `demo_requests` anon INSERT abierto | `20260406000005` + API route | ✓ Cerrado |
+| RLS decorativo en 13 tablas (session vars nunca seteadas) | `20260406000006` | ✓ Cerrado |
+
+#### Pendiente
+
+| Item | Prioridad | Acción requerida |
+|------|-----------|-----------------|
+| **Spend Cap en Supabase Billing** | HIGH | Configurar en Supabase Dashboard → Billing → Spend Cap. Limitar gasto máximo mensual antes de abrir registro público. No requiere código. |
+| **Rate limiting en API routes críticas** | Medium | Implementar según estrategia documentada en sección 9.1. Mínimo: auth y redención de puntos antes de go-live. |
+
+#### Arquitectura de seguridad actual (post-auditoría)
+
+- **RLS activo y funcional** en todas las tablas via `current_tenant_id()` / `current_member_id()` (SECURITY DEFINER, resuelven via `auth.uid()` sin depender de session settings)
+- **Segunda línea de defensa operativa** — un endpoint que omita el `.eq('tenant_id', x)` ya no expone datos de otros tenants
+- **Operaciones privilegiadas** (insert de members, accept invite, impersonation) siguen usando `service_role` explícitamente
+- **Funciones helper disponibles:** `is_super_admin()`, `is_tenant_owner()`, `current_tenant_id()`, `current_member_id()`
+
+---
+
+### 9.5 Performance — Índices para Funciones RLS
+
+**Contexto:** Las funciones `current_tenant_id()` y `current_member_id()` introducidas en `20260406000006` hacen lookups en tres tablas en cada evaluación de política RLS. Dos de los tres ya tenían índices; el tercero no.
+
+#### Estado de índices en columnas `auth_user_id`
+
+| Tabla | Columna | Índice | Estado |
+|-------|---------|--------|--------|
+| `tenants` | `auth_user_id` | `idx_tenants_auth_user` (partial: `deleted_at IS NULL`) | ✓ Existente |
+| `tenant_users` | `auth_user_id` | `idx_tenant_users_auth_user_id` | ✓ Existente |
+| `members` | `auth_user_id` | — | ✗ Faltante → `20260407000001` |
+
+#### Por qué importa
+
+`current_member_id()` hace `SELECT id FROM members WHERE auth_user_id = auth.uid()` sin índice. `current_tenant_id()` tiene el mismo problema en su tercer COALESCE (contexto member app). Con 500 miembros por tenant y decenas de tenants, cada evaluación de política que llame a estas funciones hace un sequential scan en la tabla completa de members.
+
+**Fix aplicado:** `20260407000001_index_members_auth_user_id.sql`
+
+#### Spend Cap — Decisión operacional pendiente
+
+Activar en Supabase Dashboard → Organization → Billing → Subscription.
+
+| Fase | Cap recomendado | Motivo |
+|------|----------------|--------|
+| Testing / early access privado | $0 sobre plan Pro | Pausa servicios en vez de cobrar excedente — preferible a sorpresas de facturación |
+| Tenants pagando activos | $10–20 buffer | Evitar downtime legítimo; el costo de un tenant sin servicio supera el excedente |
+
+**Prioridad:** Activar el $0 cap AHORA, antes de abrir registro público.
+
+---
+
 *LoyaltyOS PRD v2.0 — Documentación interna. No distribuir.*
