@@ -91,7 +91,7 @@ export default async function HomePage() {
   const { data: { user } } = await (supabase.auth as any).getUser();
   if (!user) redirect('/join');
 
-  let tenantId = cookies().get('loyalty_tenant_id')?.value;
+  const tenantId = cookies().get('loyalty_tenant_id')?.value;
 
   if (!tenantId) {
     const memberships = await getMembersByUserId(user.id);
