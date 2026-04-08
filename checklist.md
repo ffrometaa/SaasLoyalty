@@ -20,7 +20,7 @@
 | 2026-04-09 (Mié) | 🔴 Tarea 3b: Fix no-explicit-any (parte 2) | `[x] Completada` | Sin archivos con eslint-disable en repo |
 | 2026-04-10 (Jue) | 🧪 Tarea 4a: Tests — Setup + audit rutas API | `[x] Completada` | commit `4d63607` — 19 auth tests |
 | 2026-04-11 (Vie) | 🧪 Tarea 4b: Tests — members, rewards + rewrite components | `[x] Completada` | commit `b1e58e7` — 58 tests totales |
-| 2026-04-12 (Sáb) | 🧪 Tarea 4c: Tests — CI + revisión final | `[ ] Pendiente` | — |
+| 2026-04-12 (Sáb) | 🧪 Tarea 4c: Tests — CI + revisión final | `[x] Completada` | turbo.json + `tests/README.md` + 58 tests passing |
 
 ---
 
@@ -69,6 +69,7 @@
 | 2026-04-07 | 7 | 5 | 2 | 0 |
 | 2026-04-08 | 3 | 3 | 0 | 0 |
 | 2026-04-11 | 2 | 2 | 0 | 0 |
+| 2026-04-12 | 1 | 1 | 0 | 0 |
 
 ---
 

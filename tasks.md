@@ -157,7 +157,7 @@ Criterios de "completada":
 
 #### 🧪 Tarea 4c: Tests integración — CI + cierre y revisión final
 - **Fecha**: 2026-04-12
-- **Estado**: `[ ] Pendiente`
+- **Estado**: `[x] Completada`
 - **Esfuerzo**: 2 horas
 - **Descripción**: Cerrar el módulo de tests e integrar al pipeline CI.
 - **Pasos**:
