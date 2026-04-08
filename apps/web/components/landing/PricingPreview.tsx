@@ -28,24 +28,6 @@ export function PricingPreview() {
       highlight: true,
       enterprise: false,
     },
-    {
-      name: t('plan2_name'),
-      monthly: 599,
-      annual: 499,
-      subtitle: t('plan2_subtitle'),
-      features: [t('plan2_f0'), t('plan2_f1'), t('plan2_f2'), t('plan2_f3'), t('plan2_f4'), t('plan2_f5')],
-      highlight: false,
-      enterprise: false,
-    },
-    {
-      name: t('plan3_name'),
-      monthly: null,
-      annual: null,
-      subtitle: t('plan3_subtitle'),
-      features: [t('plan3_f0'), t('plan3_f1'), t('plan3_f2'), t('plan3_f3'), t('plan3_f4'), t('plan3_f5')],
-      highlight: false,
-      enterprise: true,
-    },
   ];
 
   useEffect(() => {
@@ -131,7 +113,7 @@ export function PricingPreview() {
         </div>
 
         {/* Plans */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch max-w-3xl mx-auto">
           {PLANS.map((plan) => (
             <div
               key={plan.name}

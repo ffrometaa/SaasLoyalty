@@ -35,15 +35,6 @@ const pricingSchema = {
       description: 'For growing local businesses. Up to 2,000 members, 10 campaigns/month.',
       url: 'https://loyalbase.dev/pricing',
     },
-    {
-      '@type': 'Offer',
-      name: 'Scale',
-      price: '599',
-      priceCurrency: 'USD',
-      priceSpecification: { '@type': 'UnitPriceSpecification', price: '599', priceCurrency: 'USD', unitText: 'MONTH' },
-      description: 'For multi-location businesses. Unlimited members and campaigns.',
-      url: 'https://loyalbase.dev/pricing',
-    },
   ],
 };
 
@@ -51,20 +42,15 @@ export default async function PricingPage() {
   const t = await getTranslations('pricingPage');
 
   const TABLE_ROWS = [
-    { feature: 'Member App (PWA)', starter: true, pro: true, scale: true, enterprise: true },
-    { feature: 'Points & Rewards Engine', starter: true, pro: true, scale: true, enterprise: true },
-    { feature: 'QR Code Onboarding', starter: true, pro: true, scale: true, enterprise: true },
-    { feature: 'Members', starter: '500', pro: '2,000', scale: 'Unlimited', enterprise: 'Unlimited' },
-    { feature: 'Campaigns / month', starter: '2', pro: '10', scale: 'Unlimited', enterprise: 'Unlimited' },
-    { feature: 'Analytics Dashboard', starter: 'Basic', pro: 'Full + Heatmap', scale: 'Full + Export', enterprise: 'Full + Export' },
-    { feature: 'White-label', starter: 'Logo', pro: 'Logo + Colors', scale: 'Full Brand', enterprise: 'Full Brand' },
-    { feature: 'API Access', starter: false, pro: false, scale: true, enterprise: true },
-    { feature: 'SSO & Custom Integrations', starter: false, pro: false, scale: false, enterprise: true },
-    { feature: 'Multi-location Management', starter: false, pro: false, scale: false, enterprise: true },
-    { feature: 'Gamification Engine', starter: false, pro: false, scale: false, enterprise: true },
-    { feature: 'Advanced Campaign Automation', starter: false, pro: false, scale: false, enterprise: true },
-    { feature: 'Account Manager', starter: false, pro: false, scale: true, enterprise: true },
-    { feature: 'Support', starter: 'Email', pro: 'Priority Chat', scale: 'Dedicated', enterprise: 'SLA-backed' },
+    { feature: 'Member App (PWA)', starter: true, pro: true },
+    { feature: 'Points & Rewards Engine', starter: true, pro: true },
+    { feature: 'QR Code Onboarding', starter: true, pro: true },
+    { feature: 'Members', starter: '500', pro: '2,000' },
+    { feature: 'Campaigns / month', starter: '2', pro: '10' },
+    { feature: 'Analytics Dashboard', starter: 'Basic', pro: 'Full + Heatmap' },
+    { feature: 'White-label Branding', starter: false, pro: true },
+    { feature: 'Gamification Engine', starter: false, pro: true },
+    { feature: 'Support', starter: 'Email', pro: 'Priority Chat' },
   ];
 
   return (
@@ -107,26 +93,25 @@ export default async function PricingPage() {
               <div className="overflow-x-auto" style={{ background: '#0d0d14' }}>
                 <div style={{ minWidth: '560px' }}>
                   {/* Header */}
-                  <div className="grid grid-cols-5 gap-4 px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="grid grid-cols-3 gap-4 px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                     <div className="text-white/40 text-xs font-semibold tracking-wide uppercase">{t('featureLabel')}</div>
-                    {['Starter', 'Pro', 'Scale'].map((p) => (
+                    {['Starter', 'Pro'].map((p) => (
                       <div key={p} className="text-center text-white font-semibold text-sm">{p}</div>
                     ))}
-                    <div className="text-center font-semibold text-sm" style={{ color: '#a5b4fc' }}>Enterprise</div>
                   </div>
 
                   {TABLE_ROWS.map((row, i) => (
                     <div
                       key={i}
-                      className="grid grid-cols-5 gap-4 px-6 py-4"
+                      className="grid grid-cols-3 gap-4 px-6 py-4"
                       style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
                     >
                       <div className="text-white/60 text-sm">{row.feature}</div>
-                      {[row.starter, row.pro, row.scale, row.enterprise].map((val, j) => (
+                      {[row.starter, row.pro].map((val, j) => (
                         <div key={j} className="text-center">
                           {val === true ? (
                             <svg
-                              className={`w-4 h-4 mx-auto ${j === 3 ? 'text-indigo-400' : 'text-purple-400'}`}
+                              className="w-4 h-4 mx-auto text-purple-400"
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
@@ -139,7 +124,7 @@ export default async function PricingPage() {
                               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                             </svg>
                           ) : (
-                            <span className={`text-xs ${j === 3 ? 'text-indigo-300' : 'text-white/60'}`}>{val as string}</span>
+                            <span className="text-xs text-white/60">{val as string}</span>
                           )}
                         </div>
                       ))}

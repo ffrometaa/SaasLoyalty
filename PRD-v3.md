@@ -711,10 +711,26 @@ Los siguientes items son candidatos para Phase 4 sin bloqueo de marketing, pero 
 | Login Member App | Solo join code | ✅ Login directo + picker de negocios |
 | Notificaciones | Solo push | ✅ In-app + push + historial |
 | Phase 3 completado | 0% | ✅ 5 de 9 módulos |
+| Planes en Landing | 4 planes (Starter/Pro/Scale/Enterprise) | ✅ Solo Starter y Pro — decisión de marketing 2026-04-08 |
 
 ---
 
-## 10. Fuera de Alcance
+## 10. Decisiones de Marketing
+
+### MKT-1 — Landing Web: Solo Starter y Pro (2026-04-08)
+
+**Decisión:** La página de pricing (`/pricing`) y el componente `PricingPreview` solo muestran los planes **Starter ($199/mes)** y **Pro ($399/mes)**. Los planes Scale y Enterprise fueron removidos del landing.
+
+**Razón:** Simplificar el mensaje de marketing y reducir la fricción de decisión en el funnel de adquisición. Demasiadas opciones en el landing confunden al prospect. Scale y Enterprise siguen existiendo en el sistema y pueden activarse por ventas directas o en el dashboard.
+
+**Impacto:**
+- `apps/web/components/landing/PricingPreview.tsx` — PLANS array reducido a 2 planes
+- `apps/web/app/pricing/page.tsx` — JSON-LD schema y tabla comparativa reducidos a Starter/Pro
+- Los planes Scale y Enterprise siguen activos en `features.ts` y en el backend
+
+---
+
+## 11. Fuera de Alcance
 
 ### Phase 3 — No implementar
 
@@ -730,7 +746,7 @@ Los siguientes items son candidatos para Phase 4 sin bloqueo de marketing, pero 
 
 ---
 
-## 11. Timeline Phase 3 — Actualizado
+## 12. Timeline Phase 3 — Actualizado
 
 | Módulo | Semanas planificadas | Estado | Fecha real |
 |--------|---------------------|--------|------------|
@@ -751,7 +767,7 @@ Los siguientes items son candidatos para Phase 4 sin bloqueo de marketing, pero 
 
 ---
 
-## 12. Trial Program — Gamificación y Heatmap (Plan Starter)
+## 13. Trial Program — Gamificación y Heatmap (Plan Starter)
 
 ### Overview
 
