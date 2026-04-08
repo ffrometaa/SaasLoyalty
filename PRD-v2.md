@@ -1,8 +1,12 @@
-# LoyaltyOS — Product Requirements Document v2.0
+# ~~LoyaltyOS — Product Requirements Document v2.0~~ [DEPRECADO]
+
+> ⚠️ **Este documento está deprecado.** Fue reemplazado por [PRD-v3.md](./PRD-v3.md) en Abril 2026.
+> No usar como referencia. Conservado solo para historial.
 
 **Fecha:** Abril 2026
-**Estado:** Producción — MVP Completo
+**Estado:** ~~Producción — MVP Completo~~ **DEPRECADO — ver PRD-v3.md**
 **Versión anterior:** PRD v1.0 (inicio del proyecto, Supabase + Next.js + Stripe)
+**Reemplazado por:** PRD v3.0 (Abril 2026)
 
 ---
 
@@ -213,11 +217,132 @@ Desde el PRD v1.0, el producto pasó de concepto a plataforma funcional en produ
 | Analytics | Básico | Completo | Completo | Custom |
 | White-label | — | — | Full | Full |
 | Data Export | — | — | ✓ | ✓ |
-| API Access | — | — | ✓ | ✓ |
-| Custom Domain | — | — | — | ✓ (Phase 3) |
+| API Access | — | — | — (†) | ✓ |
+| Custom Domain | — | — | — (†) | ✓ (Phase 3) |
 | Booking Integration | — | — | — | ✓ (Phase 3) |
 | Account Manager | — | — | ✓ | ✓ |
 | Soporte | Email | Priority | Dedicado | SLA |
+
+> **(†) Retirado del plan Scale** — API Access y Custom Domains fueron retirados como features incluidos en Scale pending validación de mercado. Marketing debe evaluar si los tenants están dispuestos a pagar un sobreprecio por ellos como add-on o tier Scale+. Ver §2.7.
+
+---
+
+### 2.7 Decisión de Pricing — API Access y Custom Domains (Pendiente Validación de Mercado)
+
+**Fecha de decisión:** 2026-04-07
+**Estado:** 🟡 Pendiente — requiere investigación de marketing antes de implementar
+
+#### Decisión tomada
+
+API Access y Custom Domains fueron **retirados del plan Scale** como features incluidos en el precio base ($599/mo). La razón principal: ambos features tienen un costo de implementación significativo y no hay evidencia actual de que los tenants los perciban como justificación suficiente para pagar $200/mo más que Pro.
+
+Actualmente el plan Scale se diferencia de Pro en:
+- Miembros ilimitados ✅ (implementado)
+- Campañas ilimitadas ✅ (implementado)
+- Data Export 🔲 (no implementado)
+- White-label full brand 🔲 (no implementado)
+- Account Manager ✅ (operacional)
+
+Con API Access y Custom Domains incluidos, el plan Scale prometía features que no están construidos y que representan semanas de desarrollo. Al retirarlos, el plan Scale queda honesto con lo que entrega hoy y evita compromiso técnico prematuro.
+
+#### Qué debe investigar Marketing
+
+Antes de decidir si API Access y Custom Domains entran como:
+
+- **Opción A — Scale+ tier** ($799-$899/mo): un cuarto plan entre Scale y Enterprise para tenants que necesitan integraciones pero no quieren Enterprise
+- **Opción B — Add-ons por separado** (+$X/mo sobre Scale): API Access como add-on independiente, Custom Domain como add-on independiente
+- **Opción C — Solo Enterprise**: mantenerlos exclusivos de Enterprise, usando el trigger de upgrade desde Settings de Scale como palanca de conversión
+
+Marketing debe responder:
+
+| Pregunta | Método sugerido |
+|----------|----------------|
+| ¿Los tenants Scale actuales usan POS o e-commerce propio? | Encuesta directa a tenants activos |
+| ¿Cuánto pagarían extra por API access? | Test de precio (Van Westendorp o Conjoint) |
+| ¿Custom Domain es un diferenciador real o nice-to-have? | Entrevistas con 5-10 tenants |
+| ¿Hay competidores que lo incluyen en el plan equivalente? | Benchmarking competitivo |
+
+#### Impacto en código
+
+El archivo `apps/dashboard/lib/plans/features.ts` actualmente tiene `api_access` en el array de features de Scale. **Debe actualizarse** para removerlo y alinearse con esta decisión antes del próximo deploy de features.ts. Esta tarea queda pendiente hasta que marketing confirme la estrategia.
+
+#### Criterio de resolución
+
+Esta decisión debe resolverse antes del inicio de Phase 3 (implementación de API pública, §4.4). Si marketing no tiene datos para ese momento, se adopta **Opción C** (solo Enterprise) por defecto para no bloquear la hoja de ruta.
+
+---
+
+### 2.8 Gaps Críticos del Plan Enterprise — Bloqueados hasta PRD v3
+
+**Fecha:** 2026-04-07
+**Estado:** 🔴 No implementar — requiere validación de marketing antes de PRD v3
+
+Los siguientes features están definidos en el sistema de planes (`features.ts`) como exclusivos de Enterprise pero **no tienen arquitectura documentada, ni especificación técnica, ni están contemplados en Phase 3**. Hoy hacen que Enterprise sea funcionalmente un "Scale con precio custom", sin diferenciadores reales de infraestructura.
+
+**Ninguno de estos features debe iniciarse hasta que marketing confirme willingness-to-pay y el equipo de producto los incorpore formalmente en PRD v3.**
+
+---
+
+#### Gap 1 — SSO Tenant (SAML / OIDC)
+
+**Qué es:** Autenticación enterprise que permite al tenant usar su propio Identity Provider (Okta, Azure AD, Google Workspace) para que sus empleados accedan al Dashboard de LoyaltyOS sin credenciales separadas.
+
+**Por qué importa:** Es el feature de Enterprise más demandado en SaaS B2B. Sin SSO, los negocios medianos/grandes con políticas de seguridad corporativa no pueden adoptar LoyaltyOS. Es un bloqueador de ventas upmarket, no un nice-to-have.
+
+**Estado actual:** Solo hay una referencia interna en el PRD a "Cross-domain login SSO entre Web y Dashboard" (§1), que es SSO *interno* de LoyaltyOS — no tiene relación con SSO de tenant. No hay tabla, no hay flujo, no hay spec.
+
+**Preguntas para marketing:**
+- ¿Los leads Enterprise actuales han preguntado por SSO?
+- ¿Cuántos deals se perdieron por falta de SSO?
+- ¿Qué IdPs usan los prospectos objetivo?
+
+**Esfuerzo estimado (cuando se defina):** Alto — 4-6 semanas. Requiere integración con `@auth/supabase` o solución dedicada (WorkOS, BoxyHQ), migración del sistema de sesiones, y UI de configuración en Settings.
+
+---
+
+#### Gap 2 — Multi-Location
+
+**Qué es:** Un tenant con múltiples sucursales (franquicia, cadena de negocios) que comparte base de miembros, acumula puntos en cualquier sucursal, y ve reportes consolidados o por sucursal.
+
+**Por qué importa:** El caso de uso de negocio con una sola ubicación es limitado en ticket promedio. Multi-location es el diferenciador que permite atacar franquicias y cadenas — segmento con LTV significativamente mayor.
+
+**Estado actual:** Solo existe un campo `location_id` implícito en algunas tablas. No hay tabla `locations`, no hay RLS por sucursal, no hay UI de gestión, no hay lógica de acumulación cross-location. La arquitectura actual es 1 tenant = 1 negocio físico.
+
+**Preguntas para marketing:**
+- ¿Hay tenants actuales con más de una sucursal que estén gestionando workarounds?
+- ¿Los prospectos Enterprise provienen de franquicias o cadenas?
+- ¿El modelo de pricing sería por sucursal adicional o flat?
+
+**Esfuerzo estimado (cuando se defina):** Muy alto — 6-8 semanas. Requiere migración de schema, refactor de RLS, nuevo contexto de sesión, y UI completa de gestión de sucursales.
+
+---
+
+#### Gap 3 — Infraestructura Dedicada / Secure Compute
+
+**Qué es:** Aislamiento de infraestructura para tenants Enterprise que operan bajo regulaciones de compliance (SOC 2 Type II, HIPAA, PCI-DSS). Incluye: tenant en schema propio o proyecto Supabase separado, sin multi-tenancy compartido, SLA de uptime garantizado contractualmente, y audit log completo.
+
+**Por qué importa:** Sin esto, LoyaltyOS no puede venderse a retailers de salud, farmacias, clínicas con programas de fidelidad, o cualquier vertical regulado. Es el techo de mercado del producto.
+
+**Estado actual:** Toda la arquitectura es multi-tenant en un único proyecto Supabase con RLS. No hay aislamiento por tenant. El "support_sla" está definido en `features.ts` pero es solo un nivel operacional, no hay infraestructura diferenciada.
+
+**Preguntas para marketing:**
+- ¿Hay prospectos en verticales regulados (salud, farmacia, finanzas)?
+- ¿El segmento objetivo de Enterprise requiere certificaciones de compliance?
+- ¿O Enterprise es simplemente "negocios grandes" sin requisitos de compliance?
+
+**Esfuerzo estimado (cuando se defina):** Muy alto — arquitectura diferente. Requiere decisión sobre multi-project Supabase vs schema isolation vs row-level tenant key, más certificaciones externas.
+
+---
+
+#### Resumen para PRD v3
+
+| Gap | Bloqueador de ventas | Esfuerzo | Prioridad sugerida para v3 |
+|-----|---------------------|----------|---------------------------|
+| SSO Tenant (SAML/OIDC) | Alto — deals perdidos | Alto (4-6 sem) | 1º |
+| Multi-location | Medio — limita segmento | Muy alto (6-8 sem) | 2º |
+| Secure Compute / Compliance | Bajo hoy, alto a futuro | Muy alto + certificaciones | 3º |
+
+> **Regla:** Ningún ingeniería avanza en estos tres items sin un documento de validación de marketing que confirme demanda real. El riesgo de construir Enterprise features sin demanda validada es alto — son las implementaciones más costosas del roadmap.
 
 ---
 
@@ -288,7 +413,9 @@ service_point_rules    — Reglas de mapeo servicio → puntos
 
 ---
 
-### 4.3 Custom Domains (Scale+)
+### 4.3 Custom Domains
+
+> ⚠️ **Decisión de pricing pendiente (ver §2.7):** Custom Domains fue retirado del plan Scale. Actualmente solo está incluido en Enterprise. Marketing debe validar si justifica un tier Scale+ o add-on separado antes de iniciar implementación.
 
 **Descripción:** Cada tenant puede usar su propio dominio o subdominio para la Member App en lugar de `member.loyalbase.dev`. El miembro ve el dominio del negocio, fortaleciendo la identidad de marca.
 
@@ -315,7 +442,9 @@ tenant_domains   — domain, verification_status, verified_at, dns_record
 
 ---
 
-### 4.4 Public REST API (Scale+)
+### 4.4 Public REST API
+
+> ⚠️ **Decisión de pricing pendiente (ver §2.7):** API Access fue retirado del plan Scale. Marketing debe validar el modelo (Scale+, add-on o solo Enterprise) antes de iniciar implementación. La especificación técnica a continuación es válida independientemente del tier que resulte.
 
 **Descripción:** API pública documentada que permite a los tenants integrar LoyaltyOS con sus propios sistemas (POS, e-commerce, apps propias) sin pasar por el dashboard.
 
@@ -457,6 +586,14 @@ Los siguientes features quedan explícitamente fuera del alcance de Phase 3 y so
 - **Multi-divisa:** Soporte para más de USD/moneda local
 - **Programa de partners / afiliados:** Comisiones para agencias que vendan LoyaltyOS
 - **White-label completo del dashboard:** Que el tenant pueda usar `dashboard.sudominio.com`
+
+### Candidatos a PRD v3 — Bloqueados por validación de marketing (ver §2.8)
+
+Estos tres items son gaps del plan Enterprise que **no entran en Phase 3 bajo ninguna circunstancia** — requieren validación de demanda antes de ser especificados:
+
+- **SSO Tenant (SAML/OIDC):** Integración con IdP corporativo del tenant (Okta, Azure AD, Google Workspace)
+- **Multi-location:** Arquitectura para franquicias y cadenas con múltiples sucursales, base de miembros compartida y reportes consolidados
+- **Infraestructura dedicada / Secure Compute:** Aislamiento por tenant para compliance (SOC 2, HIPAA, PCI-DSS), schema propio, SLA contractual
 
 ---
 
@@ -1005,6 +1142,37 @@ Los tenants no acceden a métricas financieras de LoyaltyOS. Lo que tiene sentid
 Esta integración tiene sentido como feature diferenciador de los planes Scale y Enterprise — el tenant puede medir si su programa genera retención real o solo gasto de puntos sin conversión. Se implementa sobre los datos de `transactions`, `visits`, `member_behavior_scores` que ya existen.
 
 **Prioridad:** Medium — Phase 3. Implementar después de la infraestructura de cacheo (`mrr_snapshots`, `admin_metrics_cache`) que es prerequisito de rendimiento.
+
+---
+
+### 9.13 Estudio de Impacto en Rendimiento — Features Enterprise (2026-04-07)
+
+**Referencia completa:** `Estudio-de-Impacto.md` en la raíz del proyecto.
+
+Antes de iniciar cualquier feature del plan Enterprise, consultar el nivel de impacto en rendimiento. Los features de nivel 🔴 Alto **requieren una estrategia de mitigación definida y aprobada antes de escribir una sola línea de código**.
+
+#### Resumen por nivel de impacto
+
+| Nivel | Features |
+|---|---|
+| 🔴 **Alto** | Miembros ilimitados, Analytics heatmap, Analytics export, Data export, Gamificación avanzada, Campañas avanzadas, API Access, Multi-location |
+| 🟡 **Medio-Alto** | Analytics full, Campañas ilimitadas, Webhooks salientes |
+| 🟡 **Medio** | Gamificación básica, Booking Integration, Infraestructura dedicada |
+| 🟢 **Bajo / Ninguno** | White-label, Custom Domains, SSO, Account Manager, Support SLA |
+
+#### Prerrequisitos de infraestructura para features 🔴 Alto
+
+Estos cinco componentes deben estar en producción antes de implementar cualquier feature de nivel alto:
+
+| Prerrequisito | Estado | Referencia PRD |
+|---|---|---|
+| Índices de DB revisados (EXPLAIN ANALYZE) | 🔲 Pendiente | §9.5 |
+| Sistema de caché (Upstash Redis) | 🔲 Pendiente | §3 deuda técnica |
+| Job queue (pg_cron + Edge Functions) | 🔲 Pendiente | §4.5 |
+| Observabilidad (Sentry en 3 apps) | 🔲 Pendiente | §4.8 |
+| Rate limiting en APIs públicas | 🔲 Pendiente | §9.1 |
+
+> Sin estos cinco componentes operativos, implementar features de nivel 🔴 Alto es acumular deuda de rendimiento que se manifiesta en producción — no en desarrollo.
 
 ---
 
