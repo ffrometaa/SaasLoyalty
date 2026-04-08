@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { getAuthRatelimit, isRateLimitedPath } from './lib/ratelimit';
 
 // MIDDLEWARE RULES — DO NOT REMOVE
 // 1. Public paths are never redirected regardless of auth state.
@@ -32,6 +33,33 @@ function isPublic(pathname: string): boolean {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Rate limiting — apply to auth endpoints before any session check
+  if (isRateLimitedPath(pathname)) {
+    const ratelimit = getAuthRatelimit();
+    if (ratelimit) {
+      const ip =
+        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+        request.headers.get('x-real-ip') ??
+        '127.0.0.1';
+
+      const { success, limit, remaining, reset } = await ratelimit.limit(ip);
+
+      if (!success) {
+        const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+        return new NextResponse(JSON.stringify({ error: 'Too many requests' }), {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': String(retryAfter),
+            'X-RateLimit-Limit': String(limit),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(reset),
+          },
+        });
+      }
+    }
+  }
 
   // Check public paths FIRST — no Supabase client created, no session check, no redirect ever
   if (isPublic(pathname)) {
