@@ -1,7 +1,7 @@
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 
 // Re-export for convenience
-export { createServerSupabaseClient };
+export { createServerSupabaseClient, createServiceRoleClient };
 
 /**
  * Get the authenticated server-side user.

@@ -11,7 +11,7 @@ interface OnboardingModalProps {
   isNewMember: boolean;
 }
 
-export function OnboardingModal({ memberName, appName, isNewMember }: OnboardingModalProps) {
+export function OnboardingModal({ memberName, appName: _appName, isNewMember }: OnboardingModalProps) {
   const t = useTranslations('onboarding');
   const [visible, setVisible] = useState(false);
   const [step, setStep] = useState(0);

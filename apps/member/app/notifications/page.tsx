@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { ArrowLeft, Bell, CheckCheck } from 'lucide-react';
+import { ArrowLeft, Bell } from 'lucide-react';
 
 type InAppNotification = {
   id: string;
