@@ -42,6 +42,7 @@ export default function JoinPage() {
 
   // Step 3 — login
   const [loginPassword, setLoginPassword] = useState('');
+  const [referralCode, setReferralCode] = useState('');
 
   const codeInputRef = useRef<HTMLInputElement>(null);
 
@@ -85,6 +86,9 @@ export default function JoinPage() {
       setCode(initial);
       validateCode(initial, true);
     }
+
+    const refCode = params.get('ref')?.trim().toUpperCase();
+    if (refCode) setReferralCode(refCode);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -198,6 +202,7 @@ export default function JoinPage() {
         phone: phone.trim() || null,
         birthMonth: birthMonth ? parseInt(birthMonth) : null,
         birthDay: birthDay ? parseInt(birthDay) : null,
+        ...(referralCode ? { referralCode } : {}),
       }),
     });
 

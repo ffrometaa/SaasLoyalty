@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
     const { data: tenant } = await supabase
       .from('tenants')
-      .select('business_name, brand_logo_url, brand_color_primary, brand_color_secondary, plan, plan_status, trial_ends_at, business_phone, business_address, owner_first_name, owner_last_name, owner_phone, owner_email, secondary_contact_first_name, secondary_contact_last_name, secondary_contact_phone, secondary_contact_email')
+      .select('business_name, brand_logo_url, brand_color_primary, brand_color_secondary, plan, plan_status, trial_ends_at, business_phone, business_address, owner_first_name, owner_last_name, owner_phone, owner_email, secondary_contact_first_name, secondary_contact_last_name, secondary_contact_phone, secondary_contact_email, referral_enabled, referral_points_referrer, referral_points_referee')
       .eq('auth_user_id', session.user.id)
       .is('deleted_at', null)
       .single();
@@ -42,6 +42,9 @@ export async function GET(request: NextRequest) {
       plan: tenant.plan,
       planStatus: tenant.plan_status,
       trialEndsAt: tenant.trial_ends_at,
+      referralEnabled: tenant.referral_enabled ?? false,
+      referralPointsReferrer: tenant.referral_points_referrer ?? 50,
+      referralPointsReferee: tenant.referral_points_referee ?? 50,
     });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -58,9 +61,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { businessName, primaryColor, accentColor, businessPhone, businessAddress, ownerFirstName, ownerLastName, ownerPhone, ownerEmail, secondaryContactFirstName, secondaryContactLastName, secondaryContactPhone, secondaryContactEmail } = body;
+    const {
+      businessName, primaryColor, accentColor, businessPhone, businessAddress,
+      ownerFirstName, ownerLastName, ownerPhone, ownerEmail,
+      secondaryContactFirstName, secondaryContactLastName, secondaryContactPhone, secondaryContactEmail,
+      referralEnabled, referralPointsReferrer, referralPointsReferee,
+    } = body;
 
-    const updates: Record<string, any> = { updated_at: new Date().toISOString() };
+    const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (businessName !== undefined) updates.business_name = businessName;
     if (primaryColor !== undefined) updates.brand_color_primary = primaryColor;
     if (accentColor !== undefined) updates.brand_color_secondary = accentColor;
@@ -74,6 +82,9 @@ export async function POST(request: NextRequest) {
     if (secondaryContactLastName !== undefined) updates.secondary_contact_last_name = secondaryContactLastName;
     if (secondaryContactPhone !== undefined) updates.secondary_contact_phone = secondaryContactPhone;
     if (secondaryContactEmail !== undefined) updates.secondary_contact_email = secondaryContactEmail;
+    if (referralEnabled !== undefined) updates.referral_enabled = referralEnabled;
+    if (referralPointsReferrer !== undefined) updates.referral_points_referrer = Math.max(0, Math.min(10000, Number(referralPointsReferrer)));
+    if (referralPointsReferee !== undefined) updates.referral_points_referee = Math.max(0, Math.min(10000, Number(referralPointsReferee)));
 
     const { error } = await supabase
       .from('tenants')

@@ -45,7 +45,7 @@
 | Automatizaciones Programadas (pg_cron) | 2026-05-11 | `[x] Completo` |
 | Advanced Analytics + Export | 2026-05-25 | `[x] Completo` |
 | Public REST API + API Keys | 2026-06-08 | `[ ] 🔴 BLOQUEADO — MKT-1` |
-| Referral Program | 2026-06-29 | `[ ] Pendiente` |
+| Referral Program | 2026-06-29 | `[x] Completo` |
 | Webhook Outbound | 2026-07-13 | `[ ] 🟡 BLOQUEADO — depende de API` |
 | Custom Domains | 2026-07-27 | `[ ] 🔴 BLOQUEADO — MKT-1` |
 | Booking Integration | 2026-08-17 | `[ ] Pendiente` |

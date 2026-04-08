@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Copy, Check, Download, ExternalLink, Loader2, QrCode, Hash } from 'lucide-react';
+import { Copy, Check, Download, ExternalLink, Loader2, QrCode, Hash, Gift, ToggleLeft, ToggleRight } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useTranslations } from 'next-intl';
 
@@ -21,26 +21,55 @@ export function MemberAppTab() {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState<'link' | 'code' | 'reglink' | null>(null);
 
+  // Referral program state
+  const [referralEnabled, setReferralEnabled] = useState(false);
+  const [referralPointsReferrer, setReferralPointsReferrer] = useState(50);
+  const [referralPointsReferee, setReferralPointsReferee] = useState(50);
+  const [referralSaving, setReferralSaving] = useState(false);
+  const [referralSaved, setReferralSaved] = useState(false);
+
   const joinUrl = slug ? `${MEMBER_APP_URL}/join/${slug}` : '';
   const registerUrl = joinCode ? `${MEMBER_APP_URL}/join?code=${joinCode}` : '';
 
-  // Fetch tenant join info
+  // Fetch tenant join info + referral settings
   useEffect(() => {
-    fetch('/api/tenant/join-info')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.error) {
+    Promise.all([
+      fetch('/api/tenant/join-info').then((r) => r.json()),
+      fetch('/api/settings').then((r) => r.json()),
+    ])
+      .then(([joinData, settingsData]) => {
+        if (joinData.error) {
           setError(t('loadError'));
         } else {
-          setSlug(data.slug);
-          setAppName(data.appName);
-          setBusinessName(data.businessName ?? data.appName);
-          setJoinCode(data.joinCode ?? null);
+          setSlug(joinData.slug);
+          setAppName(joinData.appName);
+          setBusinessName(joinData.businessName ?? joinData.appName);
+          setJoinCode(joinData.joinCode ?? null);
+        }
+        if (!settingsData.error) {
+          setReferralEnabled(settingsData.referralEnabled ?? false);
+          setReferralPointsReferrer(settingsData.referralPointsReferrer ?? 50);
+          setReferralPointsReferee(settingsData.referralPointsReferee ?? 50);
         }
       })
       .catch(() => setError(t('networkError')))
       .finally(() => setLoading(false));
   }, []);
+
+  async function saveReferralSettings() {
+    setReferralSaving(true);
+    try {
+      await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referralEnabled, referralPointsReferrer, referralPointsReferee }),
+      });
+      setReferralSaved(true);
+      setTimeout(() => setReferralSaved(false), 2000);
+    } finally {
+      setReferralSaving(false);
+    }
+  }
 
   // Render QR for join URL (slug-based)
   useEffect(() => {
@@ -278,6 +307,75 @@ export function MemberAppTab() {
           {t('printTip')}
         </h3>
         <p className="text-sm text-gray-600">{t('printTipDesc')}</p>
+      </div>
+
+      {/* Referral Program */}
+      <div className="bg-white rounded-xl border p-6 space-y-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Gift className="h-5 w-5 text-brand-purple" />
+            <h3 className="text-sm font-semibold text-gray-900">Programa de Referidos</h3>
+          </div>
+          <button
+            onClick={() => setReferralEnabled((v) => !v)}
+            className="flex items-center gap-1.5 text-sm font-medium"
+          >
+            {referralEnabled ? (
+              <><ToggleRight className="h-6 w-6 text-brand-purple" /><span className="text-brand-purple">Activo</span></>
+            ) : (
+              <><ToggleLeft className="h-6 w-6 text-gray-400" /><span className="text-gray-400">Inactivo</span></>
+            )}
+          </button>
+        </div>
+
+        <p className="text-sm text-gray-500">
+          Los miembros reciben un link único para invitar amigos. Cuando el referido hace su primera visita, ambos reciben puntos bonus.
+        </p>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1.5">
+              Puntos para el que refiere
+            </label>
+            <input
+              type="number"
+              min={0}
+              max={10000}
+              value={referralPointsReferrer}
+              onChange={(e) => setReferralPointsReferrer(Math.max(0, parseInt(e.target.value) || 0))}
+              disabled={!referralEnabled}
+              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple disabled:opacity-50 disabled:bg-gray-50"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1.5">
+              Puntos para el referido
+            </label>
+            <input
+              type="number"
+              min={0}
+              max={10000}
+              value={referralPointsReferee}
+              onChange={(e) => setReferralPointsReferee(Math.max(0, parseInt(e.target.value) || 0))}
+              disabled={!referralEnabled}
+              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-purple disabled:opacity-50 disabled:bg-gray-50"
+            />
+          </div>
+        </div>
+
+        <button
+          onClick={saveReferralSettings}
+          disabled={referralSaving}
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-brand-purple text-white hover:bg-brand-purple-700 disabled:opacity-50 transition-colors"
+        >
+          {referralSaved ? (
+            <><Check className="h-4 w-4" /> Guardado</>
+          ) : referralSaving ? (
+            <><Loader2 className="h-4 w-4 animate-spin" /> Guardando…</>
+          ) : (
+            'Guardar configuración'
+          )}
+        </button>
       </div>
     </div>
   );

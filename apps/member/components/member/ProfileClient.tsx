@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Mail, User, LogOut, Shield } from 'lucide-react';
+import { Mail, User, LogOut, Shield, Gift } from 'lucide-react';
+import Link from 'next/link';
 import { LanguageSwitcher } from '@/components/member/LanguageSwitcher';
 import { getSupabaseClient } from '@loyalty-os/lib';
 
@@ -107,6 +108,15 @@ export function ProfileClient({ name, email, memberCode, tier, pointsBalance, po
             <div className="px-4 py-3.5">
               <LanguageSwitcher />
             </div>
+            <Link href="/profile/referrals" className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-gray-50 transition-colors">
+              <div className="p-2 bg-purple-50 rounded-lg">
+                <Gift className="h-4 w-4 text-purple-500" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-900">Referir amigos</p>
+                <p className="text-xs text-gray-400">Ganá puntos por cada referido</p>
+              </div>
+            </Link>
             <button className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-gray-50 transition-colors">
               <div className="p-2 bg-gray-100 rounded-lg">
                 <Shield className="h-4 w-4 text-gray-500" />

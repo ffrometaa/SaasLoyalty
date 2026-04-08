@@ -39,13 +39,14 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json().catch(() => ({}));
-  const { tenantId, firstName, lastName, phone, birthMonth, birthDay } = body as {
+  const { tenantId, firstName, lastName, phone, birthMonth, birthDay, referralCode } = body as {
     tenantId?: string;
     firstName?: string;
     lastName?: string;
     phone?: string;
     birthMonth?: number;
     birthDay?: number;
+    referralCode?: string;
   };
 
   // tenantId can also come from user_metadata (email confirmation flow)
@@ -98,7 +99,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
-  // 3. Create new member
+  // 3. Resolve referrer (optional)
+  let referredBy: string | null = null;
+  if (referralCode) {
+    const { data: referrer } = await serviceClient
+      .from('members')
+      .select('id')
+      .eq('referral_code', referralCode.toUpperCase())
+      .eq('tenant_id', resolvedTenantId)
+      .eq('status', 'active')
+      .single();
+    referredBy = referrer?.id ?? null;
+  }
+
+  // 4. Create new member
   let memberCode = generateMemberCode();
   for (let i = 0; i < 3; i++) {
     const { data: existing } = await serviceClient
@@ -124,6 +138,7 @@ export async function POST(request: NextRequest) {
     points_lifetime: 0,
     visits_total: 0,
     member_code: memberCode,
+    ...(referredBy ? { referred_by: referredBy } : {}),
   });
 
   if (insertError) {
