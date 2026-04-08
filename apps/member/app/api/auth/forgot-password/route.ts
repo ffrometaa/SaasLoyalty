@@ -28,23 +28,31 @@ export async function POST(request: NextRequest) {
   const recoveryUrl = data.properties.action_link;
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
-  if (RESEND_API_KEY) {
-    const { enSubject, esSubject, enHtmlContent, esHtmlContent } = buildPasswordResetEmail({ recoveryUrl });
-    const { subject, html } = buildBilingualEmail({ enSubject, esSubject, enHtmlContent, esHtmlContent });
+  if (!RESEND_API_KEY) {
+    console.error('[forgot-password] RESEND_API_KEY is not set — email not sent');
+    return NextResponse.json({ ok: true });
+  }
 
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: 'LoyaltyOS <noreply@loyalbase.dev>',
-        to: [email.trim().toLowerCase()],
-        subject,
-        html,
-      }),
-    });
+  const { enSubject, esSubject, enHtmlContent, esHtmlContent } = buildPasswordResetEmail({ recoveryUrl });
+  const { subject, html } = buildBilingualEmail({ enSubject, esSubject, enHtmlContent, esHtmlContent });
+
+  const resendRes = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: 'LoyaltyOS <noreply@loyalbase.dev>',
+      to: [email.trim().toLowerCase()],
+      subject,
+      html,
+    }),
+  });
+
+  if (!resendRes.ok) {
+    const resendError = await resendRes.text();
+    console.error('[forgot-password] Resend error:', resendRes.status, resendError);
   }
 
   return NextResponse.json({ ok: true });
