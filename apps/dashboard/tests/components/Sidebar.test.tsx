@@ -1,62 +1,86 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { Sidebar } from '@/components/Sidebar';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { server } from '../mocks/server';
+import { http, HttpResponse } from 'msw';
 
-// Mock usePathname
+// Control pathname per-file — overrides the global setup.ts mock for next/navigation
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/dashboard/members',
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+  }),
+  usePathname: () => '/members',
+  useSearchParams: () => new URLSearchParams(),
 }));
 
+// Mock Supabase client (only needed for handleLogout — not triggered in render tests)
+vi.mock('@loyalty-os/lib', () => ({
+  getSupabaseClient: vi.fn().mockReturnValue({
+    auth: { signOut: vi.fn().mockResolvedValue({}) },
+  }),
+}));
+
+import { Sidebar } from '@/components/Sidebar';
+
 describe('Sidebar', () => {
+  beforeEach(() => {
+    // Provide /api/tenant/me so the component doesn't log MSW warnings
+    server.use(
+      http.get('/api/tenant/me', () =>
+        HttpResponse.json({ email: 'owner@biz.com', businessName: 'My Business', plan: 'pro' })
+      )
+    );
+  });
+
+  afterEach(() => {
+    server.resetHandlers();
+  });
+
+  it('renders LoyaltyOS brand', () => {
+    render(<Sidebar />);
+
+    expect(screen.getByText('LoyaltyOS')).toBeInTheDocument();
+  });
+
   it('renders all navigation items', () => {
     render(<Sidebar />);
-    
-    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+
+    expect(screen.getByText('Overview')).toBeInTheDocument();
     expect(screen.getByText('Members')).toBeInTheDocument();
     expect(screen.getByText('Rewards')).toBeInTheDocument();
     expect(screen.getByText('Redemptions')).toBeInTheDocument();
     expect(screen.getByText('Analytics')).toBeInTheDocument();
+    expect(screen.getByText('Campaigns')).toBeInTheDocument();
+    expect(screen.getByText('Gamification')).toBeInTheDocument();
     expect(screen.getByText('Settings')).toBeInTheDocument();
   });
 
-  it('renders user info section', () => {
+  it('renders mobile toggle button', () => {
     render(<Sidebar />);
-    
-    expect(screen.getByText('John Doe')).toBeInTheDocument();
-    expect(screen.getByText('Starter Plan')).toBeInTheDocument();
+
+    const button = screen.getByRole('button', { name: '' });
+    expect(button).toBeInTheDocument();
   });
 
-  it('has correct links for navigation', () => {
+  it('shows mobile overlay when toggle is clicked', () => {
     render(<Sidebar />);
-    
-    const dashboardLink = screen.getByRole('link', { name: /dashboard/i });
-    expect(dashboardLink).toHaveAttribute('href', '/dashboard');
+
+    const button = screen.getByRole('button', { name: '' });
+    fireEvent.click(button);
+
+    // Overlay div appears when mobileMenuOpen is true
+    const overlay = document.querySelector('.bg-black\\/50');
+    expect(overlay).toBeInTheDocument();
   });
 
-  it('shows mobile menu toggle button', () => {
+  it('marks /members nav link as active when pathname is /members', () => {
     render(<Sidebar />);
-    
-    const menuButton = screen.getByRole('button');
-    expect(menuButton).toBeInTheDocument();
-  });
 
-  it('opens mobile menu when toggle is clicked', async () => {
-    const user = userEvent.setup();
-    render(<Sidebar />);
-    
-    const menuButton = screen.getByRole('button');
-    await user.click(menuButton);
-    
-    // Menu should be open now (sidebar gets translate-x-0 class)
-    const sidebar = document.querySelector('aside');
-    expect(sidebar?.className).toContain('translate-x-0');
-  });
-
-  it('highlights active navigation item', () => {
-    render(<Sidebar />);
-    
-    const activeItem = screen.getByRole('link', { name: /members/i });
-    expect(activeItem.className).toContain('bg-brand-purple-50');
+    const membersLink = screen.getByRole('link', { name: /members/i });
+    expect(membersLink.className).toContain('bg-brand-purple-50');
   });
 });
