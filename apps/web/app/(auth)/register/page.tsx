@@ -222,7 +222,7 @@ export default function RegisterPage() {
             </div>
 
             <div className="grid gap-3">
-              {(['starter', 'pro', 'scale'] as const).map((plan) => {
+              {(['starter', 'pro'] as const).map((plan) => {
                 const details = PLANS[plan];
                 const isSelected = selectedPlan === plan;
                 return (
