@@ -1,3 +1,4 @@
+import React from 'react';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
@@ -88,7 +89,7 @@ export default async function RewardsPage() {
                 {t.rich('canRedeem', {
                   count: redeemableCount,
                   s: redeemableCount > 1 ? 's' : '',
-                  strong: (chunks) => <strong>{chunks}</strong>,
+                  strong: (chunks: React.ReactNode) => <strong>{chunks}</strong>,
                 })}
                 {' '}{t('redeemNote')}
               </p>
