@@ -236,7 +236,7 @@ export default function RegisterPage() {
                       <div>
                         <h4 className="font-semibold text-white font-display">{details.name}</h4>
                         <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                          {details.maxMembers === -1
+                          {(details.maxMembers as number) === -1
                             ? t('unlimitedMembers')
                             : t('membersUp', { count: details.maxMembers })}
                         </p>
