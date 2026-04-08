@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { SEGMENTS } from '../../lib/campaigns/segment-constants';
@@ -61,7 +62,7 @@ function PushPreview({ subject, body, imageUrl }: { subject: string; body: strin
         <p className="text-sm font-semibold text-gray-900 truncate">{subject || 'Notification Title'}</p>
         <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{body || 'Your message will appear here...'}</p>
         {imageUrl && (
-          <img src={imageUrl} alt="" className="mt-2 rounded-lg max-h-24 object-cover w-full" />
+          <Image src={imageUrl} alt="" width={400} height={96} className="mt-2 rounded-lg max-h-24 object-cover w-full" unoptimized />
         )}
       </div>
     </div>

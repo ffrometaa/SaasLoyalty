@@ -20,6 +20,7 @@ import {
   Shield,
   Link2,
 } from 'lucide-react';
+import Image from 'next/image';
 import { MemberAppTab } from '../../../components/MemberAppTab';
 
 type Invoice = {
@@ -434,7 +435,7 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-4">
                     <div className="h-20 w-20 rounded-lg bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
                       {logoUrl ? (
-                        <img src={logoUrl} alt="Business logo" className="h-full w-full object-cover" />
+                        <Image src={logoUrl} alt="Business logo" width={80} height={80} className="h-full w-full object-cover" />
                       ) : (
                         <Building2 className="h-8 w-8 text-gray-400" />
                       )}
