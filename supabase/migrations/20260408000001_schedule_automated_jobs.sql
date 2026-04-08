@@ -1,11 +1,12 @@
 -- Schedule automated jobs: points expiration + birthday bonus
 -- Requires pg_cron and pg_net extensions (enabled by default on Supabase Pro+).
 --
--- Before running, set app settings once:
---   ALTER DATABASE postgres SET "app.supabase_url" = 'https://YOUR_PROJECT_REF.supabase.co';
---   ALTER DATABASE postgres SET "app.cron_secret" = 'YOUR_CRON_SECRET';
+-- IMPORTANT: Replace the placeholders before running:
+--   - YOUR_PROJECT_REF → your Supabase project reference (e.g. "abcdefghijklmnop")
+--   - YOUR_CRON_SECRET → the value of CRON_SECRET in your Edge Function env vars
 --
--- Both values are also available in the Supabase dashboard under Settings → API.
+-- The project ref is visible in: Settings → API → Project URL
+-- The CRON_SECRET is set in: Settings → Edge Functions → Secrets
 
 -- Job 1: Expire stale points daily at 00:05 UTC
 SELECT cron.schedule(
@@ -13,12 +14,9 @@ SELECT cron.schedule(
   '5 0 * * *',
   $$
   SELECT net.http_post(
-    url := current_setting('app.supabase_url', true) || '/functions/v1/expire-points',
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || COALESCE(current_setting('app.cron_secret', true), '')
-    ),
-    body := jsonb_build_object('trigger', 'cron')
+    url := 'https://YOUR_PROJECT_REF.supabase.co/functions/v1/expire-points',
+    headers := '{"Content-Type": "application/json", "Authorization": "Bearer YOUR_CRON_SECRET"}',
+    body := '{"trigger": "cron"}'
   );
   $$
 );
@@ -29,17 +27,14 @@ SELECT cron.schedule(
   '0 9 * * *',
   $$
   SELECT net.http_post(
-    url := current_setting('app.supabase_url', true) || '/functions/v1/birthday-bonus',
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || COALESCE(current_setting('app.cron_secret', true), '')
-    ),
-    body := jsonb_build_object('trigger', 'cron')
+    url := 'https://YOUR_PROJECT_REF.supabase.co/functions/v1/birthday-bonus',
+    headers := '{"Content-Type": "application/json", "Authorization": "Bearer YOUR_CRON_SECRET"}',
+    body := '{"trigger": "cron"}'
   );
   $$
 );
 
--- To verify jobs were created:
+-- Verify jobs were created:
 -- SELECT jobname, schedule, active FROM cron.job WHERE jobname IN ('expire-points-daily', 'birthday-bonus-daily');
 
 -- To unschedule:
