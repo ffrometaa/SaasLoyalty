@@ -1,8 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_cache } from 'next/cache';
 import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 import { canAddMember } from '../../../lib/plans/features';
 import type { Plan } from '../../../lib/plans/features';
 import { buildBilingualEmail, buildMemberInviteEmail } from '@loyalty-os/email';
+
+const fetchMembersList = unstable_cache(
+  async (
+    tenantId: string,
+    page: number,
+    limit: number,
+    search: string,
+    tier: string | null,
+    status: string | null,
+    sortBy: string,
+    sortOrder: string,
+  ) => {
+    const serviceClient = createServiceRoleClient();
+
+    let query = serviceClient
+      .from('members')
+      .select('*', { count: 'exact' })
+      .eq('tenant_id', tenantId)
+      .is('deleted_at', null);
+
+    if (search) {
+      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,member_code.ilike.%${search}%`);
+    }
+    if (tier) {
+      query = query.eq('tier', tier);
+    }
+    if (status) {
+      query = query.eq('status', status);
+    }
+
+    query = query.order(sortBy as any, { ascending: sortOrder === 'asc' });
+
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+    query = query.range(from, to);
+
+    const { data: members, count, error } = await query;
+
+    if (error) throw error;
+
+    return {
+      members: members || [],
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit),
+      },
+    };
+  },
+  ['members-list'],
+  { revalidate: 60, tags: ['members'] },
+);
 
 // GET /api/members - List members
 export async function GET(request: NextRequest) {
@@ -36,64 +90,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     }
 
-    // Get query params
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const search = searchParams.get('search') || '';
-    const tier = searchParams.get('tier');
-    const status = searchParams.get('status');
+    const tier = searchParams.get('tier') ?? null;
+    const status = searchParams.get('status') ?? null;
     const sortBy = searchParams.get('sortBy') || 'created_at';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
-    // Use service role to bypass RLS — tenant ownership already verified above
-    const serviceClient = createServiceRoleClient();
-
-    // Build query scoped to this tenant
-    let query = serviceClient
-      .from('members')
-      .select('*', { count: 'exact' })
-      .eq('tenant_id', tenantId)
-      .is('deleted_at', null);
-
-    // Apply filters
-    if (search) {
-      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,member_code.ilike.%${search}%`);
-    }
-    if (tier) {
-      query = query.eq('tier', tier);
-    }
-    if (status) {
-      query = query.eq('status', status);
-    }
-
-    // Apply sorting
-    query = query.order(sortBy as any, { ascending: sortOrder === 'asc' });
-
-    // Apply pagination
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
-    query = query.range(from, to);
-
-    const { data: members, count, error } = await query;
-
-    if (error) {
-      console.error('Error fetching members:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch members' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({
-      members: members || [],
-      pagination: {
-        page,
-        limit,
-        total: count || 0,
-        totalPages: Math.ceil((count || 0) / limit),
-      },
-    });
+    const data = await fetchMembersList(tenantId, page, limit, search, tier, status, sortBy, sortOrder);
+    return NextResponse.json(data);
   } catch (error) {
     console.error('Members API error:', error);
     return NextResponse.json(
