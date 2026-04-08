@@ -42,7 +42,7 @@
 | Módulo Phase 3 | Fecha inicio | Estado |
 |----------------|-------------|--------|
 | Bulk Actions Dashboard | 2026-05-04 | `[x] Completo` |
-| Automatizaciones Programadas (pg_cron) | 2026-05-11 | `[ ] Pendiente` |
+| Automatizaciones Programadas (pg_cron) | 2026-05-11 | `[x] Completo` |
 | Advanced Analytics + Export | 2026-05-25 | `[ ] Pendiente` |
 | Public REST API + API Keys | 2026-06-08 | `[ ] 🔴 BLOQUEADO — MKT-1` |
 | Referral Program | 2026-06-29 | `[ ] Pendiente` |
