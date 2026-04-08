@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { MemberAppTab } from '../../../components/MemberAppTab';
+import { planHasFeature } from '../../../lib/plans/features';
+import type { Plan } from '../../../lib/plans/features';
 
 type Invoice = {
   id: string;
@@ -658,90 +660,150 @@ export default function SettingsPage() {
 
           {/* Branding Tab */}
           {activeTab === 'branding' && (
-            <div className="bg-white rounded-xl border p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">Branding</h2>
-              
-              <div className="space-y-6">
-                <div className="p-4 bg-amber-50 rounded-lg">
-                  <p className="text-sm text-amber-800">
-                    <strong>Coming Soon:</strong> Full white-label customization will be available in the next update. 
-                    For now, you can set your brand colors below.
-                  </p>
-                </div>
+            planHasFeature(plan as Plan, 'whitelabel_logo') ? (
+              <div className="bg-white rounded-xl border p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">Branding</h2>
 
-                {/* Primary Color */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Primary Color
-                  </label>
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="color"
-                      value={branding.primaryColor}
-                      onChange={(e) => setBranding({ ...branding, primaryColor: e.target.value })}
-                      className="h-12 w-24 rounded-lg border-2 border-gray-200 cursor-pointer"
-                    />
-                    <input
-                      type="text"
-                      value={branding.primaryColor}
-                      onChange={(e) => setBranding({ ...branding, primaryColor: e.target.value })}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm"
-                    />
+                <div className="space-y-6">
+                  {/* Logo */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Business Logo</label>
+                    <div className="flex items-center gap-4">
+                      {logoUrl ? (
+                        <Image src={logoUrl} alt="Logo" width={64} height={64} className="rounded-lg object-contain border border-gray-200" />
+                      ) : (
+                        <div className="w-16 h-16 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
+                          <Palette className="w-6 h-6 text-gray-400" />
+                        </div>
+                      )}
+                      <div>
+                        <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                          <Download className="w-4 h-4" />
+                          {logoUploading ? 'Uploading…' : 'Upload Logo'}
+                          <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={logoUploading} />
+                        </label>
+                        <p className="text-xs text-gray-500 mt-1">PNG, JPG or SVG — max 2MB</p>
+                        {logoError && <p className="text-xs text-red-500 mt-1">{logoError}</p>}
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Used for buttons, links, and key UI elements</p>
-                </div>
 
-                {/* Accent Color */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Accent Color
-                  </label>
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="color"
-                      value={branding.accentColor}
-                      onChange={(e) => setBranding({ ...branding, accentColor: e.target.value })}
-                      className="h-12 w-24 rounded-lg border-2 border-gray-200 cursor-pointer"
-                    />
-                    <input
-                      type="text"
-                      value={branding.accentColor}
-                      onChange={(e) => setBranding({ ...branding, accentColor: e.target.value })}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm"
-                    />
+                  {/* Primary Color */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Primary Color</label>
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="color"
+                        value={branding.primaryColor}
+                        onChange={(e) => setBranding({ ...branding, primaryColor: e.target.value })}
+                        className="h-12 w-24 rounded-lg border-2 border-gray-200 cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={branding.primaryColor}
+                        onChange={(e) => setBranding({ ...branding, primaryColor: e.target.value })}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Used for buttons, links, and key UI elements in the Member App</p>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Used for highlights and secondary actions</p>
-                </div>
 
-                {/* Preview */}
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <p className="text-sm font-medium text-gray-700 mb-3">Preview</p>
-                  <div className="flex gap-3">
+                  {/* Accent Color */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Accent Color</label>
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="color"
+                        value={branding.accentColor}
+                        onChange={(e) => setBranding({ ...branding, accentColor: e.target.value })}
+                        className="h-12 w-24 rounded-lg border-2 border-gray-200 cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={branding.accentColor}
+                        onChange={(e) => setBranding({ ...branding, accentColor: e.target.value })}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Used for highlights and secondary actions in the Member App</p>
+                  </div>
+
+                  {/* Preview */}
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm font-medium text-gray-700 mb-3">Preview</p>
+                    <div className="flex gap-3">
+                      <button
+                        className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+                        style={{ backgroundColor: branding.primaryColor }}
+                      >
+                        Primary Button
+                      </button>
+                      <button
+                        className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+                        style={{ backgroundColor: branding.accentColor }}
+                      >
+                        Accent Button
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t">
                     <button
-                      className="px-4 py-2 rounded-lg text-white text-sm font-medium"
-                      style={{ backgroundColor: branding.primaryColor }}
+                      onClick={handleSaveBranding}
+                      className="px-4 py-2 bg-brand-purple text-white rounded-lg text-sm font-medium hover:bg-brand-purple-700 transition-colors"
                     >
-                      Primary Button
-                    </button>
-                    <button
-                      className="px-4 py-2 rounded-lg text-white text-sm font-medium"
-                      style={{ backgroundColor: branding.accentColor }}
-                    >
-                      Accent Button
+                      Apply Branding
                     </button>
                   </div>
-                </div>
-
-                <div className="pt-4 border-t">
-                  <button
-                    onClick={handleSaveBranding}
-                    className="px-4 py-2 bg-brand-purple text-white rounded-lg text-sm font-medium hover:bg-brand-purple-700 transition-colors"
-                  >
-                    Apply Branding
-                  </button>
                 </div>
               </div>
-            </div>
+            ) : (
+              /* Upsell card for Starter plan */
+              <div className="max-w-2xl mx-auto mt-12">
+                <div className="relative overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 via-white to-indigo-50 p-8 shadow-sm">
+                  <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-violet-100 opacity-40 blur-2xl pointer-events-none" />
+                  <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-indigo-100 opacity-40 blur-2xl pointer-events-none" />
+
+                  <div className="relative">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700 mb-5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                      Upgrade to Pro
+                    </span>
+
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-md">
+                        <Palette className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-gray-900">Make it yours with Branding</h2>
+                        <p className="text-gray-500 text-sm mt-1 leading-relaxed">
+                          Upload your logo and set your brand colors so your loyalty program looks and feels like your business — available on the Pro plan.
+                        </p>
+                      </div>
+                    </div>
+
+                    <ul className="space-y-2.5 mb-7 mt-5">
+                      {['Upload your business logo', 'Set primary and accent brand colors', 'Colors and logo applied across the Member App'].map((feature) => (
+                        <li key={feature} className="flex items-center gap-2.5 text-sm text-gray-600">
+                          <svg className="w-4 h-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <a
+                      href="/settings?tab=billing"
+                      onClick={() => setActiveTab('billing')}
+                      className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:opacity-90 transition-opacity"
+                    >
+                      Upgrade to Pro →
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )
           )}
 
           {/* Billing Tab */}

@@ -415,7 +415,8 @@
     "availableOn": "Disponible en el plan {plan}",
     "premiumFeature": "Función premium",
     "upgradeToUnlock": "Actualizá para desbloquear esta función",
-    "upgradeTo": "Actualizar a {name} →"
+    "upgradeTo": "Actualizar a {name} →",
+    "trialLinkText": "Solicitar prueba gratuita de 45 días"
   },
   "limits": {
     "reachedLimit": "Alcanzaste el límite de {max} {label}.",
@@ -462,13 +463,14 @@
     "archive": "Archivar",
     "upgradeRequired": "Gamificación es una función Enterprise",
     "upgradeDesc": "Actualiza a Enterprise para crear desafíos e insignias que hagan volver a los miembros.",
-    "comingSoonBadge": "Próximamente",
-    "comingSoonTitle": "¡Gamificación viene a tu plan!",
-    "comingSoonDesc": "Estamos preparando algo increíble. Muy pronto recibirás una invitación exclusiva para una demostración de nuestra plataforma de gamificación — diseñada para hacer que tus clientes vuelvan una y otra vez.",
+    "comingSoonBadge": "Actualizar a Pro",
+    "comingSoonTitle": "Mejorá la retención con Gamificación",
+    "comingSoonDesc": "Desafíos, insignias y rankings diseñados para hacer que tus clientes vuelvan — disponible en el plan Pro. Los usuarios del plan Starter pueden solicitar una prueba gratuita de 45 días para explorar esta función antes de actualizar.",
     "comingSoonFeature1": "Desafíos y misiones personalizadas",
     "comingSoonFeature2": "Insignias y recompensas exclusivas",
     "comingSoonFeature3": "Rankings y tablas de posiciones",
-    "comingSoonCta": "Explorar planes superiores →"
+    "comingSoonCta": "Actualizar a Pro →",
+    "trialLinkText": "Solicitar prueba gratuita de 45 días"
   },
   "langSwitch": {
     "en": "EN",

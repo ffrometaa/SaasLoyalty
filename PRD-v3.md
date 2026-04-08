@@ -509,6 +509,95 @@ Permite calcular NRR (Net Revenue Retention) histórico.
 
 ---
 
+### 6.6 Super Admin — Expansión de Platform Configuration (Medium, Phase 3)
+
+**Contexto actual:**
+
+La sección Platform Configuration del Super Admin (`/admin/settings`) expone 5 campos globales editables almacenados en `platform_config`:
+
+| Campo | Valor default | Función |
+|-------|--------------|---------|
+| `trial_period_days` | 14 | Duración del trial al registrarse |
+| `grace_period_days` | 7 | Días de gracia tras fallo de pago antes de suspender |
+| `points_expiry_days` | 365 | Días hasta vencimiento de puntos (default global) |
+| `reactivation_threshold_days` | 25 | Días de inactividad para disparar campaña de reactivación |
+| `max_payment_retries` | 3 | Intentos máximos de cobro vía Stripe antes de suspender |
+
+**Problema — Límites de plan hardcodeados:**
+
+Los límites críticos de negocio (`maxMembers`, `maxCampaignsPerMonth`, feature flags) están definidos en código fuente en `apps/dashboard/lib/plans/features.ts` como constante `PLAN_CONFIGS`. Cualquier cambio requiere un deploy. Los valores actuales son:
+
+| Plan | Max Miembros | Campañas/Mes | Gamificación | Analytics Export | API Access |
+|------|-------------|-------------|-------------|-----------------|-----------|
+| Starter ($199) | 500 | 2 | ❌ | ❌ | ❌ |
+| Pro ($399) | 2,000 | 10 | ✅ | ❌ | ❌ |
+| Scale ($599) | Ilimitado | Ilimitado | ✅ | ✅ | ❌ |
+| Enterprise (custom) | Ilimitado | Ilimitado | ✅ avanzado | ✅ | ✅ |
+
+**Gaps identificados en Platform Configuration:**
+
+**1. Plan Limits configurables desde Super Admin**
+
+Hoy, si se decide cambiar el límite de miembros de Starter de 500 a 750 (ajuste de pricing), se necesita un deploy. La recomendación es mover estos límites a una tabla `plan_limits` en la DB, editable desde el Super Admin, con cache en memoria para evitar queries en cada request.
+
+Modelo de datos propuesto:
+```
+plan_limits (
+  plan       TEXT PRIMARY KEY,   -- 'starter' | 'pro' | 'scale' | 'enterprise'
+  max_members        INTEGER,    -- NULL = ilimitado
+  max_campaigns_month INTEGER,   -- NULL = ilimitado
+  max_rewards        INTEGER,    -- NULL = ilimitado (hoy sin límite ni en código)
+  max_team_members   INTEGER,    -- NULL = ilimitado (hoy sin límite ni en código)
+  updated_at         TIMESTAMPTZ
+)
+```
+
+Ventajas: cambio de límites sin deploy, A/B testing de pricing, ajuste por tenant específico (override por tenant en `tenant_plan_overrides`).
+Riesgo: añade una query (o cache miss) a cada validación de negocio. Mitigar con `unstable_cache` con `revalidateTag('plan-limits')`.
+
+**2. Feature Flags por Plan — Super Admin togglable**
+
+Actualmente los feature flags (`api_access`, `gamification`, `sso`, etc.) son arrays estáticos en `PLAN_CONFIGS`. No hay forma de habilitar un feature para un tenant específico sin tocar código.
+
+Casos de uso reales:
+- Tenant en trial extendido con acceso a features Pro sin actualizar el plan
+- Beta testers de API Access en plan Starter
+- Deshabilitar temporalmente un feature problemático en producción sin deploy
+
+Modelo propuesto: tabla `tenant_feature_overrides (tenant_id, feature, enabled, expires_at)` manejada desde la vista de tenant en Super Admin.
+
+**3. Toggles globales de plataforma**
+
+| Toggle | Descripción | Caso de uso |
+|--------|-------------|------------|
+| `maintenance_mode` | Banner global + bloqueo de acciones destructivas | Migraciones, incidentes |
+| `registration_open` | Habilitar/deshabilitar el registro público de nuevos tenants | Control de crecimiento, beta cerrada |
+| `trial_enabled` | Si los nuevos tenants entran en trial o en plan activo | Campañas de adquisición sin trial |
+| `new_tenant_default_plan` | Plan asignado por defecto al registro | Cambiar estrategia GTM sin deploy |
+
+Estos se pueden agregar como columnas adicionales en `platform_config` (ya existe la tabla, solo agregar campos).
+
+**4. Configuración de Email / Notificaciones**
+
+Hoy los templates de email (18, bilingüe) tienen el `from` address y el nombre del remitente fijos en el código de cada función Resend. Si se quiere cambiar el nombre del remitente de "LoyaltyOS" a "Loyalbase" en todos los templates, se necesita buscar y reemplazar en múltiples archivos.
+
+Propuesta: agregar a `platform_config` los campos `email_from_name`, `email_from_address`, `email_reply_to`, leídos en el módulo compartido de email de `packages/`.
+
+**Decisión pendiente — ¿Qué implementar primero?**
+
+| Item | Impacto | Esfuerzo | Prioridad |
+|------|---------|---------|----------|
+| Toggles globales (`maintenance_mode`, `registration_open`) | Alto operacional | Bajo — solo agregar columnas + UI | Alta |
+| `email_from_name` / `email_from_address` en `platform_config` | Medio | Bajo | Alta |
+| `tenant_feature_overrides` | Alto para ventas | Medio | Media |
+| `plan_limits` en DB con cache | Alto para pricing | Alto (refactor + cache) | Media-Baja |
+
+**Recomendación:** Implementar los toggles globales y la config de email en un sprint corto (bajo riesgo, alto valor operacional). Dejar `plan_limits` en DB para Phase 4 o cuando el equipo de ventas necesite flexibilidad real — el refactor del sistema de validaciones es no trivial y hoy los límites no cambian con frecuencia.
+
+**Prioridad:** Medium — no bloquea revenue, pero sí operaciones y ventas a medida que escala.
+
+---
+
 ## 7. Phase 4 — Candidatos (Sujetos a MKT-2)
 
 > ⚠️ Ningún item de Phase 4 debe especificarse ni iniciarse hasta que MKT-2 entregue validación de demanda (fecha límite: 2026-09-21).
@@ -659,3 +748,81 @@ Los siguientes items son candidatos para Phase 4 sin bloqueo de marketing, pero 
 - Financial Pulse en Super Admin (§6.4)
 - Fix bug multi-tenant (§6.1)
 - Booking Integration (§5.4)
+
+---
+
+## 12. Trial Program — Gamificación y Heatmap (Plan Starter)
+
+### Overview
+
+Los tenants en plan Starter pueden solicitar una prueba gratuita de 45 días para dos features del plan Pro: Gamification y Heatmap Analytics. Esto les permite experimentar el valor real antes de comprometerse a un upgrade.
+
+El entry point de la solicitud son los upsell cards ya actualizados en `/gamification` y `/analytics`, con un link `mailto:` a `hello@loyalbase.dev`.
+
+### Scope
+
+| Campo | Valor |
+|-------|-------|
+| Features incluidas | Gamification module, Heatmap analytics |
+| Planes elegibles | Starter solamente |
+| Duración del trial | 45 días desde la fecha de activación |
+| Límite | Un trial por feature, por tenant (no renovable) |
+
+### Modelo de datos propuesto
+
+```sql
+CREATE TABLE feature_trials (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id       UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  feature_name    TEXT NOT NULL CHECK (feature_name IN ('gamification', 'heatmap')),
+  trial_start     TIMESTAMPTZ NOT NULL,
+  trial_end       TIMESTAMPTZ NOT NULL GENERATED ALWAYS AS (trial_start + INTERVAL '45 days') STORED,
+  status          TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'expired', 'converted')),
+  requested_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  activated_by    UUID REFERENCES auth.users(id),
+  UNIQUE (tenant_id, feature_name)
+);
+```
+
+### RLS
+
+- Tenants pueden `SELECT` sus propias filas (`tenant_id = auth_tenant_id()`)
+- Solo service role puede `INSERT` / `UPDATE` (activación manual por Super Admin o API interna)
+- Super Admin lee vía service role — sin restricción
+
+### Lógica de Dashboard
+
+Cuando un tenant tiene un trial activo para una feature:
+1. Renderizar la UI real de la feature en lugar del upsell card
+2. Mostrar un banner dismissible: "Tu trial de 45 días de [Feature] — X días restantes"
+3. Al expirar (`trial_end < now()` o `status = 'expired'`): volver automáticamente al upsell card
+
+La verificación ocurre en el Server Component de cada página (`/gamification/page.tsx`, `/analytics/page.tsx`) antes de decidir qué renderizar.
+
+### Flujo de solicitud — Estado actual (manual)
+
+```
+Tenant → clic en "Solicitar prueba gratuita de 45 días"
+       → mailto: hello@loyalbase.dev
+       → Super Admin activa el trial manualmente desde el panel
+       → Tenant ve la feature al siguiente login
+```
+
+### Flujo de solicitud — Futuro (self-serve)
+
+```
+Tenant → formulario in-app → POST /api/trials/request
+       → auto-activación con email de confirmación via Resend
+       → Tenant ve la feature inmediatamente
+```
+
+### Criterios de aceptación
+
+- [ ] Tenant Starter con trial activo ve la UI completa de Gamification
+- [ ] Tenant Starter con trial activo ve la UI completa de Heatmap
+- [ ] Al expirar el trial, el upsell card vuelve automáticamente
+- [ ] Super Admin puede activar / ver / expirar trials desde el panel
+- [ ] El tenant ve el banner de días restantes durante el trial activo
+- [ ] El link "Solicitar prueba gratuita de 45 días" aparece en los upsell cards de Gamification y Heatmap
+
+> ⚠️ La tabla `feature_trials` y la lógica de activación **no están implementadas aún**. Esta sección es la especificación para la implementación futura.

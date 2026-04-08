@@ -324,7 +324,11 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Visits Heatmap — Pro/Scale only */}
-            <FeatureGate plan={plan} feature="analytics_heatmap">
+            <FeatureGate
+              plan={plan}
+              feature="analytics_heatmap"
+              trialHref={`mailto:hello@loyalbase.dev?subject=${encodeURIComponent('45-day Heatmap Trial Request')}&body=${encodeURIComponent("Hi, I'm interested in trying the Heatmap Analytics feature for 45 days.")}`}
+            >
               <div className="bg-white rounded-xl border p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('peakHours')}</h2>
                 {heatmapData === null ? (

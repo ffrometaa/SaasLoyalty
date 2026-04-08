@@ -12,6 +12,7 @@ interface FeatureGateProps {
   fallback?: React.ReactNode;
   silent?: boolean;
   overridePlan?: Plan;
+  trialHref?: string;
 }
 
 export function FeatureGate({
@@ -21,6 +22,7 @@ export function FeatureGate({
   fallback,
   silent = false,
   overridePlan,
+  trialHref,
 }: FeatureGateProps) {
   const t = useTranslations('upgrade');
   // When overridePlan is provided (plan preview mode), use it instead of the real plan.
@@ -63,12 +65,22 @@ export function FeatureGate({
         </div>
 
         {upgradePlan && (
-          <Link
-            href="/settings?tab=billing"
-            className="px-4 py-2 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-[#7c3aed] to-[#2563eb] hover:opacity-90 transition-opacity"
-          >
-            {t('upgradeTo', { name: upgradeName })}
-          </Link>
+          <div className="flex flex-col items-center gap-2">
+            <Link
+              href="/settings?tab=billing"
+              className="px-4 py-2 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-[#7c3aed] to-[#2563eb] hover:opacity-90 transition-opacity"
+            >
+              {t('upgradeTo', { name: upgradeName })}
+            </Link>
+            {trialHref && (
+              <a
+                href={trialHref}
+                className="text-xs text-white/60 hover:text-white/90 underline underline-offset-2 transition-colors"
+              >
+                {t('trialLinkText')}
+              </a>
+            )}
+          </div>
         )}
       </div>
 

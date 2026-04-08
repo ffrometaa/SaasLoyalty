@@ -415,7 +415,8 @@
     "availableOn": "Available on {plan} plan",
     "premiumFeature": "Premium feature",
     "upgradeToUnlock": "Upgrade to unlock this feature",
-    "upgradeTo": "Upgrade to {name} →"
+    "upgradeTo": "Upgrade to {name} →",
+    "trialLinkText": "Request a 45-day free trial"
   },
   "limits": {
     "reachedLimit": "You've reached your limit of {max} {label}.",
@@ -462,13 +463,14 @@
     "archive": "Archive",
     "upgradeRequired": "Gamification is an Enterprise feature",
     "upgradeDesc": "Upgrade to Enterprise to create challenges and badges that keep members coming back.",
-    "comingSoonBadge": "Coming Soon",
-    "comingSoonTitle": "Gamification is coming to your plan!",
-    "comingSoonDesc": "We're building something incredible. Very soon you'll receive an exclusive invitation to a live demo of our gamification platform — designed to keep your customers coming back again and again.",
+    "comingSoonBadge": "Upgrade to Pro",
+    "comingSoonTitle": "Boost retention with Gamification",
+    "comingSoonDesc": "Challenges, badges, and leaderboards designed to keep your customers coming back — available on the Pro plan. Starter plan users can request a free 45-day trial to explore this feature before upgrading.",
     "comingSoonFeature1": "Custom challenges and missions",
     "comingSoonFeature2": "Exclusive badges and rewards",
     "comingSoonFeature3": "Leaderboards and rankings",
-    "comingSoonCta": "Explore higher plans →"
+    "comingSoonCta": "Upgrade to Pro →",
+    "trialLinkText": "Request a 45-day free trial"
   },
   "langSwitch": {
     "en": "EN",

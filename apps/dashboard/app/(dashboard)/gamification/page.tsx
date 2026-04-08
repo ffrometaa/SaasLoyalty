@@ -91,12 +91,20 @@ export default async function GamificationPage() {
               </ul>
 
               {/* CTA */}
-              <a
-                href="/settings?tab=billing"
-                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:opacity-90 transition-opacity"
-              >
-                {t('comingSoonCta')}
-              </a>
+              <div className="flex flex-col items-start gap-3">
+                <a
+                  href="/settings?tab=billing"
+                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:opacity-90 transition-opacity"
+                >
+                  {t('comingSoonCta')}
+                </a>
+                <a
+                  href={`mailto:hello@loyalbase.dev?subject=${encodeURIComponent('45-day Gamification Trial Request')}&body=${encodeURIComponent("Hi, I'm interested in trying the Gamification feature for 45 days.")}`}
+                  className="text-sm text-violet-600 hover:text-violet-800 underline underline-offset-2 transition-colors"
+                >
+                  {t('trialLinkText')}
+                </a>
+              </div>
             </div>
           </div>
         </div>
