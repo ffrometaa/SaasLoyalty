@@ -21,7 +21,6 @@ import {
   Shield,
   Link2,
 } from 'lucide-react';
-import Image from 'next/image';
 import { MemberAppTab } from '../../../components/MemberAppTab';
 import { planHasFeature } from '../../../lib/plans/features';
 import type { Plan } from '../../../lib/plans/features';
@@ -642,7 +641,8 @@ export default function SettingsPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Business Logo</label>
                     <div className="flex items-center gap-4">
                       {logoUrl ? (
-                        <Image src={logoUrl} alt="Logo" width={64} height={64} className="rounded-lg object-contain border border-gray-200" />
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={logoUrl} alt="Logo" className="w-16 h-16 rounded-lg object-contain border border-gray-200" />
                       ) : (
                         <div className="w-16 h-16 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
                           <Palette className="w-6 h-6 text-gray-400" />
