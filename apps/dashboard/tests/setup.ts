@@ -1,6 +1,20 @@
 import '@testing-library/jest-dom';
-import { afterAll, afterEach, beforeAll } from 'vitest';
+import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import { server } from './mocks/server';
+
+// Mock next-intl globally — resolve keys against the real en.json messages
+// so component tests get actual strings without needing a real IntlProvider.
+import en from '../messages/en.json';
+
+vi.mock('next-intl', () => ({
+  useTranslations: (namespace?: string) => (key: string) => {
+    if (!namespace) return key;
+    const ns = (en as Record<string, Record<string, string>>)[namespace];
+    return ns?.[key] ?? key;
+  },
+  useLocale: () => 'en',
+  useFormatter: () => ({ dateTime: (v: Date) => v.toISOString() }),
+}));
 
 // Start MSW server before all tests
 beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }));
@@ -27,14 +41,14 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock Next.js router
-jest.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({
   useRouter: () => ({
-    push: jest.fn(),
-    replace: jest.fn(),
-    prefetch: jest.fn(),
-    back: jest.fn(),
-    forward: jest.fn(),
-    refresh: jest.fn(),
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
   }),
   usePathname: () => '/dashboard',
   useSearchParams: () => new URLSearchParams(),
