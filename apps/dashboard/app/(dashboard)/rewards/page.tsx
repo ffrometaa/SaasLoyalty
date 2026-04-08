@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, MoreVertical, Gift, Edit, Trash2, Check, X, Eye, EyeOff } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { SectionErrorBoundary } from '../../../components/SectionErrorBoundary';
 
 type Reward = {
   id: string;
@@ -111,6 +112,7 @@ export default function RewardsPage() {
   const inactiveCount = rewards.filter(r => !r.is_active).length;
 
   return (
+    <SectionErrorBoundary section="Recompensas">
     <div className="p-6 lg:p-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
@@ -264,6 +266,7 @@ export default function RewardsPage() {
         />
       )}
     </div>
+    </SectionErrorBoundary>
   );
 }
 

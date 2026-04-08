@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 import { redirect } from 'next/navigation';
 import { GamificationPanel } from '../../../components/dashboard/GamificationPanel';
+import { SectionErrorBoundary } from '../../../components/SectionErrorBoundary';
 import { FeatureGate } from '../../../components/dashboard/FeatureGate';
 import { getChallenges, getBadges, getGamificationSummary } from '../../../lib/gamification/queries';
 import { getTranslations } from 'next-intl/server';
@@ -110,10 +111,12 @@ export default async function GamificationPage() {
   ]);
 
   return (
-    <GamificationPanel
-      challenges={challenges}
-      badges={badges}
-      summary={summary}
-    />
+    <SectionErrorBoundary section="Gamificación">
+      <GamificationPanel
+        challenges={challenges}
+        badges={badges}
+        summary={summary}
+      />
+    </SectionErrorBoundary>
   );
 }

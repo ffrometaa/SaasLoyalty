@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Users, Gift, TrendingUp, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { MetricCard } from '../../components/MetricCard';
+import { SectionErrorBoundary } from '../../components/SectionErrorBoundary';
 import { useTranslations } from 'next-intl';
 
 type Metrics = {
@@ -66,6 +67,7 @@ export default function DashboardPage() {
   }, [metrics, activity]);
 
   return (
+    <SectionErrorBoundary section="Resumen">
     <div className="p-6 lg:p-8" ref={scrollRef}>
       {/* Header */}
       <div className="mb-8 animate-on-scroll">
@@ -186,5 +188,6 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+    </SectionErrorBoundary>
   );
 }

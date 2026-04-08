@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Users, TrendingUp, TrendingDown, Minus, Calendar, Gift, Percent, Clock, Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { FeatureGate } from '../../../components/dashboard/FeatureGate';
+import { SectionErrorBoundary } from '../../../components/SectionErrorBoundary';
 import type { Plan } from '../../../lib/plans/features';
 
 type Segments = {
@@ -114,6 +115,7 @@ export default function AnalyticsPage() {
   const topRewards = data?.topRewards ?? [];
 
   return (
+    <SectionErrorBoundary section="Analytics">
     <div className="p-6 lg:p-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
@@ -318,5 +320,6 @@ export default function AnalyticsPage() {
         </div>
       </div>
     </div>
+    </SectionErrorBoundary>
   );
 }

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getCampaigns, getCampaignStatusCounts, getCampaignsThisMonth } from '../../../lib/campaigns/queries';
 import { PLAN_CONFIGS } from '../../../lib/plans/features';
 import CampaignsList from '../../../components/dashboard/CampaignsList';
+import { SectionErrorBoundary } from '../../../components/SectionErrorBoundary';
 import type { Plan } from '../../../lib/plans/features';
 
 async function resolveAuthedTenant(
@@ -52,11 +53,13 @@ export default async function CampaignsPage() {
   const planLimit = planConfig.maxCampaignsPerMonth;
 
   return (
-    <CampaignsList
-      campaigns={campaigns}
-      statusCounts={statusCounts}
-      planLimit={planLimit}
-      currentMonthCount={currentMonthCount}
-    />
+    <SectionErrorBoundary section="Campañas">
+      <CampaignsList
+        campaigns={campaigns}
+        statusCounts={statusCounts}
+        planLimit={planLimit}
+        currentMonthCount={currentMonthCount}
+      />
+    </SectionErrorBoundary>
   );
 }

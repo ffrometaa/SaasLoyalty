@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, ChevronLeft, ChevronRight, UserPlus, CheckCircle, Upload, Users, FileText, Link2, Send } from 'lucide-react';
 import { LimitWarningBanner } from '../../../components/dashboard/LimitWarningBanner';
+import { SectionErrorBoundary } from '../../../components/SectionErrorBoundary';
 import { canAddMember } from '../../../lib/plans/features';
 import type { Plan } from '../../../lib/plans/features';
 import { useTranslations } from 'next-intl';
@@ -170,6 +171,7 @@ export default function MembersPage() {
   const totalPages = Math.ceil(totalMembers / itemsPerPage);
 
   return (
+    <SectionErrorBoundary section="Miembros">
     <div className="p-6 lg:p-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
@@ -562,5 +564,6 @@ export default function MembersPage() {
         </div>
       )}
     </div>
+    </SectionErrorBoundary>
   );
 }
