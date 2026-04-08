@@ -51,7 +51,7 @@ export function QrScanner({ isActive, onScan, showFormatsLabel = true }: Props) 
           Html5QrcodeSupportedFormats.UPC_E,
         ];
 
-        const scanner = new Html5Qrcode(ELEMENT_ID, { formatsToSupport });
+        const scanner = new Html5Qrcode(ELEMENT_ID, { formatsToSupport, verbose: false });
         scannerRef.current = scanner;
 
         await scanner.start(

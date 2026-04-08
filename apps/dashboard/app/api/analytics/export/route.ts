@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
 
       if (error) throw error;
 
-      const rows = (members ?? []).map((m) => ({
+      const rows = (members ?? []).map((m: { name: string | null; email: string | null; phone: string | null; tier: string | null; points_balance: number; visits_total: number; last_visit_at: string | null; created_at: string; status: string | null }) => ({
         Name: m.name ?? '',
         Email: m.email ?? '',
         Phone: m.phone ?? '',
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
 
       if (error) throw error;
 
-      const rows = (transactions ?? []).map((t) => {
+      const rows = (transactions ?? []).map((t: { type: string; points: number; balance_after: number | null; description: string | null; created_at: string; members: unknown }) => {
         const member = t.members as { name: string; email: string } | null;
         return {
           Date: new Date(t.created_at).toLocaleDateString(),
