@@ -11,7 +11,8 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await (supabase.auth as any).getSession();
+  const user = session?.user;
 
   if (!user || user.email !== process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -55,7 +56,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await (supabase.auth as any).getSession();
+  const user = session?.user;
 
   if (!user || user.email !== process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
