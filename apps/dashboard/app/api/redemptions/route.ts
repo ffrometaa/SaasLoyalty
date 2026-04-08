@@ -150,6 +150,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status');
     const limit = parseInt(searchParams.get('limit') || '20');
+    const since = searchParams.get('since'); // ISO date string or YYYY-MM-DD
 
     let query = supabase
       .from('redemptions')
@@ -171,6 +172,9 @@ export async function GET(request: NextRequest) {
 
     if (status) {
       query = query.eq('status', status);
+    }
+    if (since) {
+      query = query.gte('used_at', since);
     }
 
     const { data: redemptions, count, error } = await query;

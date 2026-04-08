@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { QrCode, CheckCircle, XCircle, AlertTriangle, Gift, Camera } from 'lucide-react';
+import { QrCode, CheckCircle, XCircle, AlertTriangle, Gift, Camera, Eye, Zap } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { QrScanner } from '../../../components/QrScanner';
 
@@ -13,65 +13,90 @@ type HistoryItem = {
   time: string;
 };
 
+type VerifyPreview = {
+  id: string;
+  member: { id: string; name: string; email: string; tier: string; points_balance: number };
+  reward: { id: string; name: string };
+  points_spent: number;
+  expires_at: string;
+};
+
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins} min ago`;
+  if (mins < 1) return 'ahora';
+  if (mins < 60) return `hace ${mins} min`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
+  if (hours < 24) return `hace ${hours}h`;
+  return `hace ${Math.floor(hours / 24)}d`;
 }
+
+const TIER_COLORS: Record<string, string> = {
+  bronze: 'text-amber-700 bg-amber-100',
+  silver: 'text-gray-700 bg-gray-100',
+  gold: 'text-yellow-700 bg-yellow-100',
+  platinum: 'text-purple-700 bg-purple-100',
+};
 
 export default function RedemptionsPage() {
   const t = useTranslations('redemptions');
-  const [mode, setMode] = useState<'scan' | 'manual'>('manual');
+
+  // Input mode: manual entry | camera scan | verify-only camera
+  const [mode, setMode] = useState<'manual' | 'scan' | 'verify'>('manual');
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{
-    success: boolean;
-    message: string;
-    data?: any;
-  } | null>(null);
+  const [result, setResult] = useState<{ success: boolean; message: string; data?: any } | null>(null);
+
+  // Verify preview (mode=verify)
+  const [verifyPreview, setVerifyPreview] = useState<VerifyPreview | null>(null);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+
+  // History + today count
   const [history, setHistory] = useState<HistoryItem[] | null>(null);
+  const [todayCount, setTodayCount] = useState(0);
+
+  const todayISO = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
   const fetchHistory = useCallback(() => {
-    fetch('/api/redemptions?status=used&limit=10')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data?.redemptions) {
-          setHistory(data.redemptions.map((r: any) => ({
-            id: r.id,
-            member: r.members?.name ?? 'Unknown',
-            reward: r.rewards?.name ?? 'Unknown reward',
-            status: r.status,
-            time: timeAgo(r.used_at || r.created_at),
-          })));
-        } else {
-          setHistory([]);
-        }
-      });
-  }, []);
+    const todayStart = `${todayISO}T00:00:00.000Z`;
+    Promise.all([
+      fetch('/api/redemptions?status=used&limit=10').then(r => r.ok ? r.json() : null),
+      fetch(`/api/redemptions?status=used&since=${encodeURIComponent(todayStart)}&limit=100`).then(r => r.ok ? r.json() : null),
+    ]).then(([recent, today]) => {
+      if (recent?.redemptions) {
+        setHistory(recent.redemptions.map((r: any) => ({
+          id: r.id,
+          member: r.members?.name ?? 'Unknown',
+          reward: r.rewards?.name ?? 'Unknown reward',
+          status: r.status,
+          time: timeAgo(r.used_at || r.created_at),
+        })));
+      } else {
+        setHistory([]);
+      }
+      if (today?.total != null) {
+        setTodayCount(today.total);
+      }
+    });
+  }, [todayISO]);
 
   useEffect(() => {
     fetchHistory();
   }, [fetchHistory]);
 
+  // ── Process (mark as used) ──────────────────────────────────────────────────
   const processCode = useCallback(async (target: string) => {
     if (!target.trim()) return;
-
     setLoading(true);
     setResult(null);
-
     try {
       const response = await fetch('/api/redemptions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: target.trim() }),
       });
-
       const data = await response.json();
-
       if (response.ok && data.success) {
         const r = data.redemption;
         setResult({
@@ -87,10 +112,7 @@ export default function RedemptionsPage() {
         });
         fetchHistory();
       } else {
-        setResult({
-          success: false,
-          message: data.error || 'Invalid code. Please check and try again.',
-        });
+        setResult({ success: false, message: data.error || 'Invalid code. Please check and try again.' });
       }
     } catch {
       setResult({ success: false, message: 'Connection error. Please try again.' });
@@ -99,25 +121,66 @@ export default function RedemptionsPage() {
     }
   }, [fetchHistory]);
 
+  // ── Verify (preview only) ───────────────────────────────────────────────────
+  const verifyCode = useCallback(async (target: string) => {
+    if (!target.trim()) return;
+    setVerifyLoading(true);
+    setVerifyPreview(null);
+    setVerifyError(null);
+    try {
+      const res = await fetch(`/api/redemptions/verify?code=${encodeURIComponent(target.trim())}`);
+      const data = await res.json();
+      if (res.ok && data.valid) {
+        setVerifyPreview(data.redemption);
+      } else {
+        setVerifyError(data.error || 'Código inválido o expirado');
+      }
+    } catch {
+      setVerifyError('Error de conexión. Intentá de nuevo.');
+    } finally {
+      setVerifyLoading(false);
+    }
+  }, []);
+
   const handleProcess = () => processCode(code).then(() => setCode(''));
+  const handleVerify = () => verifyCode(code).then(() => setCode(''));
 
   const handleScan = useCallback((scannedCode: string) => {
-    // QR detected: stop scanner, switch to manual view, process automatically
     setMode('manual');
     setCode(scannedCode);
     processCode(scannedCode);
   }, [processCode]);
 
-  const resetResult = () => {
-    setResult(null);
+  const handleVerifyScan = useCallback((scannedCode: string) => {
+    // Stay in scan view but show preview
+    verifyCode(scannedCode);
+  }, [verifyCode]);
+
+  const confirmVerified = async () => {
+    if (!verifyPreview) return;
+    setVerifyPreview(null);
+    setVerifyError(null);
+    setMode('manual');
+    await processCode(verifyPreview.id); // pass ID since we already know the redemption
   };
+
+  const resetResult = () => setResult(null);
+  const resetVerify = () => { setVerifyPreview(null); setVerifyError(null); };
 
   return (
     <div className="p-6 lg:p-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
-        <p className="text-gray-600 mt-1">{t('subtitle')}</p>
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
+          <p className="text-gray-600 mt-1">{t('subtitle')}</p>
+        </div>
+        {todayCount > 0 && (
+          <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
+            <Zap className="h-4 w-4 text-green-600" />
+            <span className="text-sm font-semibold text-green-700">{todayCount} canjes hoy</span>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -125,37 +188,45 @@ export default function RedemptionsPage() {
         <div className="space-y-6">
           {/* Mode Toggle */}
           <div className="bg-white rounded-xl border p-6">
-            <div className="flex gap-4 mb-6">
+            <div className="flex gap-2 mb-6">
               <button
-                onClick={() => setMode('manual')}
-                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
-                  mode === 'manual'
-                    ? 'bg-brand-purple text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                onClick={() => { setMode('manual'); resetResult(); resetVerify(); }}
+                className={`flex-1 py-2.5 px-3 rounded-lg font-medium text-sm transition-colors ${mode === 'manual' ? 'bg-brand-purple text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
               >
-                <span className="flex items-center justify-center gap-2">
-                  <QrCode className="h-5 w-5" />
+                <span className="flex items-center justify-center gap-1.5">
+                  <QrCode className="h-4 w-4" />
                   {t('enterCode')}
                 </span>
               </button>
               <button
-                onClick={() => { setMode('scan'); setResult(null); }}
-                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
-                  mode === 'scan'
-                    ? 'bg-brand-purple text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                onClick={() => { setMode('scan'); resetResult(); resetVerify(); }}
+                className={`flex-1 py-2.5 px-3 rounded-lg font-medium text-sm transition-colors ${mode === 'scan' ? 'bg-brand-purple text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
               >
-                <span className="flex items-center justify-center gap-2">
-                  <Camera className="h-5 w-5" />
+                <span className="flex items-center justify-center gap-1.5">
+                  <Camera className="h-4 w-4" />
                   {t('scanQr')}
+                </span>
+              </button>
+              <button
+                onClick={() => { setMode('verify'); resetResult(); resetVerify(); }}
+                className={`flex-1 py-2.5 px-3 rounded-lg font-medium text-sm transition-colors ${mode === 'verify' ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                title="Verificá la validez del código sin consumirlo"
+              >
+                <span className="flex items-center justify-center gap-1.5">
+                  <Eye className="h-4 w-4" />
+                  Verificar
                 </span>
               </button>
             </div>
 
-            {mode === 'manual' && (
+            {/* ── Manual entry (process or verify) ── */}
+            {(mode === 'manual' || mode === 'verify') && (
               <div className="space-y-4">
+                {mode === 'verify' && (
+                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    Modo verificación: el código <strong>no se consume</strong>. Solo muestra la info del miembro.
+                  </p>
+                )}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t('redemptionCode')}
@@ -166,15 +237,18 @@ export default function RedemptionsPage() {
                     onChange={(e) => setCode(e.target.value.toUpperCase())}
                     placeholder={t('codePlaceholder')}
                     className="w-full px-4 py-3 text-lg border rounded-lg font-mono text-center tracking-wider focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
-                    onKeyDown={(e) => e.key === 'Enter' && handleProcess()}
+                    onKeyDown={(e) => {
+                      if (e.key !== 'Enter') return;
+                      mode === 'verify' ? handleVerify() : handleProcess();
+                    }}
                   />
                 </div>
                 <button
-                  onClick={handleProcess}
-                  disabled={!code.trim() || loading}
-                  className="w-full py-3 bg-brand-purple text-white rounded-lg font-medium hover:bg-brand-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  onClick={mode === 'verify' ? handleVerify : handleProcess}
+                  disabled={!code.trim() || loading || verifyLoading}
+                  className={`w-full py-3 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${mode === 'verify' ? 'bg-amber-500 hover:bg-amber-600' : 'bg-brand-purple hover:bg-brand-purple-700'}`}
                 >
-                  {loading ? (
+                  {(loading || verifyLoading) ? (
                     <span className="flex items-center justify-center gap-2">
                       <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
@@ -182,13 +256,12 @@ export default function RedemptionsPage() {
                       </svg>
                       {t('processing')}
                     </span>
-                  ) : (
-                    t('processRedemption')
-                  )}
+                  ) : mode === 'verify' ? 'Verificar código' : t('processRedemption')}
                 </button>
               </div>
             )}
 
+            {/* ── Camera scan (process) ── */}
             {mode === 'scan' && (
               <div className="space-y-3">
                 <QrScanner isActive={mode === 'scan'} onScan={handleScan} />
@@ -203,9 +276,89 @@ export default function RedemptionsPage() {
                 )}
               </div>
             )}
+
+            {/* ── Verify mode scan ── */}
+            {mode === 'verify' && !verifyPreview && !verifyError && (
+              <div className="mt-4 space-y-3">
+                <p className="text-sm text-center text-gray-500 font-medium">— o escaneá con cámara —</p>
+                <QrScanner isActive={true} onScan={handleVerifyScan} />
+                {verifyLoading && (
+                  <div className="flex items-center justify-center gap-2 py-2 text-sm text-gray-500">
+                    <svg className="animate-spin h-4 w-4 text-amber-500" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Verificando...
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Result */}
+          {/* ── Verify preview ── */}
+          {mode === 'verify' && verifyPreview && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <CheckCircle className="h-5 w-5 text-amber-600" />
+                <span className="font-semibold text-amber-800">Código válido</span>
+              </div>
+              <div className="bg-white rounded-lg p-4 space-y-2.5 mb-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">Miembro</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{verifyPreview.member.name}</span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium capitalize ${TIER_COLORS[verifyPreview.member.tier] ?? 'bg-gray-100 text-gray-700'}`}>
+                      {verifyPreview.member.tier}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500">Email</span>
+                  <span className="text-sm">{verifyPreview.member.email}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500">Premio</span>
+                  <span className="font-medium">{verifyPreview.reward.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500">Puntos</span>
+                  <span className="font-medium text-red-600">-{verifyPreview.points_spent.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500">Vence</span>
+                  <span className="text-sm">{new Date(verifyPreview.expires_at).toLocaleDateString('es-AR')}</span>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={resetVerify}
+                  className="flex-1 py-2.5 border rounded-lg text-sm font-medium hover:bg-gray-50"
+                >
+                  Escanear otro
+                </button>
+                <button
+                  onClick={confirmVerified}
+                  disabled={loading}
+                  className="flex-1 py-2.5 bg-brand-purple text-white rounded-lg text-sm font-medium hover:bg-brand-purple-700 disabled:opacity-50"
+                >
+                  {loading ? 'Procesando...' : 'Confirmar canje'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {mode === 'verify' && verifyError && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-center">
+              <XCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+              <p className="font-medium text-red-800">Código inválido</p>
+              <p className="text-sm text-red-600 mt-1">{verifyError}</p>
+              <button onClick={resetVerify} className="mt-3 text-sm text-red-700 underline">
+                Intentar de nuevo
+              </button>
+            </div>
+          )}
+
+          {/* ── Process result ── */}
           {result && (
             <div className={`rounded-xl border p-6 ${result.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
               {result.success ? (
@@ -236,10 +389,7 @@ export default function RedemptionsPage() {
                       )}
                     </div>
                   )}
-                  <button
-                    onClick={resetResult}
-                    className="mt-4 text-sm text-green-700 hover:text-green-800 underline"
-                  >
+                  <button onClick={resetResult} className="mt-4 text-sm text-green-700 hover:text-green-800 underline">
                     {t('processAnother')}
                   </button>
                 </div>
@@ -250,10 +400,7 @@ export default function RedemptionsPage() {
                   </div>
                   <h3 className="mt-4 text-lg font-semibold text-red-800">{t('redemptionFailed')}</h3>
                   <p className="mt-2 text-red-700">{result.message}</p>
-                  <button
-                    onClick={resetResult}
-                    className="mt-4 text-sm text-red-700 hover:text-red-800 underline"
-                  >
+                  <button onClick={resetResult} className="mt-4 text-sm text-red-700 hover:text-red-800 underline">
                     {t('tryAgain')}
                   </button>
                 </div>
@@ -264,12 +411,17 @@ export default function RedemptionsPage() {
 
         {/* Recent Redemptions */}
         <div className="bg-white rounded-xl border">
-          <div className="px-6 py-4 border-b">
+          <div className="px-6 py-4 border-b flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">{t('recentRedemptions')}</h2>
+            {todayCount > 0 && (
+              <span className="text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                {todayCount} hoy
+              </span>
+            )}
           </div>
           <div className="divide-y">
             {history === null ? (
-              <div className="px-6 py-12 text-center text-gray-400 text-sm">Loading...</div>
+              <div className="px-6 py-12 text-center text-gray-400 text-sm">Cargando...</div>
             ) : history.length === 0 ? (
               <div className="px-6 py-12 text-center">
                 <Gift className="mx-auto h-12 w-12 text-gray-300" />
@@ -301,24 +453,19 @@ export default function RedemptionsPage() {
         </div>
       </div>
 
-      {/* Tips Section */}
+      {/* Tips */}
       <div className="mt-6 bg-blue-50 rounded-xl border border-blue-200 p-6">
         <h3 className="font-semibold text-blue-900 flex items-center gap-2">
           <AlertTriangle className="h-5 w-5" />
           {t('tipsTitle')}
         </h3>
         <ul className="mt-3 space-y-2 text-sm text-blue-800">
+          <li className="flex items-start gap-2"><span className="text-blue-400">•</span>{t('tip1')}</li>
+          <li className="flex items-start gap-2"><span className="text-blue-400">•</span>{t('tip2')}</li>
+          <li className="flex items-start gap-2"><span className="text-blue-400">•</span>{t('tip3')}</li>
           <li className="flex items-start gap-2">
             <span className="text-blue-400">•</span>
-            {t('tip1')}
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-blue-400">•</span>
-            {t('tip2')}
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-blue-400">•</span>
-            {t('tip3')}
+            El modo <strong>Verificar</strong> te permite confirmar la identidad y el premio antes de consumir el código.
           </li>
         </ul>
       </div>

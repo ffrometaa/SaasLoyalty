@@ -6,11 +6,12 @@ import { Camera, CameraOff } from 'lucide-react';
 type Props = {
   isActive: boolean;
   onScan: (code: string) => void;
+  showFormatsLabel?: boolean;
 };
 
 type ScannerState = 'starting' | 'scanning' | 'error';
 
-export function QrScanner({ isActive, onScan }: Props) {
+export function QrScanner({ isActive, onScan, showFormatsLabel = true }: Props) {
   const [state, setState] = useState<ScannerState>('starting');
   const [errorMsg, setErrorMsg] = useState('');
   const scannerRef = useRef<any>(null);
@@ -36,11 +37,21 @@ export function QrScanner({ isActive, onScan }: Props) {
 
       try {
         // Dynamic import — avoids SSR issues since Html5Qrcode uses document/navigator
-        const { Html5Qrcode } = await import('html5-qrcode');
+        const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import('html5-qrcode');
 
         if (cancelled) return;
 
-        const scanner = new Html5Qrcode(ELEMENT_ID);
+        const formatsToSupport = [
+          Html5QrcodeSupportedFormats.QR_CODE,
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+        ];
+
+        const scanner = new Html5Qrcode(ELEMENT_ID, { formatsToSupport });
         scannerRef.current = scanner;
 
         await scanner.start(
@@ -113,11 +124,18 @@ export function QrScanner({ isActive, onScan }: Props) {
           <div className="absolute bottom-3 left-0 right-0 flex justify-center pointer-events-none">
             <span className="inline-flex items-center gap-1.5 bg-black/60 text-white text-xs px-3 py-1.5 rounded-full">
               <Camera className="h-3.5 w-3.5" />
-              Point camera at QR code
+              Apuntá al QR o código de barras
             </span>
           </div>
         )}
       </div>
     </div>
+
+    {showFormatsLabel && state === 'scanning' && (
+      <p className="text-center text-xs text-gray-400">
+        QR · EAN-13 · EAN-8 · Code 128 · Code 39 · UPC
+      </p>
+    )}
+  </div>
   );
 }
