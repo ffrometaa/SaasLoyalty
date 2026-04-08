@@ -8,6 +8,7 @@ import { TransactionHistory } from '@/components/member/TransactionHistory';
 import { BottomNav } from '@/components/member/BottomNav';
 import { BrandTheme } from '@/components/member/BrandTheme';
 import { OneSignalInit } from '@/components/member/OneSignalInit';
+import { OnboardingModal } from '@/components/member/OnboardingModal';
 import { getTierProgress } from '@/lib/member/types';
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 import { cookies } from 'next/headers';
@@ -124,6 +125,10 @@ export default async function HomePage() {
     ? `2x puntos en ${nextTierLabel}`
     : 'Nivel máximo alcanzado';
 
+  const isNewMember = member.points_lifetime === 0;
+  const hasRedeemablePoints = member.points_balance > 0;
+  const appName = member.tenant.brand_app_name ?? member.tenant.business_name;
+
   return (
     <>
       <BrandTheme
@@ -131,6 +136,11 @@ export default async function HomePage() {
         secondary={member.tenant.brand_color_secondary}
       />
       <OneSignalInit memberId={member.id} />
+      <OnboardingModal
+        memberName={member.name}
+        appName={appName}
+        isNewMember={isNewMember}
+      />
 
       <main className="pb-safe" style={{ background: 'var(--cream)' }}>
         {/* Hero with points card */}
@@ -196,7 +206,7 @@ export default async function HomePage() {
         )}
 
         {/* Quick actions */}
-        <QuickActions />
+        <QuickActions highlightRedeem={hasRedeemablePoints && isNewMember} />
 
         {/* Rewards horizontal scroll */}
         <div className="mt-6">

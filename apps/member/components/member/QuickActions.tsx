@@ -11,9 +11,10 @@ interface ToastState {
 interface QuickActionsProps {
   memberCode?: string;
   shareUrl?: string;
+  highlightRedeem?: boolean;
 }
 
-export function QuickActions({ memberCode, shareUrl }: QuickActionsProps) {
+export function QuickActions({ memberCode, shareUrl, highlightRedeem }: QuickActionsProps) {
   const [toast, setToast] = useState<ToastState>({ visible: false, message: '' });
 
   function showToast(message: string) {
@@ -53,12 +54,26 @@ export function QuickActions({ memberCode, shareUrl }: QuickActionsProps) {
         {/* Canjear */}
         <Link
           href="/rewards"
-          className="flex flex-col items-center gap-1.5 rounded-[14px] p-3.5 cursor-pointer transition-colors"
+          className="relative flex flex-col items-center gap-1.5 rounded-[14px] p-3.5 cursor-pointer transition-colors"
           style={{
             background: 'white',
-            border: '1px solid var(--border)',
+            border: highlightRedeem ? '2px solid var(--brand-primary)' : '1px solid var(--border)',
           }}
         >
+          {highlightRedeem && (
+            <span
+              className="absolute -top-1 -right-1 flex h-3 w-3"
+            >
+              <span
+                className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                style={{ background: 'var(--brand-primary)' }}
+              />
+              <span
+                className="relative inline-flex rounded-full h-3 w-3"
+                style={{ background: 'var(--brand-primary)' }}
+              />
+            </span>
+          )}
           <div
             className="w-9 h-9 rounded-[10px] flex items-center justify-center"
             style={{ background: 'var(--sage-light)' }}
