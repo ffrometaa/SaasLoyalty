@@ -28,10 +28,10 @@
 
 | Fecha | Tarea | Estado |
 |-------|-------|--------|
-| 2026-04-13 (Lun) | 🖼️ M1: img → next/image | `[ ] Pendiente` |
-| 2026-04-14 (Mar) | 🛡️ M2: Error Boundaries en Dashboard | `[ ] Pendiente` |
-| 2026-04-15 (Mié) | 🚦 M3: Rate Limiting en Member App | `[ ] Pendiente` |
-| 2026-04-16 (Jue) | ⚡ B1: Caché en API routes analytics/members | `[ ] Pendiente` |
+| 2026-04-13 (Lun) | 🖼️ M1: img → next/image | `[x] Completo` |
+| 2026-04-14 (Mar) | 🛡️ M2: Error Boundaries en Dashboard | `[x] Completo` |
+| 2026-04-15 (Mié) | 🚦 M3: Rate Limiting en Member App | `[x] Completo` |
+| 2026-04-16 (Jue) | ⚡ B1: Caché en API routes analytics/members | `[x] Completo` |
 | 2026-04-18 (Sáb) | ⚙️ M4: Edge Functions Supabase — parte 1 | `[ ] Pendiente` |
 | 2026-04-19 (Dom) | ⚙️ M4: Edge Functions Supabase — parte 2 | `[ ] Pendiente` |
 
