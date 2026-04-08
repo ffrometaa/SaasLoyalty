@@ -2,7 +2,7 @@
 
 > Actualizado automáticamente por el agente diario (lunes a sábado, 9:00 AM).
 > El agente verifica cada tarea contra el historial de commits y actualiza este archivo.
-> Última actualización manual: 2026-04-07
+> Última actualización: 2026-04-08
 
 ---
 
@@ -15,7 +15,7 @@
 | 2026-04-07 (Lun) | 🔒 Tarea 5: Sistema de consentimiento legal | `[x] Completada` | migración + `/api/consent` + `consent-checkbox.tsx` + `consent-guard.tsx` + `/consent-update` + páginas legales |
 | 2026-04-07 (Lun) | 🌐 Tarea 6: Fix i18n — /join page | `[x] Completada` | `join/page.tsx` reescrita con `useTranslations`, namespaces `join_page` en `en.json` y `es.json` |
 | 2026-04-07 (Lun) | 📷 Tarea 7: QR Scanner en /join | `[x] Completada` | `qr-scanner-modal.tsx` con `jsqr`, namespaces `qr_scanner` en ambos idiomas |
-| 2026-04-08 (Mar) | ⚠️ Tarea 8: Update features.ts — remover api_access de Scale | `[x] Completada` | `features.ts` línea 117 removida |
+| 2026-04-08 (Mar) | ⚠️ Tarea 8: Update features.ts — remover api_access de Scale | `[x] Completada` | commit `89ea3c0` — `features.ts` api_access removido de Scale |
 | 2026-04-08 (Mar) | 🔴 Tarea 3a: Fix no-explicit-any (parte 1) | `[x] Completada` | Sin archivos con eslint-disable en repo |
 | 2026-04-09 (Mié) | 🔴 Tarea 3b: Fix no-explicit-any (parte 2) | `[x] Completada` | Sin archivos con eslint-disable en repo |
 | 2026-04-10 (Jue) | 🧪 Tarea 4a: Tests — Setup + audit rutas API | `[x] Completada` | commit `4d63607` — 19 auth tests |
@@ -67,7 +67,7 @@
 | Fecha verificación | Tareas revisadas | Completadas | Pendientes | Vencidas |
 |--------------------|-----------------|-------------|------------|---------|
 | 2026-04-07 | 7 | 5 | 2 | 0 |
-| 2026-04-08 | 3 | 3 | 0 | 0 |
+| 2026-04-08 | 7 | 7 | 0 | 0 |
 | 2026-04-11 | 2 | 2 | 0 | 0 |
 | 2026-04-12 | 1 | 1 | 0 | 0 |
 
