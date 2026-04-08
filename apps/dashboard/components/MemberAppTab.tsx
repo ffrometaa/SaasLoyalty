@@ -11,7 +11,6 @@ const MEMBER_APP_URL =
 export function MemberAppTab() {
   const t = useTranslations('memberApp');
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const codeCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const [slug, setSlug] = useState<string | null>(null);
   const [appName, setAppName] = useState<string>('');
@@ -82,17 +81,6 @@ export function MemberAppTab() {
     }).catch(console.error);
   }, [joinUrl]);
 
-  // Render QR for register?code= URL
-  useEffect(() => {
-    if (!registerUrl || !codeCanvasRef.current) return;
-    QRCode.toCanvas(codeCanvasRef.current, registerUrl, {
-      width: 220,
-      margin: 2,
-      color: { dark: '#1c2117', light: '#ffffff' },
-      errorCorrectionLevel: 'M',
-    }).catch(console.error);
-  }, [registerUrl]);
-
   function copy(text: string, key: 'link' | 'code' | 'reglink') {
     navigator.clipboard.writeText(text).then(() => {
       setCopied(key);
@@ -100,14 +88,12 @@ export function MemberAppTab() {
     });
   }
 
-  function handleDownload(canvas: HTMLCanvasElement | null, filename: string) {
-    if (!canvas) return;
+  function handleDownload(filename: string) {
     const offscreen = document.createElement('canvas');
     const size = 600;
     offscreen.width = size;
     offscreen.height = size;
-    const url = canvas === canvasRef.current ? joinUrl : registerUrl;
-    QRCode.toCanvas(offscreen, url, {
+    QRCode.toCanvas(offscreen, joinUrl, {
       width: size,
       margin: 3,
       color: { dark: '#1c2117', light: '#ffffff' },
@@ -152,24 +138,8 @@ export function MemberAppTab() {
           </div>
           <p className="text-sm text-gray-500 mb-6">{t('joinCodeSubtitle')}</p>
 
-          <div className="flex flex-col sm:flex-row gap-8 items-start">
-            {/* QR for register?code= URL */}
-            <div className="flex flex-col items-center gap-3 shrink-0">
-              <div className="rounded-2xl border-2 border-gray-100 p-3 bg-white shadow-sm">
-                <canvas ref={codeCanvasRef} className="rounded-lg" />
-              </div>
-              <p className="text-xs text-gray-400 text-center">{t('scanToJoin', { name: businessName })}</p>
-              <button
-                onClick={() => handleDownload(codeCanvasRef.current, `qr-code-${joinCode}.png`)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-              >
-                <Download className="h-4 w-4" />
-                {t('downloadQr')}
-              </button>
-            </div>
-
-            {/* Code display + actions */}
-            <div className="flex-1 min-w-0">
+          {/* Code display + actions */}
+          <div>
               {/* Big code display */}
               <div className="flex justify-center sm:justify-start mb-5">
                 <div className="inline-block bg-gray-50 border-2 border-gray-200 rounded-2xl px-8 py-4 text-center">
@@ -221,7 +191,6 @@ export function MemberAppTab() {
               <div className="p-4 bg-brand-purple/5 border border-brand-purple/10 rounded-xl">
                 <p className="text-sm text-gray-600">{t('shareCodeTip')}</p>
               </div>
-            </div>
           </div>
         </div>
       )}
@@ -238,7 +207,7 @@ export function MemberAppTab() {
               <canvas ref={canvasRef} className="rounded-lg" />
             </div>
             <button
-              onClick={() => handleDownload(canvasRef.current, `qr-${slug}.png`)}
+              onClick={() => handleDownload(`qr-${slug}.png`)}
               className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
             >
               <Download className="h-4 w-4" />

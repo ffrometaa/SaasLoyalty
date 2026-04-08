@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Building2,
   Mail,
@@ -39,6 +40,7 @@ type Invoice = {
 };
 
 export default function SettingsPage() {
+  const t = useTranslations('settings');
   const [activeTab, setActiveTab] = useState<'profile' | 'branding' | 'member-app' | 'billing' | 'language' | 'team' | 'danger' | 'integrations'>('profile');
   const [saved, setSaved] = useState(false);
   const [settingsLoading, setSettingsLoading] = useState(true);
@@ -229,14 +231,14 @@ export default function SettingsPage() {
   };
 
   const tabs = [
-    { id: 'profile', label: 'Business Profile', icon: Building2 },
-    { id: 'branding', label: 'Branding', icon: Palette },
-    { id: 'member-app', label: 'App de Miembros', icon: QrCode },
-    { id: 'billing', label: 'Plan & Billing', icon: CreditCard },
-    { id: 'team', label: 'Team', icon: Users },
-    { id: 'integrations', label: 'Integrations', icon: Link2 },
-    { id: 'language', label: 'Language / Idioma', icon: Globe },
-    { id: 'danger', label: 'Danger Zone', icon: AlertTriangle },
+    { id: 'profile', label: t('profile'), icon: Building2 },
+    { id: 'branding', label: t('branding'), icon: Palette },
+    { id: 'member-app', label: t('memberApp'), icon: QrCode },
+    { id: 'billing', label: t('billing'), icon: CreditCard },
+    { id: 'team', label: t('team'), icon: Users },
+    { id: 'integrations', label: t('integrations'), icon: Link2 },
+    { id: 'language', label: t('language'), icon: Globe },
+    { id: 'danger', label: t('danger'), icon: AlertTriangle },
   ];
 
   const handleManageSubscription = async () => {

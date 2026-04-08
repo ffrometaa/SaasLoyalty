@@ -79,20 +79,18 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
-        <button
-          type="button"
-          className="p-2 rounded-md bg-white shadow-md"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen ? (
-            <X className="h-6 w-6 text-gray-600" />
-          ) : (
+      {/* Mobile hamburger — only visible when sidebar is closed */}
+      {!mobileMenuOpen && (
+        <div className="lg:hidden fixed top-4 left-4 z-50">
+          <button
+            type="button"
+            className="p-2 rounded-md bg-white shadow-md"
+            onClick={() => setMobileMenuOpen(true)}
+          >
             <Menu className="h-6 w-6 text-gray-600" />
-          )}
-        </button>
-      </div>
+          </button>
+        </div>
+      )}
 
       {/* Mobile sidebar overlay */}
       {mobileMenuOpen && (
@@ -109,7 +107,7 @@ export function Sidebar() {
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Logo */}
-        <div className="h-16 flex items-center px-6 border-b">
+        <div className="h-16 flex items-center justify-between px-6 border-b">
           <a href={process.env.NEXT_PUBLIC_LANDING_URL || '/'} className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-brand-purple flex items-center justify-center">
               <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,6 +116,14 @@ export function Sidebar() {
             </div>
             <span className="text-xl font-bold text-gray-900">LoyaltyOS</span>
           </a>
+          {/* Close button — mobile only, inside header to avoid logo overlap */}
+          <button
+            type="button"
+            className="lg:hidden p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         {/* Navigation */}
