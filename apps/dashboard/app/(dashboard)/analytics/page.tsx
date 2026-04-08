@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { FeatureGate } from '../../../components/dashboard/FeatureGate';
+import { TrialBanner } from '../../../components/dashboard/TrialBanner';
 import { SectionErrorBoundary } from '../../../components/SectionErrorBoundary';
 import type { Plan } from '../../../lib/plans/features';
 
@@ -121,6 +122,8 @@ export default function AnalyticsPage() {
 
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [plan, setPlan] = useState<Plan>('starter');
+  // undefined = loading, null = never used, object = trial exists (active or expired)
+  const [heatmapTrial, setHeatmapTrial] = useState<{ status: string; trial_end: string } | null | undefined>(undefined);
   const [exportType, setExportType] = useState<'members' | 'transactions'>('members');
   const [exporting, setExporting] = useState(false);
 
@@ -135,6 +138,12 @@ export default function AnalyticsPage() {
   useEffect(() => {
     fetch('/api/analytics').then(r => r.ok ? r.json() : null).then(d => { if (d) setData(d); });
     fetch('/api/settings').then(r => r.ok ? r.json() : null).then(d => { if (d?.plan) setPlan(d.plan as Plan); });
+    fetch('/api/feature-trials')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        const t = (d?.trials ?? []).find((tr: { feature_name: string }) => tr.feature_name === 'heatmap');
+        setHeatmapTrial(t ?? null);
+      });
   }, []);
 
   const loadCohorts = useCallback(() => {
@@ -247,6 +256,10 @@ export default function AnalyticsPage() {
         </FeatureGate>
       </div>
 
+      {heatmapTrial?.status === 'active' && (
+        <TrialBanner feature="heatmap" trialEnd={heatmapTrial.trial_end} />
+      )}
+
       {/* Tabs */}
       <div className="flex gap-1 border-b mb-6">
         {tabs.map(({ id, label, icon: Icon }) => (
@@ -323,11 +336,14 @@ export default function AnalyticsPage() {
               )}
             </div>
 
-            {/* Visits Heatmap — Pro/Scale only */}
+            {/* Visits Heatmap — gated by plan or active trial */}
             <FeatureGate
               plan={plan}
               feature="analytics_heatmap"
-              trialHref={`mailto:hello@loyalbase.dev?subject=${encodeURIComponent('45-day Heatmap Trial Request')}&body=${encodeURIComponent("Hi, I'm interested in trying the Heatmap Analytics feature for 45 days.")}`}
+              bypass={heatmapTrial?.status === 'active'}
+              trialHref={heatmapTrial === null
+                ? `mailto:hello@loyalbase.dev?subject=${encodeURIComponent('45-day Heatmap Trial Request')}&body=${encodeURIComponent("Hi, I'm interested in trying the Heatmap Analytics feature for 45 days.")}`
+                : undefined}
             >
               <div className="bg-white rounded-xl border p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('peakHours')}</h2>

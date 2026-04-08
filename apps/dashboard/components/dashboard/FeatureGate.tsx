@@ -13,6 +13,8 @@ interface FeatureGateProps {
   silent?: boolean;
   overridePlan?: Plan;
   trialHref?: string;
+  /** When true, bypasses the gate entirely (active trial). */
+  bypass?: boolean;
 }
 
 export function FeatureGate({
@@ -23,11 +25,12 @@ export function FeatureGate({
   silent = false,
   overridePlan,
   trialHref,
+  bypass = false,
 }: FeatureGateProps) {
   const t = useTranslations('upgrade');
   // When overridePlan is provided (plan preview mode), use it instead of the real plan.
   const effectivePlan = overridePlan ?? plan;
-  const hasAccess = planHasFeature(effectivePlan, feature);
+  const hasAccess = bypass || planHasFeature(effectivePlan, feature);
 
   if (hasAccess) return <>{children}</>;
 

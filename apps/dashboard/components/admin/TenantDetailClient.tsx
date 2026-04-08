@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { changeTenantPlan, suspendTenant, reactivateTenant } from '@/lib/admin/actions';
@@ -45,6 +45,35 @@ export function TenantDetailClient({ data = { tenant: { id: '', business_name: '
   const [newPlan, setNewPlan] = useState(tenant.plan);
   const [planReason, setPlanReason] = useState('');
   const [planExpiry, setPlanExpiry] = useState('');
+
+  type FeatureTrial = { id: string; feature_name: string; status: string; trial_start: string; trial_end: string };
+  const [trials, setTrials] = useState<FeatureTrial[]>([]);
+  const [trialsLoading, setTrialsLoading] = useState(true);
+  const [activatingTrial, setActivatingTrial] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch(`/api/admin/tenants/${tenant.id}/trials`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        setTrials(d?.trials ?? []);
+        setTrialsLoading(false);
+      });
+  }, [tenant.id]);
+
+  async function handleActivateTrial(feature: 'gamification' | 'heatmap') {
+    setActivatingTrial(feature);
+    try {
+      const res = await fetch(`/api/admin/tenants/${tenant.id}/trials`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feature }),
+      });
+      const d = await res.json();
+      if (res.ok && d.trial) setTrials(prev => [...prev, d.trial]);
+    } finally {
+      setActivatingTrial(null);
+    }
+  }
 
   const mrr = tenant.plan_status === 'active' ? getPlanMRR(tenant.plan) : 0;
   const stripeCustomerUrl = tenant.stripe_customer_id
@@ -186,7 +215,50 @@ export function TenantDetailClient({ data = { tenant: { id: '', business_name: '
         </>
       </Section>
 
-      {/* Section 4 — Members */}
+      {/* Section 4 — Feature Trials */}
+      <Section title="Feature Trials">
+        {trialsLoading ? (
+          <p className="text-xs text-slate-500">Loading…</p>
+        ) : (
+          <div className="space-y-0">
+            {(['gamification', 'heatmap'] as const).map(feature => {
+              const trial = trials.find(t => t.feature_name === feature);
+              const label = feature === 'gamification' ? 'Gamification Engine' : 'Heatmap Analytics';
+              return (
+                <div key={feature} className="flex items-center justify-between py-2.5 border-b border-white/[0.04] last:border-0">
+                  <div>
+                    <p className="text-xs font-medium text-slate-300">{label}</p>
+                    {trial ? (
+                      <p className="text-[10px] text-slate-500 mt-0.5">
+                        Ends {new Date(trial.trial_end).toLocaleDateString()}
+                      </p>
+                    ) : (
+                      <p className="text-[10px] text-slate-500 mt-0.5">No trial activated</p>
+                    )}
+                  </div>
+                  {trial ? (
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-semibold capitalize ${
+                      trial.status === 'active' ? 'bg-green-500/15 text-green-400' :
+                      trial.status === 'converted' ? 'bg-blue-500/15 text-blue-400' :
+                      'bg-slate-500/15 text-slate-400'
+                    }`}>{trial.status}</span>
+                  ) : (
+                    <button
+                      onClick={() => handleActivateTrial(feature)}
+                      disabled={activatingTrial === feature}
+                      className="px-3 py-1.5 rounded-lg text-[10px] font-semibold text-white bg-[#7c3aed] hover:bg-[#6d28d9] disabled:opacity-50 transition-colors"
+                    >
+                      {activatingTrial === feature ? 'Activating…' : 'Activate 45d Trial'}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Section>
+
+      {/* Section 6 — Members */}
       <Section title={`Members (${memberCount})`}>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
@@ -220,7 +292,7 @@ export function TenantDetailClient({ data = { tenant: { id: '', business_name: '
         </div>
       </Section>
 
-      {/* Section 5 — Campaigns */}
+      {/* Section 7 — Campaigns */}
       <Section title="Campaigns">
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
@@ -250,7 +322,7 @@ export function TenantDetailClient({ data = { tenant: { id: '', business_name: '
         </div>
       </Section>
 
-      {/* Section 6 — Activity log */}
+      {/* Section 8 — Activity log */}
       <Section title="Activity Log">
         <div className="space-y-2">
           {events.length === 0 ? (

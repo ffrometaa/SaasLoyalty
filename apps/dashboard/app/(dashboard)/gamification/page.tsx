@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { GamificationPanel } from '../../../components/dashboard/GamificationPanel';
 import { SectionErrorBoundary } from '../../../components/SectionErrorBoundary';
 import { FeatureGate } from '../../../components/dashboard/FeatureGate';
+import { TrialBanner } from '../../../components/dashboard/TrialBanner';
 import { getChallenges, getBadges, getGamificationSummary } from '../../../lib/gamification/queries';
 import { getTranslations } from 'next-intl/server';
 import { planHasFeature } from '../../../lib/plans/features';
@@ -44,8 +45,23 @@ export default async function GamificationPage() {
 
   const { tenantId, plan } = tenant;
 
-  // If plan doesn't include gamification, show coming soon marketing card
+  // Check for active gamification trial (Starter plan only)
+  let gamificationTrial: { status: string; trial_end: string } | null = null;
   if (!planHasFeature(plan, 'gamification')) {
+    const { data: trial } = await supabase
+      .from('feature_trials')
+      .select('status, trial_end')
+      .eq('tenant_id', tenantId)
+      .eq('feature_name', 'gamification')
+      .single();
+    gamificationTrial = trial ?? null;
+  }
+
+  const hasTrialAccess = gamificationTrial?.status === 'active';
+  const trialUsed = gamificationTrial !== null; // has been used (active or expired)
+
+  // If plan doesn't include gamification and no active trial, show upsell card
+  if (!planHasFeature(plan, 'gamification') && !hasTrialAccess) {
     return (
       <div className="p-6 lg:p-8">
         <div className="mb-8">
@@ -98,12 +114,14 @@ export default async function GamificationPage() {
                 >
                   {t('comingSoonCta')}
                 </a>
-                <a
-                  href={`mailto:hello@loyalbase.dev?subject=${encodeURIComponent('45-day Gamification Trial Request')}&body=${encodeURIComponent("Hi, I'm interested in trying the Gamification feature for 45 days.")}`}
-                  className="text-sm text-violet-600 hover:text-violet-800 underline underline-offset-2 transition-colors"
-                >
-                  {t('trialLinkText')}
-                </a>
+                {!trialUsed && (
+                  <a
+                    href={`mailto:hello@loyalbase.dev?subject=${encodeURIComponent('45-day Gamification Trial Request')}&body=${encodeURIComponent("Hi, I'm interested in trying the Gamification feature for 45 days.")}`}
+                    className="text-sm text-violet-600 hover:text-violet-800 underline underline-offset-2 transition-colors"
+                  >
+                    {t('trialLinkText')}
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -120,11 +138,16 @@ export default async function GamificationPage() {
 
   return (
     <SectionErrorBoundary section="Gamificación">
-      <GamificationPanel
-        challenges={challenges}
-        badges={badges}
-        summary={summary}
-      />
+      <div className="p-6 lg:p-8">
+        {hasTrialAccess && gamificationTrial && (
+          <TrialBanner feature="gamification" trialEnd={gamificationTrial.trial_end} />
+        )}
+        <GamificationPanel
+          challenges={challenges}
+          badges={badges}
+          summary={summary}
+        />
+      </div>
     </SectionErrorBoundary>
   );
 }
