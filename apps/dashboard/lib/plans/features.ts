@@ -76,7 +76,6 @@ export const PLAN_CONFIGS: Record<Plan, PlanConfig> = {
       'members_up_to_500',
       'campaigns_per_month_2',
       'analytics_basic',
-      'whitelabel_logo',
       'support_email',
     ],
   },
