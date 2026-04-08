@@ -51,7 +51,7 @@ const fetchCampaignsData = unstable_cache(
     }
 
     return {
-      campaigns: (campaigns ?? []).map((c) => ({
+      campaigns: (campaigns ?? []).map((c: { id: string; name: string | null; type: string | null; status: string | null; bonus_points: number | null; bonus_multiplier: number | null; stats: unknown; started_at: string | null; completed_at: string | null }) => ({
         id: c.id,
         name: c.name,
         type: c.type,
