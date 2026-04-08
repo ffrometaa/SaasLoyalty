@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient, createServiceRoleClient, getServerUser } from '@/lib/supabase';
+import { createServiceRoleClient, getServerUser } from '@/lib/supabase';
 
 const MEMBER_APP_URL = process.env.NEXT_PUBLIC_MEMBER_APP_URL ?? 'https://member.loyalbase.dev';
 
 export async function GET() {
   try {
-    const supabase = await createServerSupabaseClient();
-    const user = await getServerUser(supabase);
+    const user = await getServerUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const db = createServiceRoleClient();

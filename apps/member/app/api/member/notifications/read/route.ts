@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient, createServiceRoleClient, getServerUser } from '@/lib/supabase';
+import { createServiceRoleClient, getServerUser } from '@/lib/supabase';
 
 // POST /api/member/notifications/read
 // Body: { ids?: string[] }  — omit ids to mark ALL as read
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const user = await getServerUser(supabase);
+    const user = await getServerUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const db = createServiceRoleClient();
