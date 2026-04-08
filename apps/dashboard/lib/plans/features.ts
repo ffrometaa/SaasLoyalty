@@ -114,7 +114,6 @@ export const PLAN_CONFIGS: Record<Plan, PlanConfig> = {
       'whitelabel_full_brand',
       'support_priority_chat',
       'support_account_manager',
-      'api_access',
       'gamification',
     ],
   },

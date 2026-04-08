@@ -2,6 +2,7 @@
 
 > Actualizado automáticamente por el agente diario (lunes a sábado, 9:00 AM).
 > El agente verifica cada tarea contra el historial de commits y actualiza este archivo.
+> Última actualización manual: 2026-04-07
 
 ---
 
@@ -10,9 +11,13 @@
 | Fecha | Tarea | Estado | Evidencia |
 |-------|-------|--------|-----------|
 | 2026-04-07 (Lun) | 🔧 Tarea 1: Git Author Config | `[x] Completada` | git config verificado |
-| 2026-04-07 (Lun) | 🗄️ Tarea 2: Regenerar tipos Supabase | `[x] Completada` | `2d472be` |
-| 2026-04-08 (Mar) | 🔴 Tarea 3a: Fix no-explicit-any (parte 1) | `[ ] Pendiente` | — |
-| 2026-04-09 (Mié) | 🔴 Tarea 3b: Fix no-explicit-any (parte 2) | `[ ] Pendiente` | — |
+| 2026-04-07 (Lun) | 🗄️ Tarea 2: Regenerar tipos Supabase | `[x] Completada` | commit `2d472be` |
+| 2026-04-07 (Lun) | 🔒 Tarea 5: Sistema de consentimiento legal | `[x] Completada` | migración + `/api/consent` + `consent-checkbox.tsx` + `consent-guard.tsx` + `/consent-update` + páginas legales |
+| 2026-04-07 (Lun) | 🌐 Tarea 6: Fix i18n — /join page | `[x] Completada` | `join/page.tsx` reescrita con `useTranslations`, namespaces `join_page` en `en.json` y `es.json` |
+| 2026-04-07 (Lun) | 📷 Tarea 7: QR Scanner en /join | `[x] Completada` | `qr-scanner-modal.tsx` con `jsqr`, namespaces `qr_scanner` en ambos idiomas |
+| 2026-04-08 (Mar) | ⚠️ Tarea 8: Update features.ts — remover api_access de Scale | `[x] Completada` | `features.ts` línea 117 removida |
+| 2026-04-08 (Mar) | 🔴 Tarea 3a: Fix no-explicit-any (parte 1) | `[x] Completada` | Sin archivos con eslint-disable en repo |
+| 2026-04-09 (Mié) | 🔴 Tarea 3b: Fix no-explicit-any (parte 2) | `[x] Completada` | Sin archivos con eslint-disable en repo |
 | 2026-04-10 (Jue) | 🧪 Tarea 4a: Tests — Setup + audit rutas API | `[ ] Pendiente` | — |
 | 2026-04-11 (Vie) | 🧪 Tarea 4b: Tests — members, rewards, campaigns | `[ ] Pendiente` | — |
 | 2026-04-12 (Sáb) | 🧪 Tarea 4c: Tests — CI + revisión final | `[ ] Pendiente` | — |
@@ -27,7 +32,33 @@
 | 2026-04-14 (Mar) | 🛡️ M2: Error Boundaries en Dashboard | `[ ] Pendiente` |
 | 2026-04-15 (Mié) | 🚦 M3: Rate Limiting en Member App | `[ ] Pendiente` |
 | 2026-04-16 (Jue) | ⚡ B1: Caché en API routes analytics/members | `[ ] Pendiente` |
-| 2026-04-18 (Sáb) | ⚙️ M4: Edge Functions — parte 1 (diseño + setup) | `[ ] Pendiente` |
+| 2026-04-18 (Sáb) | ⚙️ M4: Edge Functions Supabase — parte 1 | `[ ] Pendiente` |
+| 2026-04-19 (Dom) | ⚙️ M4: Edge Functions Supabase — parte 2 | `[ ] Pendiente` |
+
+---
+
+## Estado de Phase 3 — Semáforo
+
+| Módulo Phase 3 | Fecha inicio | Estado |
+|----------------|-------------|--------|
+| Bulk Actions Dashboard | 2026-05-04 | `[ ] Pendiente` |
+| Automatizaciones Programadas (pg_cron) | 2026-05-11 | `[ ] Pendiente` |
+| Advanced Analytics + Export | 2026-05-25 | `[ ] Pendiente` |
+| Public REST API + API Keys | 2026-06-08 | `[ ] 🔴 BLOQUEADO — MKT-1` |
+| Referral Program | 2026-06-29 | `[ ] Pendiente` |
+| Webhook Outbound | 2026-07-13 | `[ ] 🟡 BLOQUEADO — depende de API` |
+| Custom Domains | 2026-07-27 | `[ ] 🔴 BLOQUEADO — MKT-1` |
+| Booking Integration | 2026-08-17 | `[ ] Pendiente` |
+| Redactar PRD v3 | 2026-09-21 | `[ ] Pendiente` |
+
+---
+
+## Gates de Marketing — Seguimiento
+
+| Gate | Responsable | Fecha límite | Estado |
+|------|-------------|-------------|--------|
+| MKT-1: Pricing API Access + Custom Domains (§2.7) | Marketing | 2026-05-04 | `[ ] Pendiente` |
+| MKT-2: Demanda features Enterprise — SSO, Multi-location, Secure Compute (§2.8) | Marketing | 2026-09-21 | `[ ] Pendiente` |
 
 ---
 
@@ -35,7 +66,8 @@
 
 | Fecha verificación | Tareas revisadas | Completadas | Pendientes | Vencidas |
 |--------------------|-----------------|-------------|------------|---------|
-| 2026-04-07 | 2 | 1 | 0 | 1 |
+| 2026-04-07 | 7 | 5 | 2 | 0 |
+| 2026-04-08 | 3 | 3 | 0 | 0 |
 
 ---
 
