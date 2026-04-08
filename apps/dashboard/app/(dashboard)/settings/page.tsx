@@ -1111,26 +1111,6 @@ export default function SettingsPage() {
                 </div>
               ) : integrations && (
                 <>
-                  {/* Join Link */}
-                  <div className="bg-white rounded-xl border p-6">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-1">Member Join Link</h2>
-                    <p className="text-sm text-gray-500 mb-4">Share this link so customers can sign up to your loyalty program directly.</p>
-                    <div className="flex gap-2">
-                      <input
-                        readOnly
-                        value={integrations.joinUrl}
-                        className="flex-1 px-3 py-2 border rounded-lg bg-gray-50 text-sm font-mono text-gray-700"
-                      />
-                      <button
-                        onClick={() => handleCopy(integrations.joinUrl, 'join')}
-                        className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-1"
-                      >
-                        {copied === 'join' ? <Check className="h-4 w-4 text-green-600" /> : <FileText className="h-4 w-4" />}
-                        {copied === 'join' ? 'Copied!' : 'Copy'}
-                      </button>
-                    </div>
-                  </div>
-
                   {/* Embeddable Widget */}
                   <div className="bg-white rounded-xl border p-6">
                     <h2 className="text-lg font-semibold text-gray-900 mb-1">Embeddable Widget</h2>
@@ -1148,47 +1128,88 @@ export default function SettingsPage() {
                   </div>
 
                   {/* POS / API Key */}
-                  <div className="bg-white rounded-xl border p-6">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-1">API Key (POS / External Systems)</h2>
-                    <p className="text-sm text-gray-500 mb-4">
-                      Use this key to register members from your POS system, kiosk, or any external tool. Send a POST request to:
-                    </p>
-                    <div className="bg-gray-50 rounded-lg p-3 font-mono text-xs text-gray-700 mb-4">
-                      POST https://dashboard.loyalbase.dev/api/public/members<br/>
-                      x-api-key: YOUR_API_KEY<br/>
-                      Content-Type: application/json<br/><br/>
-                      {'{ "name": "Jane Doe", "email": "jane@example.com", "phone": "+1234567890" }'}
-                    </div>
-                    <div className="flex gap-2 mb-3">
-                      <input
-                        type={apiKeyVisible ? 'text' : 'password'}
-                        readOnly
-                        value={integrations.apiKey}
-                        className="flex-1 px-3 py-2 border rounded-lg bg-gray-50 text-sm font-mono text-gray-700"
-                      />
+                  {planHasFeature(plan as Plan, 'api_access') ? (
+                    <div className="bg-white rounded-xl border p-6">
+                      <h2 className="text-lg font-semibold text-gray-900 mb-1">API Key (POS / External Systems)</h2>
+                      <p className="text-sm text-gray-500 mb-4">
+                        Use this key to register members from your POS system, kiosk, or any external tool. Send a POST request to:
+                      </p>
+                      <div className="bg-gray-50 rounded-lg p-3 font-mono text-xs text-gray-700 mb-4">
+                        POST https://dashboard.loyalbase.dev/api/public/members<br/>
+                        x-api-key: YOUR_API_KEY<br/>
+                        Content-Type: application/json<br/><br/>
+                        {'{ "name": "Jane Doe", "email": "jane@example.com", "phone": "+1234567890" }'}
+                      </div>
+                      <div className="flex gap-2 mb-3">
+                        <input
+                          type={apiKeyVisible ? 'text' : 'password'}
+                          readOnly
+                          value={integrations.apiKey}
+                          className="flex-1 px-3 py-2 border rounded-lg bg-gray-50 text-sm font-mono text-gray-700"
+                        />
+                        <button
+                          onClick={() => setApiKeyVisible(v => !v)}
+                          className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50"
+                        >
+                          {apiKeyVisible ? 'Hide' : 'Show'}
+                        </button>
+                        <button
+                          onClick={() => handleCopy(integrations.apiKey, 'apikey')}
+                          className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-1"
+                        >
+                          {copied === 'apikey' ? <Check className="h-4 w-4 text-green-600" /> : <FileText className="h-4 w-4" />}
+                          {copied === 'apikey' ? 'Copied!' : 'Copy'}
+                        </button>
+                      </div>
                       <button
-                        onClick={() => setApiKeyVisible(v => !v)}
-                        className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50"
+                        onClick={handleRegenerateKey}
+                        disabled={regenerating}
+                        className="text-sm text-red-600 hover:text-red-700 disabled:opacity-50"
                       >
-                        {apiKeyVisible ? 'Hide' : 'Show'}
+                        {regenerating ? 'Regenerating...' : '↺ Regenerate key'}
                       </button>
-                      <button
-                        onClick={() => handleCopy(integrations.apiKey, 'apikey')}
-                        className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-1"
-                      >
-                        {copied === 'apikey' ? <Check className="h-4 w-4 text-green-600" /> : <FileText className="h-4 w-4" />}
-                        {copied === 'apikey' ? 'Copied!' : 'Copy'}
-                      </button>
+                      <p className="text-xs text-gray-400 mt-2">Regenerating invalidates all existing integrations using the current key.</p>
                     </div>
-                    <button
-                      onClick={handleRegenerateKey}
-                      disabled={regenerating}
-                      className="text-sm text-red-600 hover:text-red-700 disabled:opacity-50"
-                    >
-                      {regenerating ? 'Regenerating...' : '↺ Regenerate key'}
-                    </button>
-                    <p className="text-xs text-gray-400 mt-2">Regenerating invalidates all existing integrations using the current key.</p>
-                  </div>
+                  ) : (
+                    /* Upsell card for Starter/Pro */
+                    <div className="relative overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 via-white to-indigo-50 p-8 shadow-sm">
+                      <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-violet-100 opacity-40 blur-2xl pointer-events-none" />
+                      <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-indigo-100 opacity-40 blur-2xl pointer-events-none" />
+                      <div className="relative">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700 mb-5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                          Scale plan required
+                        </span>
+                        <div className="flex items-start gap-4 mb-4">
+                          <div className="shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-md">
+                            <Link2 className="w-6 h-6 text-white" />
+                          </div>
+                          <div>
+                            <h2 className="text-xl font-bold text-gray-900">API Access & POS Integration</h2>
+                            <p className="text-gray-500 text-sm mt-1 leading-relaxed">
+                              Connect your POS system, kiosk, or any external tool to automatically register members and log visits via API.
+                            </p>
+                          </div>
+                        </div>
+                        <ul className="space-y-2.5 mb-7 mt-5">
+                          {['REST API with API key authentication', 'Register members from any POS or kiosk', 'Log visits and issue points programmatically'].map((f) => (
+                            <li key={f} className="flex items-center gap-2.5 text-sm text-gray-600">
+                              <svg className="w-4 h-4 text-violet-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                              {f}
+                            </li>
+                          ))}
+                        </ul>
+                        <button
+                          onClick={() => setActiveTab('billing')}
+                          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:opacity-90 transition-opacity"
+                        >
+                          Upgrade to Scale
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>
