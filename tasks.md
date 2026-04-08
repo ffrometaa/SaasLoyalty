@@ -1,7 +1,7 @@
 # LoyaltyOS — Task Board
 
 > Fuente de verdad de tareas del proyecto. Sincronizado con PRD v2.
-> Última actualización: 2026-04-07
+> Última actualización: 2026-04-08
 
 ---
 
@@ -172,7 +172,7 @@ Criterios de "completada":
 
 #### 🖼️ M1: img → next/image
 - **Fecha**: 2026-04-13
-- **Estado**: `[ ] Pendiente`
+- **Estado**: `[x] Completada` — sin `<img>` en `apps/member/**/*.tsx` (verificado 2026-04-08)
 - **Esfuerzo**: 1-2 horas
 - **Descripción**: Reemplazar todas las etiquetas `<img>` por `next/image` en Member App.
 - **Pasos**:
@@ -185,7 +185,7 @@ Criterios de "completada":
 
 #### 🛡️ M2: Error Boundaries en Dashboard
 - **Fecha**: 2026-04-14
-- **Estado**: `[ ] Pendiente`
+- **Estado**: `[x] Completada` — `SectionErrorBoundary.tsx` + integrado en 6 páginas del dashboard (verificado 2026-04-08)
 - **Esfuerzo**: 2-3 horas
 - **Descripción**: Agregar error boundaries por sección en el Dashboard.
 - **Pasos**:
@@ -198,7 +198,7 @@ Criterios de "completada":
 
 #### 🚦 M3: Rate Limiting en Member App
 - **Fecha**: 2026-04-15
-- **Estado**: `[ ] Pendiente`
+- **Estado**: `[x] Completada` — `lib/ratelimit.ts` con `@upstash/ratelimit` integrado en middleware (verificado 2026-04-08)
 - **Esfuerzo**: 2-3 horas
 - **Descripción**: Proteger rutas públicas del Member App contra abuso.
 - **Pasos**:
@@ -212,7 +212,7 @@ Criterios de "completada":
 
 #### ⚡ B1: Caché en API routes analytics/members
 - **Fecha**: 2026-04-16
-- **Estado**: `[ ] Pendiente`
+- **Estado**: `[x] Completada` — `unstable_cache` en 5 rutas: analytics, cohort, funnel, campaigns, members (verificado 2026-04-08)
 - **Esfuerzo**: 2-3 horas
 - **Descripción**: Agregar `unstable_cache` a rutas que siempre van a DB.
 - **Nota**: Next.js 14.2.35 → usar `unstable_cache` (NO `'use cache'`, eso es Next.js 15+)
@@ -229,7 +229,7 @@ Criterios de "completada":
 
 #### ⚙️ M4: Edge Functions Supabase — parte 1 (diseño + setup)
 - **Fecha**: 2026-04-18
-- **Estado**: `[ ] Pendiente`
+- **Estado**: `[x] Completada` — `supabase/functions/expire-points/index.ts` (verificado 2026-04-08)
 - **Esfuerzo**: 3 horas
 - **Descripción**: Implementar procesos automáticos: expiración de puntos y cumpleaños — sesión 1.
 - **Pasos**:
@@ -243,7 +243,7 @@ Criterios de "completada":
 
 #### ⚙️ M4: Edge Functions Supabase — parte 2 (cumpleaños + pg_cron)
 - **Fecha**: 2026-04-19
-- **Estado**: `[ ] Pendiente`
+- **Estado**: `[x] Completada` — `supabase/functions/birthday-bonus/index.ts` + pg_cron (verificado 2026-04-08)
 - **Esfuerzo**: 2-3 horas
 - **Descripción**: Cerrar implementación de procesos automáticos con pg_cron.
 - **Pasos**:

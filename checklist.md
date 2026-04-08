@@ -24,16 +24,16 @@
 
 ---
 
-## Próxima semana: 13–19 Abril 2026
+## Semana 13–19 Abril 2026 — Completada adelantada (2026-04-08)
 
-| Fecha | Tarea | Estado |
-|-------|-------|--------|
-| 2026-04-13 (Lun) | 🖼️ M1: img → next/image | `[x] Completo` |
-| 2026-04-14 (Mar) | 🛡️ M2: Error Boundaries en Dashboard | `[x] Completo` |
-| 2026-04-15 (Mié) | 🚦 M3: Rate Limiting en Member App | `[x] Completo` |
-| 2026-04-16 (Jue) | ⚡ B1: Caché en API routes analytics/members | `[x] Completo` |
-| 2026-04-18 (Sáb) | ⚙️ M4: Edge Functions Supabase — parte 1 | `[x] Completo` |
-| 2026-04-19 (Dom) | ⚙️ M4: Edge Functions Supabase — parte 2 | `[x] Completo` |
+| Fecha | Tarea | Estado | Evidencia |
+|-------|-------|--------|-----------|
+| 2026-04-13 (Lun) | 🖼️ M1: img → next/image | `[x] Completada` | cero `<img>` en `apps/member/**/*.tsx` |
+| 2026-04-14 (Mar) | 🛡️ M2: Error Boundaries en Dashboard | `[x] Completada` | `SectionErrorBoundary.tsx` + usado en 6 páginas |
+| 2026-04-15 (Mié) | 🚦 M3: Rate Limiting en Member App | `[x] Completada` | `lib/ratelimit.ts` + `@upstash/ratelimit` en middleware |
+| 2026-04-16 (Jue) | ⚡ B1: Caché en API routes analytics/members | `[x] Completada` | `unstable_cache` en 5 rutas (analytics, cohort, funnel, campaigns, members) |
+| 2026-04-18 (Sáb) | ⚙️ M4: Edge Functions Supabase — parte 1 | `[x] Completada` | `supabase/functions/expire-points/index.ts` |
+| 2026-04-19 (Dom) | ⚙️ M4: Edge Functions Supabase — parte 2 | `[x] Completada` | `supabase/functions/birthday-bonus/index.ts` + pg_cron |
 
 ---
 
@@ -70,6 +70,7 @@
 | 2026-04-08 | 7 | 7 | 0 | 0 |
 | 2026-04-11 | 2 | 2 | 0 | 0 |
 | 2026-04-12 | 1 | 1 | 0 | 0 |
+| 2026-04-08 | 6 (M1–M4, B1) | 6 | 0 | 0 |
 
 ---
 
