@@ -235,6 +235,11 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 - Segunda línea de defensa operativa — un bug en app-layer no expone datos de otros tenants
 - Índice en `members.auth_user_id` para lookup eficiente en políticas RLS
 
+**Convención obligatoria — helpers de RLS:**
+- Usar siempre `current_tenant_id()` y `current_member_id()` en todas las policies
+- **NUNCA usar `auth_tenant_id()` ni `auth_member_id()`** — leen session vars que nunca se setean desde middleware, siempre retornan `NULL`, cualquier policy que las use es un no-op silencioso
+- Auditado y corregido en `20260408000010_fix_gamification_engine_rls.sql` — ver `supabase/RLS-AUDIT-2026-04-08.md`
+
 ---
 
 ### 2.7 Planes y Límites
