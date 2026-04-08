@@ -39,17 +39,17 @@
 
 ## Estado de Phase 3 — Semáforo
 
-| Módulo Phase 3 | Fecha inicio | Estado |
-|----------------|-------------|--------|
-| Bulk Actions Dashboard | 2026-05-04 | `[x] Completo` |
-| Automatizaciones Programadas (pg_cron) | 2026-05-11 | `[x] Completo` |
-| Advanced Analytics + Export | 2026-05-25 | `[x] Completo` |
-| Public REST API + API Keys | 2026-06-08 | `[ ] 🔴 BLOQUEADO — MKT-1` |
-| Referral Program | 2026-06-29 | `[x] Completo` |
-| Webhook Outbound | 2026-07-13 | `[ ] 🟡 BLOQUEADO — depende de API` |
-| Custom Domains | 2026-07-27 | `[ ] 🔴 BLOQUEADO — MKT-1` |
-| Booking Integration | 2026-08-17 | `[ ] Pendiente` |
-| Redactar PRD v3 | 2026-09-21 | `[ ] Pendiente` |
+| Módulo Phase 3 | Fecha inicio | Estado | Evidencia |
+|----------------|-------------|--------|-----------|
+| Bulk Actions Dashboard | 2026-05-04 | `[x] Completada` | `selectedIds` + `/api/members/bulk` + `tenant_plan_history` migration |
+| Automatizaciones Programadas (pg_cron) | 2026-05-11 | `[x] Completada` | 6 Edge Functions + `tier_upgrade_trigger.sql` |
+| Advanced Analytics + Export | 2026-05-25 | `[x] Completada` | cohort + funnel + campaigns + export CSV (Scale+) |
+| Public REST API + API Keys | 2026-06-08 | `[ ] 🔴 BLOQUEADO — MKT-1` | — |
+| Referral Program | 2026-06-29 | `[x] Completada` | `api/member/referrals/route.ts` + `profile/referrals/page.tsx` |
+| Webhook Outbound | 2026-07-13 | `[ ] 🟡 BLOQUEADO — depende de API` | — |
+| Custom Domains | 2026-07-27 | `[ ] 🔴 BLOQUEADO — MKT-1` | — |
+| Booking Integration | 2026-08-17 | `[ ] Pendiente` | — |
+| Redactar PRD v3 | 2026-09-21 | `[ ] Pendiente` | — |
 
 ---
 
@@ -71,6 +71,7 @@
 | 2026-04-11 | 2 | 2 | 0 | 0 |
 | 2026-04-12 | 1 | 1 | 0 | 0 |
 | 2026-04-08 | 6 (M1–M4, B1) | 6 | 0 | 0 |
+| 2026-04-08 | 4 (P3-1, P3-2, P3-3, P3-5) | 4 | 0 | 0 |
 
 ---
 

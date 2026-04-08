@@ -289,7 +289,7 @@ Criterios de "completada":
 ### Semana 1 — Bulk Actions Dashboard
 - **Fecha inicio**: 2026-05-04
 - **Duración**: 1 semana
-- **Estado**: `[ ] Pendiente`
+- **Estado**: `[x] Completada` — `selectedIds` + `/api/members/bulk` + migración `tenant_plan_history` (verificado 2026-04-08)
 - **Descripción**: Selección múltiple en lista de miembros con acciones masivas.
 - **Entregable**: PR mergeado + tabla `tenant_plan_history` creada.
 - **Tareas**:
@@ -305,7 +305,7 @@ Criterios de "completada":
 ### Semanas 2-3 — Automatizaciones Programadas (pg_cron)
 - **Fecha inicio**: 2026-05-11
 - **Duración**: 2 semanas
-- **Estado**: `[ ] Pendiente`
+- **Estado**: `[x] Completada` — 6 Edge Functions + `tier_upgrade_trigger.sql` (verificado 2026-04-08)
 - **Descripción**: 6 procesos automáticos via Supabase Edge Functions + pg_cron.
 - **Entregable**: 6 Edge Functions + pg_cron + `scheduled_jobs` con tenant_id e is_active.
 - **KPI objetivo**: 80% de tenants con al menos 1 automatización activada.
@@ -322,7 +322,7 @@ Criterios de "completada":
 ### Semanas 4-5 — Advanced Analytics + Export
 - **Fecha inicio**: 2026-05-25
 - **Duración**: 2 semanas
-- **Estado**: `[ ] Pendiente`
+- **Estado**: `[x] Completada` — cohort + funnel + campaigns + export CSV (Scale+) routes (verificado 2026-04-08)
 - **Descripción**: Analytics avanzado con exportación de datos (Scale+).
 - **Entregable**: Analytics expandido + `tenant_plan_history` validada con datos reales.
 - **KPIs**: Churn <5% mensual, Tier upgrade 15% Starter→Pro en 6 meses.
@@ -351,7 +351,7 @@ Criterios de "completada":
 ### Semanas 9-10 — Referral Program (Member App)
 - **Fecha inicio**: 2026-06-29
 - **Duración**: 2 semanas
-- **Estado**: `[ ] Pendiente`
+- **Estado**: `[x] Completada` — `api/member/referrals/route.ts` + `profile/referrals/page.tsx` + `referral_code` (verificado 2026-04-08)
 - **Descripción**: Sistema de referidos con bonus points para ambas partes.
 - **Entregable**: Referral system completo + métricas secundarias en DB.
 - **Tareas**:
