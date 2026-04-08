@@ -929,4 +929,83 @@ feedback_responses
 
 ---
 
+### 9.12 Financial Control System — Evaluación e Integración en Super Admin (2026-04-07)
+
+**Contexto:** Evaluación del documento `financial_control_system.html` para determinar qué métricas son implementables en `/admin/overview` con los datos existentes en el proyecto, el impacto en rendimiento a escala, y la viabilidad de integración en analytics avanzado de planes Scale/Enterprise.
+
+---
+
+#### Métricas disponibles vs. no disponibles desde la DB
+
+| Métrica | Fuente en el proyecto | Viabilidad |
+|---------|----------------------|------------|
+| **MRR** | `tenants.plan` × precio del plan | ✅ Ya calculado en `RevenueCharts.tsx` |
+| **MRR Growth** | Histórico de suscripciones vía `stripe_events` | ✅ Ya graficado en `/admin` |
+| **Churn rate** | `plan_status = 'canceled'` + `stripe_events` tipo `customer.subscription.deleted` | ⚠️ Dato existe, no calculado como % mensual |
+| **NRR** | Requiere snapshot mensual de MRR — activo + upgrades − downgrades − churn | ⚠️ Calculable con tabla `mrr_snapshots` |
+| **Trial conversion rate** | `trial_ends_at` + cambio de `plan_status` | ⚠️ Dato existe, no calculado |
+| **At-risk / señales de alarma** | `plan_status IN ('past_due', 'trialing')` | ✅ Ya implementado |
+| **Runway** | Requiere saldo bancario real — no está en Supabase ni en Stripe | 🚫 No cumple |
+| **EBITDA** | Requiere estructura de costos operativos externos — no está en Supabase | 🚫 No cumple |
+| **Breakeven** | Requiere costos fijos (Vercel, Supabase, Resend, salarios) — dato externo | 🚫 No cumple |
+| **CAC Payback** | Requiere gasto de adquisición (ads, marketing) — dato externo | 🚫 No cumple |
+
+**Runway y EBITDA son explícitamente descartados** — no hay forma de calcularlos automáticamente desde la DB del proyecto sin integrar una fuente externa de costos operativos y saldo bancario. Agregarlos como campos manuales (input del Super Admin) es posible pero fuera del alcance del sistema automatizado.
+
+---
+
+#### Recomendación de implementación en `/admin/overview`
+
+**Fase A — Con datos actuales, sin cambios de modelo:**
+
+Agregar sección "Financial Pulse" al overview con:
+- MRR total + variación mes a mes (%)
+- Churn rate mensual calculado desde `stripe_events`
+- Trial conversion rate (últimos 30 días)
+- Señales de alarma activas (past_due, churn > 5%, MRR decreciente dos meses consecutivos)
+
+**Fase B — Con tabla `mrr_snapshots` (Phase 3):**
+
+Un registro por mes con MRR calculado al cierre. Alimentado por pg_cron (ya planificado en sección 4.5). Habilita:
+- NRR mensual real
+- Forecast 12M proyectado desde tendencia histórica
+- Margen bruto = MRR − COGS estimado (hosting, email, infraestructura — input manual en Settings)
+
+---
+
+#### Impacto en rendimiento a escala
+
+Las métricas del overview hacen aggregations sobre todas las tablas (`tenants`, `stripe_events`, `transactions`, `members`). Con 10 tenants no se nota. Con 200 tenants y 100K miembros, cada carga del overview genera sequential scans costosos.
+
+**Solución requerida antes de implementar el dashboard financiero:**
+
+| Mecanismo | Qué resuelve |
+|-----------|-------------|
+| Tabla `mrr_snapshots` | MRR y NRR leídos desde snapshot, no calculados en tiempo real |
+| Tabla `admin_metrics_cache` | Churn rate, trial conversion, tenant count — actualizados cada hora por pg_cron |
+| Índices en `tenants.plan_status` y `stripe_events.type` | Acelera los filtros más frecuentes del overview |
+
+**Regla:** el overview financiero debe leer datos pre-computados, nunca calcular en tiempo real sobre tablas de producción. Sin este cacheo, el sistema no escala más allá de 50-100 tenants activos sin latencia visible.
+
+---
+
+#### Integración en Analytics de Scale/Enterprise
+
+Los tenants no acceden a métricas financieras de LoyaltyOS. Lo que tiene sentido exponer es el **marco financiero aplicado al programa de fidelización del propio tenant**:
+
+| Concepto del documento | Equivalente para el tenant | Fuente |
+|----------------------|---------------------------|--------|
+| MRR | Revenue atribuible al programa (visitas × ticket promedio estimado) | `visits`, `transactions` |
+| Churn rate | Tasa de miembros inactivos (sin visita en 30/60/90 días) | `members` |
+| NRR | LTV promedio del miembro activo vs. inactivo | `transactions` agrupadas por member |
+| Señales de alarma | Churn risk > 0.7 (ya implementado en `member_behavior_scores`) | `member_behavior_scores` |
+| Runway | 🚫 No cumple — no aplica al contexto del tenant | — |
+| EBITDA | 🚫 No cumple — no aplica al contexto del tenant | — |
+
+Esta integración tiene sentido como feature diferenciador de los planes Scale y Enterprise — el tenant puede medir si su programa genera retención real o solo gasto de puntos sin conversión. Se implementa sobre los datos de `transactions`, `visits`, `member_behavior_scores` que ya existen.
+
+**Prioridad:** Medium — Phase 3. Implementar después de la infraestructura de cacheo (`mrr_snapshots`, `admin_metrics_cache`) que es prerequisito de rendimiento.
+
+---
+
 *LoyaltyOS PRD v2.0 — Documentación interna. No distribuir.*
