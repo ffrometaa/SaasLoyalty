@@ -431,36 +431,6 @@ export default function SettingsPage() {
               <h2 className="text-lg font-semibold text-gray-900 mb-6">Business Profile</h2>
               
               <div className="space-y-6">
-                {/* Logo Upload */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Business Logo
-                  </label>
-                  <div className="flex items-center gap-4">
-                    <div className="h-20 w-20 rounded-lg bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
-                      {logoUrl ? (
-                        <Image src={logoUrl} alt="Business logo" width={80} height={80} className="h-full w-full object-cover" />
-                      ) : (
-                        <Building2 className="h-8 w-8 text-gray-400" />
-                      )}
-                    </div>
-                    <div>
-                      <label className={`cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 ${logoUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                        <span>{logoUploading ? 'Uploading...' : 'Upload Logo'}</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          disabled={logoUploading}
-                          onChange={handleLogoUpload}
-                        />
-                      </label>
-                      <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 2MB</p>
-                      {logoError && <p className="text-xs text-red-600 mt-1">{logoError}</p>}
-                    </div>
-                  </div>
-                </div>
-
                 {/* Business Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
