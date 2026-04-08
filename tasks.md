@@ -129,7 +129,7 @@ Criterios de "completada":
 
 #### 🧪 Tarea 4a: Tests integración — Setup + audit de rutas API
 - **Fecha**: 2026-04-10
-- **Estado**: `[ ] Pendiente`
+- **Estado**: `[x] Completada` (commit `4d63607`)
 - **Esfuerzo**: 3 horas
 - **Descripción**: Preparar infraestructura de testing para rutas API.
 - **Pasos**:
@@ -140,16 +140,18 @@ Criterios de "completada":
 
 ---
 
-#### 🧪 Tarea 4b: Tests integración — members, rewards, campaigns
+#### 🧪 Tarea 4b: Tests integración — members, rewards, campaigns + rewrite stale component tests
 - **Fecha**: 2026-04-11
-- **Estado**: `[ ] Pendiente`
-- **Esfuerzo**: 3 horas
-- **Descripción**: Escribir tests de integración para los módulos core.
+- **Estado**: `[x] Completada` — commit `b1e58e7`
+- **Esfuerzo**: 4 horas
+- **Descripción**: Escribir tests de integración para los módulos core. También reescribir los component tests de MetricCard y Sidebar — tienen API stale (props renombradas, `icon` requerido no provisto) y nunca pasaron.
 - **Pasos**:
-  1. Tests para rutas de members
-  2. Tests para rutas de rewards
-  3. Tests para rutas de campaigns
-  4. Verificar coverage
+  1. Reescribir `tests/components/MetricCard.test.tsx` con la API correcta (prop `title`, `icon` requerido)
+  2. Reescribir `tests/components/Sidebar.test.tsx` — verificar estructura actual del componente antes de escribir
+  3. Tests para rutas de members (`GET /api/members`, `POST /api/members`, `PATCH /api/members/[id]`)
+  4. Tests para rutas de rewards (`GET /api/rewards`, `POST /api/rewards`, `DELETE /api/rewards/[id]`)
+  5. Tests para rutas de campaigns (`GET` + auth guard)
+  6. Verificar que `pnpm exec vitest run` pase al 100%
 
 ---
 
