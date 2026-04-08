@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Download, Smartphone } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -13,6 +14,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function InstallPrompt() {
+  const t = useTranslations('install');
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -22,12 +24,12 @@ export function InstallPrompt() {
     const checkInstalled = () => {
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
       const isMobileIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream: unknown }).MSStream;
-      
+
       if (isStandalone || isMobileIOS) {
         setIsInstalled(true);
         return;
       }
-      
+
       // Check localStorage to see if user dismissed
       const dismissed = localStorage.getItem('pwa-install-dismissed');
       if (dismissed) {
@@ -37,7 +39,7 @@ export function InstallPrompt() {
           return; // Don't show for 7 days
         }
       }
-      
+
       setShowPrompt(true);
     };
 
@@ -49,7 +51,7 @@ export function InstallPrompt() {
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    
+
     // Check on mount
     checkInstalled();
 
@@ -61,17 +63,14 @@ export function InstallPrompt() {
   const handleInstall = async () => {
     if (!deferredPrompt) return;
 
-    // Show the install prompt
     await deferredPrompt.prompt();
-    
-    // Wait for the user's choice
     const { outcome } = await deferredPrompt.userChoice;
-    
+
     if (outcome === 'accepted') {
       setShowPrompt(false);
       setIsInstalled(true);
     }
-    
+
     setDeferredPrompt(null);
   };
 
@@ -80,7 +79,6 @@ export function InstallPrompt() {
     localStorage.setItem('pwa-install-dismissed', new Date().toISOString());
   };
 
-  // Don't show if already installed or no prompt available
   if (isInstalled || !showPrompt) {
     return null;
   }
@@ -94,9 +92,9 @@ export function InstallPrompt() {
           </div>
 
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-white">Instalar aplicación</h3>
+            <h3 className="font-semibold text-white">{t('title')}</h3>
             <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
-              Agregá a tu pantalla de inicio para acceso rápido sin conexión.
+              {t('description')}
             </p>
 
             <div className="flex gap-2 mt-3">
@@ -106,23 +104,19 @@ export function InstallPrompt() {
                 style={{ background: 'linear-gradient(135deg, #e11d48, #7c3aed)' }}
               >
                 <Download className="h-4 w-4" />
-                Instalar
+                {t('install')}
               </button>
               <button
                 onClick={handleDismiss}
                 className="px-4 py-2 text-sm font-medium transition-colors"
                 style={{ color: 'rgba(255,255,255,0.4)' }}
               >
-                Ahora no
+                {t('notNow')}
               </button>
             </div>
           </div>
 
-          <button
-            onClick={handleDismiss}
-            className="p-1 transition-colors"
-            style={{ color: 'rgba(255,255,255,0.3)' }}
-          >
+          <button onClick={handleDismiss} className="p-1 transition-colors" style={{ color: 'rgba(255,255,255,0.3)' }}>
             <X className="h-5 w-5" />
           </button>
         </div>

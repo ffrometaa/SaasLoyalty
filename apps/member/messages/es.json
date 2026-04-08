@@ -3,7 +3,15 @@
     "loading": "Cargando...",
     "error": "Error",
     "points": "puntos",
-    "visits": "visitas"
+    "visits": "visitas",
+    "pts": "pts"
+  },
+  "nav": {
+    "home": "Inicio",
+    "rewards": "Recompensas",
+    "challenges": "Desafíos",
+    "leaderboard": "Ranking",
+    "profile": "Perfil"
   },
   "home": {
     "greeting": "Hola",
@@ -13,7 +21,59 @@
     "history": "Historial de visitas",
     "noHistory": "Aún no tienes visitas registradas.",
     "scan": "Escanear QR",
-    "rewards": "Mis Recompensas"
+    "rewards": "Mis Recompensas",
+    "welcomeBack": "Bienvenido de vuelta",
+    "recentActivity": "Actividad reciente",
+    "activeMultiplier": "{multiplier}x Puntos Activos",
+    "activeMultiplierSub": "{name} · hasta el {date}",
+    "justForYou": "Solo para ti",
+    "maxTierReached": "Nivel máximo alcanzado",
+    "nextTierBonus": "2x puntos en {tier}"
+  },
+  "onboarding": {
+    "skip": "Saltar",
+    "next": "Siguiente →",
+    "start": "¡Empecemos!",
+    "step1Title": "¡Bienvenido, {name}!",
+    "step1Subtitle": "Tu programa de fidelidad",
+    "step1Body": "Acumula puntos en cada visita, canjea recompensas exclusivas y sube de nivel. Todo en un solo lugar.",
+    "step2Title": "Acumula puntos",
+    "step2Subtitle": "En cada visita",
+    "step2Body": "Cada vez que visitas, acumulas puntos automáticamente. Cuanto más vengas, más beneficios desbloqueas.",
+    "step3Title": "Canjea recompensas",
+    "step3Subtitle": "Usa tus puntos",
+    "step3Body": "Convierte tus puntos en recompensas reales: descuentos, productos, servicios gratuitos y más.",
+    "step4Title": "¡Listo para comenzar!",
+    "step4Subtitle": "Explora la app",
+    "step4Body": "Encuentra tus desafíos personalizados, el ranking con otros miembros y tu perfil completo."
+  },
+  "quickActions": {
+    "redeem": "Canjear",
+    "book": "Reservar",
+    "bookSoon": "Próximamente: Reservar turno",
+    "refer": "Referir"
+  },
+  "tier": {
+    "member": "Miembro"
+  },
+  "transactions": {
+    "today": "Hoy",
+    "noActivity": "Sin actividad reciente.",
+    "pts": "pts"
+  },
+  "redemptionQR": {
+    "success": "¡Canje exitoso!",
+    "showCode": "Muestra este código al llegar",
+    "scanOnArrival": "Escanea al llegar",
+    "redeemCode": "Código de canje",
+    "validUntil": "Válido hasta {date}",
+    "backToHome": "Volver al inicio"
+  },
+  "install": {
+    "title": "Instalar app",
+    "description": "Agrega a tu pantalla de inicio para acceso rápido, incluso sin conexión.",
+    "install": "Instalar",
+    "notNow": "Ahora no"
   },
   "rewards": {
     "title": "Recompensas",
@@ -21,7 +81,70 @@
     "redeem": "Canjear",
     "redeemed": "Canjeado",
     "notEnough": "Puntos insuficientes",
-    "pointsRequired": "Puntos necesarios"
+    "pointsRequired": "Puntos necesarios",
+    "pageTitle": "Recompensas",
+    "pointsAvailable": "Tienes {points} pts disponibles",
+    "canRedeem": "Puedes canjear <strong>{count} recompensa{s}</strong> con tus puntos actuales.",
+    "redeemNote": "Los canjes se aplican en tu próxima visita.",
+    "availableForYou": "Disponibles para ti",
+    "locked": "Bloqueado",
+    "needMore": "Faltan {points} pts",
+    "empty": "Sin recompensas aún",
+    "emptyDesc": "Sigue acumulando puntos para desbloquear beneficios."
+  },
+  "challenges": {
+    "title": "Desafíos",
+    "subtitle": "Completa desafíos y gana puntos extra",
+    "empty": "Sin desafíos activos",
+    "emptyDesc": "Tu negocio aún no ha creado desafíos. ¡Vuelve pronto!",
+    "justForYou": "Solo para ti",
+    "personalized": "Personalizado",
+    "goal": "Meta: {value} · Vence en {days}d",
+    "goalSimple": "Meta: {value}",
+    "missions": "Misiones",
+    "stepsProgress": "{completed} de {total} pasos completados",
+    "stepOf": "Paso {current} / {total}",
+    "inProgress": "En progreso",
+    "completedSection": "Completados",
+    "missionCompleted": "Misión completada",
+    "challengeCompleted": "Completado",
+    "bonusPts": "+{pts} pts",
+    "typeLabels": {
+      "visit_count": "Visitas",
+      "points_earned": "Puntos ganados",
+      "referral": "Referidos",
+      "spend_amount": "Monto gastado",
+      "streak": "Días consecutivos"
+    }
+  },
+  "history": {
+    "title": "Historial",
+    "subtitle": "Todos tus movimientos de puntos"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "newBadge": "{count} nuevas",
+    "empty": "Sin notificaciones aún.",
+    "loadMore": "Cargar más",
+    "loading": "Cargando..."
+  },
+  "referrals": {
+    "title": "Referir amigos",
+    "loading": "Cargando...",
+    "inactive": "El programa de referidos aún no está activo en este negocio.",
+    "earn": "Refiere y gana puntos",
+    "earnDesc": "Comparte tu enlace único con amigos y ambos se benefician",
+    "forYou": "pts para ti",
+    "forFriend": "pts para tu amigo",
+    "note": "Los puntos se acreditan cuando tu amigo realiza su primera visita a {business}.",
+    "yourLink": "Tu enlace de referido",
+    "share": "Compartir enlace",
+    "referralsCount": "referidos",
+    "pointsEarned": "puntos ganados",
+    "myReferrals": "Mis referidos",
+    "visited": "Visitó",
+    "registered": "Registrado",
+    "shareText": "¡Únete a {business} con mi enlace y gana {points} puntos!"
   },
   "profile": {
     "title": "Mi Perfil",
@@ -63,7 +186,7 @@
       "submit": "Ingresar",
       "submitting": "Ingresando...",
       "noAccount": "¿No tienes cuenta?",
-      "register": "Registrate",
+      "register": "Regístrate",
       "errorInvalid": "Email o contraseña incorrectos.",
       "errorTooMany": "Demasiados intentos. Espera un momento e intenta de nuevo.",
       "errorGeneric": "Hubo un problema al iniciar sesión. Intenta de nuevo."
@@ -123,30 +246,30 @@
     "and": "y la",
     "privacy_link": "Política de Privacidad",
     "update_title": "Documentos legales actualizados",
-    "update_description": "Hemos actualizado nuestros documentos legales. Por favor revisá y aceptá para continuar.",
+    "update_description": "Hemos actualizado nuestros documentos legales. Por favor revisa y acepta para continuar.",
     "accept_button": "Aceptar y continuar",
     "loading": "Cargando..."
   },
   "qr_scanner": {
     "title": "Escanear código QR",
     "close": "Cerrar",
-    "hint": "Apuntá la cámara al código QR del negocio",
-    "camera_error": "No se pudo acceder a la cámara. Verificá los permisos del navegador.",
-    "camera_hint": "Permitir el acceso a la cámara en la configuración del navegador e intentá de nuevo."
+    "hint": "Apunta la cámara al código QR del negocio",
+    "camera_error": "No se pudo acceder a la cámara. Verifica los permisos del navegador.",
+    "camera_hint": "Permite el acceso a la cámara en la configuración del navegador e intenta de nuevo."
   },
   "join_page": {
     "welcome": "Bienvenido",
-    "welcome_subtitle": "Ingresá el código de tu negocio para comenzar",
+    "welcome_subtitle": "Ingresa el código de tu negocio para comenzar",
     "business_label": "Negocio",
     "code_label": "Código del negocio",
     "code_placeholder": "Ej: ABC12345",
     "scan_button": "Escanear código QR",
-    "code_hint": "Pedíselo al negocio o escaneá su código QR",
+    "code_hint": "Pídelo al negocio o escanea su código QR",
     "continue": "Continuar",
     "verifying": "Verificando...",
     "email_label": "Correo electrónico",
     "email_placeholder": "tu@correo.com",
-    "register_subtitle": "Completá tus datos para crear tu cuenta",
+    "register_subtitle": "Completa tus datos para crear tu cuenta",
     "first_name": "Nombre",
     "first_name_placeholder": "Ana",
     "last_name": "Apellido",
@@ -160,7 +283,7 @@
     "birth_day": "Día",
     "password": "Contraseña",
     "password_placeholder": "Mínimo 6 caracteres",
-    "confirm_password": "Confirmá la contraseña",
+    "confirm_password": "Confirmar contraseña",
     "confirm_password_placeholder": "••••••••",
     "creating": "Creando cuenta...",
     "create_account": "Crear cuenta",
@@ -168,14 +291,14 @@
     "forgot_password": "¿Olvidaste tu contraseña?",
     "signing_in": "Ingresando...",
     "sign_in": "Ingresar",
-    "have_account": "¿Ya tenés cuenta?",
-    "sign_in_link": "Iniciá sesión",
+    "have_account": "¿Ya tienes cuenta?",
+    "sign_in_link": "Inicia sesión",
     "back": "Volver",
-    "error_invalid_code": "Código inválido. Verificá con tu negocio.",
+    "error_invalid_code": "Código inválido. Verifica con tu negocio.",
     "error_invitation": "Error validando la invitación.",
     "error_password_mismatch": "Las contraseñas no coinciden.",
     "error_password_min": "La contraseña debe tener al menos 6 caracteres.",
-    "error_already_registered": "Ya tenés una cuenta con este email. Ingresá tu contraseña.",
+    "error_already_registered": "Ya tienes una cuenta con este email. Ingresa tu contraseña.",
     "error_wrong_password": "Contraseña incorrecta.",
     "error_profile": "Error al crear tu perfil: ",
     "months": {
@@ -185,7 +308,7 @@
     }
   },
   "offline": {
-    "title": "Estás sin conexión",
+    "title": "Sin conexión",
     "description": "Por favor verifica tu conexión a internet e intenta de nuevo. Parte del contenido puede estar disponible en caché.",
     "tryAgain": "Reintentar",
     "goHome": "Ir al inicio",

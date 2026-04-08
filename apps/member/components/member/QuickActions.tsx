@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface ToastState {
   visible: boolean;
@@ -15,6 +16,7 @@ interface QuickActionsProps {
 }
 
 export function QuickActions({ memberCode, shareUrl, highlightRedeem }: QuickActionsProps) {
+  const t = useTranslations('quickActions');
   const [toast, setToast] = useState<ToastState>({ visible: false, message: '' });
 
   function showToast(message: string) {
@@ -48,10 +50,8 @@ export function QuickActions({ memberCode, shareUrl, highlightRedeem }: QuickAct
 
   return (
     <div className="relative">
-      <div
-        className="grid grid-cols-3 gap-2.5 px-5 pt-5"
-      >
-        {/* Canjear */}
+      <div className="grid grid-cols-3 gap-2.5 px-5 pt-5">
+        {/* Redeem */}
         <Link
           href="/rewards"
           className="relative flex flex-col items-center gap-1.5 rounded-[14px] p-3.5 cursor-pointer transition-colors"
@@ -61,9 +61,7 @@ export function QuickActions({ memberCode, shareUrl, highlightRedeem }: QuickAct
           }}
         >
           {highlightRedeem && (
-            <span
-              className="absolute -top-1 -right-1 flex h-3 w-3"
-            >
+            <span className="absolute -top-1 -right-1 flex h-3 w-3">
               <span
                 className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
                 style={{ background: 'var(--brand-primary)' }}
@@ -82,17 +80,14 @@ export function QuickActions({ memberCode, shareUrl, highlightRedeem }: QuickAct
               <path d="M12 8v13m0-13V6a4 4 0 014-4h1m-5 6H6a4 4 0 01-4-4V6a4 4 0 014-4h1m5 6v13M6 8h12" />
             </svg>
           </div>
-          <span className="text-[11px] text-center" style={{ color: 'var(--text)' }}>Canjear</span>
+          <span className="text-[11px] text-center" style={{ color: 'var(--text)' }}>{t('redeem')}</span>
         </Link>
 
-        {/* Reservar */}
+        {/* Book */}
         <button
-          onClick={() => showToast('Próximamente: Reservar cita')}
+          onClick={() => showToast(t('bookSoon'))}
           className="flex flex-col items-center gap-1.5 rounded-[14px] p-3.5 cursor-pointer transition-colors w-full"
-          style={{
-            background: 'white',
-            border: '1px solid var(--border)',
-          }}
+          style={{ background: 'white', border: '1px solid var(--border)' }}
         >
           <div
             className="w-9 h-9 rounded-[10px] flex items-center justify-center"
@@ -105,17 +100,14 @@ export function QuickActions({ memberCode, shareUrl, highlightRedeem }: QuickAct
               <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
           </div>
-          <span className="text-[11px] text-center" style={{ color: 'var(--text)' }}>Reservar</span>
+          <span className="text-[11px] text-center" style={{ color: 'var(--text)' }}>{t('book')}</span>
         </button>
 
-        {/* Referir */}
+        {/* Refer */}
         <button
           onClick={handleShareReferral}
           className="flex flex-col items-center gap-1.5 rounded-[14px] p-3.5 cursor-pointer transition-colors w-full"
-          style={{
-            background: 'white',
-            border: '1px solid var(--border)',
-          }}
+          style={{ background: 'white', border: '1px solid var(--border)' }}
         >
           <div
             className="w-9 h-9 rounded-[10px] flex items-center justify-center"
@@ -129,7 +121,7 @@ export function QuickActions({ memberCode, shareUrl, highlightRedeem }: QuickAct
               <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
             </svg>
           </div>
-          <span className="text-[11px] text-center" style={{ color: 'var(--text)' }}>Referir amiga</span>
+          <span className="text-[11px] text-center" style={{ color: 'var(--text)' }}>{t('refer')}</span>
         </button>
       </div>
 

@@ -124,7 +124,7 @@ export function QrScanner({ isActive, onScan, showFormatsLabel = true }: Props) 
           <div className="absolute bottom-3 left-0 right-0 flex justify-center pointer-events-none">
             <span className="inline-flex items-center gap-1.5 bg-black/60 text-white text-xs px-3 py-1.5 rounded-full">
               <Camera className="h-3.5 w-3.5" />
-              Apuntá al QR o código de barras
+              Point at QR or barcode
             </span>
           </div>
         )}

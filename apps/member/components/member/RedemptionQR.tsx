@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import QRCode from 'qrcode';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { RedemptionResult } from '@/lib/member/types';
 
 interface RedemptionQRProps {
@@ -10,6 +11,7 @@ interface RedemptionQRProps {
 }
 
 export function RedemptionQR({ redemption }: RedemptionQRProps) {
+  const t = useTranslations('redemptionQR');
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -25,7 +27,7 @@ export function RedemptionQR({ redemption }: RedemptionQRProps) {
     });
   }, [redemption.qr_data]);
 
-  const expiryDate = new Date(redemption.expires_at).toLocaleDateString('es', {
+  const expiryDate = new Date(redemption.expires_at).toLocaleDateString(undefined, {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -39,10 +41,7 @@ export function RedemptionQR({ redemption }: RedemptionQRProps) {
       {/* Success circle */}
       <div
         className="w-24 h-24 rounded-full flex items-center justify-center mb-7 animate-fade-in-scale"
-        style={{
-          background: 'var(--sage-light)',
-          border: '2px solid var(--sage)',
-        }}
+        style={{ background: 'var(--sage-light)', border: '2px solid var(--sage)' }}
       >
         <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="var(--sage-dark)" strokeWidth="2">
           <polyline points="20 6 9 17 4 12" />
@@ -50,44 +49,30 @@ export function RedemptionQR({ redemption }: RedemptionQRProps) {
       </div>
 
       <h1 className="font-display text-[32px] font-normal mb-2.5" style={{ color: 'var(--text)' }}>
-        ¡Canje exitoso!
+        {t('success')}
       </h1>
       <p className="text-sm leading-relaxed mb-8 max-w-xs" style={{ color: 'var(--muted)' }}>
-        {redemption.reward_name} · Mostrá este código al llegar
+        {redemption.reward_name} · {t('showCode')}
       </p>
 
       {/* QR Code */}
       <div
         className="flex flex-col items-center justify-center p-4 mb-6 rounded-[20px]"
-        style={{
-          background: 'white',
-          border: '1px solid var(--border)',
-          width: 180,
-          height: 180,
-        }}
+        style={{ background: 'white', border: '1px solid var(--border)', width: 180, height: 180 }}
       >
         <canvas ref={canvasRef} />
-        <p
-          className="text-[11px] mt-2 tracking-widest uppercase"
-          style={{ color: 'var(--muted)' }}
-        >
-          Scanear al llegar
+        <p className="text-[11px] mt-2 tracking-widest uppercase" style={{ color: 'var(--muted)' }}>
+          {t('scanOnArrival')}
         </p>
       </div>
 
       {/* Alphanumeric code */}
       <div
         className="rounded-xl px-6 py-3.5 mb-7 text-center"
-        style={{
-          background: 'var(--clay-light)',
-          border: '1px solid rgba(196,168,130,0.4)',
-        }}
+        style={{ background: 'var(--clay-light)', border: '1px solid rgba(196,168,130,0.4)' }}
       >
-        <p
-          className="text-[11px] mb-1 tracking-widest uppercase"
-          style={{ color: 'var(--muted)' }}
-        >
-          Código de canje
+        <p className="text-[11px] mb-1 tracking-widest uppercase" style={{ color: 'var(--muted)' }}>
+          {t('redeemCode')}
         </p>
         <p
           className="text-2xl font-medium tracking-[6px]"
@@ -98,20 +83,16 @@ export function RedemptionQR({ redemption }: RedemptionQRProps) {
       </div>
 
       <p className="text-xs mb-8" style={{ color: 'var(--muted)' }}>
-        Válido hasta {expiryDate}
+        {t('validUntil', { date: expiryDate })}
       </p>
 
       {/* Back to home */}
       <Link
         href="/"
         className="w-full max-w-xs py-3.5 rounded-[14px] text-sm font-medium text-center block"
-        style={{
-          background: 'white',
-          border: '1.5px solid var(--sage)',
-          color: 'var(--sage-dark)',
-        }}
+        style={{ background: 'white', border: '1.5px solid var(--sage)', color: 'var(--sage-dark)' }}
       >
-        Volver al inicio
+        {t('backToHome')}
       </Link>
     </div>
   );

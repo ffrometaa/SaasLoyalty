@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 const STORAGE_KEY = 'loyalty_ob_v1';
 
@@ -10,37 +11,40 @@ interface OnboardingModalProps {
   isNewMember: boolean;
 }
 
-const STEPS = [
-  {
-    emoji: '👋',
-    title: (name: string) => `¡Bienvenida, ${name.split(' ')[0]}!`,
-    subtitle: (_appName: string) => 'Tu programa de fidelidad',
-    body: 'Acumulá puntos en cada visita, canjeá premios exclusivos y subí de nivel. Todo desde acá.',
-  },
-  {
-    emoji: '⭐',
-    title: () => 'Ganá puntos',
-    subtitle: () => 'En cada visita al local',
-    body: 'Cada vez que visitás el negocio, sumás puntos automáticamente. Cuantos más puntos, más beneficios.',
-  },
-  {
-    emoji: '🎁',
-    title: () => 'Canjeá premios',
-    subtitle: () => 'Usá tus puntos',
-    body: 'Convertí tus puntos en descuentos, productos y servicios gratuitos. Explorá el catálogo de premios.',
-  },
-  {
-    emoji: '🏆',
-    title: () => '¡Ya podés empezar!',
-    subtitle: () => 'Explorá la app',
-    body: 'Encontrás tus desafíos personalizados, el ranking con otros miembros y tu perfil completo.',
-  },
-];
-
 export function OnboardingModal({ memberName, appName, isNewMember }: OnboardingModalProps) {
+  const t = useTranslations('onboarding');
   const [visible, setVisible] = useState(false);
   const [step, setStep] = useState(0);
   const [exiting, setExiting] = useState(false);
+
+  const firstName = memberName.split(' ')[0];
+
+  const STEPS = [
+    {
+      emoji: '👋',
+      title: t('step1Title', { name: firstName }),
+      subtitle: t('step1Subtitle'),
+      body: t('step1Body'),
+    },
+    {
+      emoji: '⭐',
+      title: t('step2Title'),
+      subtitle: t('step2Subtitle'),
+      body: t('step2Body'),
+    },
+    {
+      emoji: '🎁',
+      title: t('step3Title'),
+      subtitle: t('step3Subtitle'),
+      body: t('step3Body'),
+    },
+    {
+      emoji: '🏆',
+      title: t('step4Title'),
+      subtitle: t('step4Subtitle'),
+      body: t('step4Body'),
+    },
+  ];
 
   useEffect(() => {
     if (!isNewMember) return;
@@ -85,10 +89,7 @@ export function OnboardingModal({ memberName, appName, isNewMember }: Onboarding
         style={{ background: 'var(--cream, #faf9f6)' }}
       >
         {/* Decorative header bar */}
-        <div
-          className="h-1.5 w-full"
-          style={{ background: 'var(--brand-primary, #3a4332)' }}
-        />
+        <div className="h-1.5 w-full" style={{ background: 'var(--brand-primary, #3a4332)' }} />
 
         <div className="px-6 pt-6 pb-8">
           {/* Skip */}
@@ -98,7 +99,7 @@ export function OnboardingModal({ memberName, appName, isNewMember }: Onboarding
               className="text-xs font-medium px-2 py-1 rounded-lg"
               style={{ color: 'var(--muted, #9ca3af)' }}
             >
-              Saltar
+              {t('skip')}
             </button>
           </div>
 
@@ -130,13 +131,13 @@ export function OnboardingModal({ memberName, appName, isNewMember }: Onboarding
               className="font-display font-light mb-1"
               style={{ fontSize: 26, color: 'var(--text, #1a1a1a)' }}
             >
-              {current.title(memberName)}
+              {current.title}
             </h2>
             <p
               className="text-sm font-medium mb-3"
               style={{ color: 'var(--brand-primary, #3a4332)' }}
             >
-              {current.subtitle(appName)}
+              {current.subtitle}
             </p>
             <p
               className="text-sm leading-relaxed"
@@ -150,12 +151,9 @@ export function OnboardingModal({ memberName, appName, isNewMember }: Onboarding
           <button
             onClick={next}
             className="w-full py-3.5 rounded-2xl text-sm font-semibold transition-opacity active:opacity-80"
-            style={{
-              background: 'var(--brand-primary, #3a4332)',
-              color: 'white',
-            }}
+            style={{ background: 'var(--brand-primary, #3a4332)', color: 'white' }}
           >
-            {isLast ? '¡Empezar!' : 'Siguiente →'}
+            {isLast ? t('start') : t('next')}
           </button>
         </div>
       </div>

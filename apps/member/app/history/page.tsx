@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { getServerUser } from '@/lib/supabase';
 import { getMemberWithTenant, getMemberTransactions } from '@/lib/member/queries';
 import { TransactionHistory } from '@/components/member/TransactionHistory';
@@ -7,6 +8,7 @@ import { BottomNav } from '@/components/member/BottomNav';
 import { BrandTheme } from '@/components/member/BrandTheme';
 
 export default async function HistoryPage() {
+  const t = await getTranslations('history');
   const user = await getServerUser();
   if (!user) redirect('/login');
 
@@ -42,10 +44,10 @@ export default async function HistoryPage() {
           </Link>
           <div>
             <h1 className="font-display text-xl font-normal" style={{ color: 'var(--text)' }}>
-              Historial
+              {t('title')}
             </h1>
             <p className="text-xs" style={{ color: 'var(--muted)' }}>
-              Todos tus movimientos de puntos
+              {t('subtitle')}
             </p>
           </div>
         </div>

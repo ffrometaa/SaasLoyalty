@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { getMemberWithTenant, getMembersByUserId, getRewardsForTenant, getMemberTransactions } from '@/lib/member/queries';
 import { MemberHero } from '@/components/member/MemberHero';
 import { TierBadge } from '@/components/member/TierBadge';
@@ -87,6 +88,7 @@ const TYPE_ICONS: Record<string, string> = {
 };
 
 export default async function HomePage() {
+  const t = await getTranslations('home');
   const supabase = await createServerSupabaseClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: { user } } = await (supabase.auth as any).getUser();
@@ -122,8 +124,8 @@ export default async function HomePage() {
 
   const nextTierLabel = nextTier ? TIER_LABELS[nextTier] : null;
   const nextInfo = nextTier
-    ? `2x puntos en ${nextTierLabel}`
-    : 'Nivel máximo alcanzado';
+    ? t('nextTierBonus', { tier: nextTierLabel })
+    : t('maxTierReached');
 
   const isNewMember = member.points_lifetime === 0;
   const hasRedeemablePoints = member.points_balance > 0;
@@ -159,9 +161,9 @@ export default async function HomePage() {
           >
             <span className="text-2xl">⚡</span>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold leading-tight">{activeMultiplier.multiplier}x Puntos Activos</p>
+              <p className="text-sm font-bold leading-tight">{t('activeMultiplier', { multiplier: activeMultiplier.multiplier })}</p>
               <p className="text-xs text-white/70 mt-0.5 truncate">
-                {activeMultiplier.name} · hasta {new Date(activeMultiplier.ends_at).toLocaleDateString()}
+                {t('activeMultiplierSub', { name: activeMultiplier.name, date: new Date(activeMultiplier.ends_at).toLocaleDateString() })}
               </p>
             </div>
           </div>
@@ -181,7 +183,7 @@ export default async function HomePage() {
                   className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-white"
                   style={{ background: 'var(--brand-primary)' }}
                 >
-                  Solo para ti
+                  {t('justForYou')}
                 </span>
               </div>
               <p className="text-sm font-semibold truncate mb-1" style={{ color: 'var(--text)' }}>
@@ -217,7 +219,7 @@ export default async function HomePage() {
         <div className="mt-6 px-5 pb-8">
           <div className="flex justify-between items-center mb-3.5">
             <span className="font-display text-xl font-normal" style={{ color: 'var(--text)' }}>
-              Últimas actividades
+              {t('recentActivity')}
             </span>
           </div>
           <TransactionHistory transactions={transactions} />

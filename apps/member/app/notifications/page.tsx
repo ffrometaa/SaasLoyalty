@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { ArrowLeft, Bell, CheckCheck } from 'lucide-react';
 
 type InAppNotification = {
@@ -26,14 +27,15 @@ const TYPE_ICON: Record<string, string> = {
 
 function timeAgo(iso: string): string {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000;
-  if (diff < 60) return 'Ahora';
-  if (diff < 3600) return `Hace ${Math.floor(diff / 60)} min`;
-  if (diff < 86400) return `Hace ${Math.floor(diff / 3600)} h`;
-  if (diff < 604800) return `Hace ${Math.floor(diff / 86400)} días`;
-  return new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
+  if (diff < 60) return 'Now';
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
 }
 
 export default function NotificationsPage() {
+  const t = useTranslations('notifications');
   const router = useRouter();
   const [notifications, setNotifications] = useState<InAppNotification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,10 +97,10 @@ export default function NotificationsPage() {
             <ArrowLeft className="h-5 w-5 text-gray-600" />
           </button>
           <h1 className="text-lg font-semibold text-gray-900">
-            Notificaciones
+            {t('title')}
             {unreadCount > 0 && (
               <span className="ml-2 text-xs font-medium bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
-                {unreadCount} nuevas
+                {t('newBadge', { count: unreadCount })}
               </span>
             )}
           </h1>
@@ -108,13 +110,13 @@ export default function NotificationsPage() {
       {/* Content */}
       <div className="max-w-lg mx-auto">
         {loading ? (
-          <div className="py-16 text-center text-gray-400 text-sm">Cargando...</div>
+          <div className="py-16 text-center text-gray-400 text-sm">{t('loading')}</div>
         ) : notifications.length === 0 ? (
           <div className="py-20 flex flex-col items-center gap-3 text-center px-8">
             <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
               <Bell className="h-7 w-7 text-gray-300" />
             </div>
-            <p className="text-gray-500 text-sm">No tenés notificaciones todavía.</p>
+            <p className="text-gray-500 text-sm">{t('empty')}</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-100 bg-white">
@@ -150,7 +152,7 @@ export default function NotificationsPage() {
               disabled={loadingMore}
               className="text-sm text-brand-purple font-medium disabled:opacity-50"
             >
-              {loadingMore ? 'Cargando…' : 'Ver más'}
+              {loadingMore ? t('loading') : t('loadMore')}
             </button>
           </div>
         )}

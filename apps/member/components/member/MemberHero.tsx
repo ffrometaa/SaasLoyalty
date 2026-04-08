@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { PointsCard } from './PointsCard';
 import { NotificationBell } from './NotificationBell';
 import { getTierProgress } from '@/lib/member/types';
@@ -14,7 +15,8 @@ interface MemberHeroProps {
   member: MemberProfile;
 }
 
-export function MemberHero({ member }: MemberHeroProps) {
+export async function MemberHero({ member }: MemberHeroProps) {
+  const t = await getTranslations('home');
   const { percent, pointsToNext, nextTier } = getTierProgress(
     member.points_lifetime,
     member.tier
@@ -63,7 +65,7 @@ export function MemberHero({ member }: MemberHeroProps) {
       {/* Greeting */}
       <div className="relative z-10 mb-5">
         <p className="text-[13px] font-light mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
-          Bienvenida de vuelta
+          {t('welcomeBack')}
         </p>
         <h1
           className="font-display font-light text-white"

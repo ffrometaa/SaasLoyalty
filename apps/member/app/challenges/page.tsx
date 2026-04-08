@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { getServerUser } from '@/lib/supabase';
 import { getMemberWithTenant } from '@/lib/member/queries';
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
@@ -128,13 +129,7 @@ async function getMemberDynamicChallenges(tenantId: string, memberId: string) {
   return (data ?? []) as DynamicChallengeRow[];
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  visit_count: 'Visitas',
-  points_earned: 'Puntos acumulados',
-  referral: 'Referidos',
-  spend_amount: 'Monto gastado',
-  streak: 'Días consecutivos',
-};
+// TYPE_LABELS resolved dynamically from translations in the component
 
 const TYPE_ICONS: Record<string, string> = {
   visit_count: '🎯',
@@ -145,6 +140,14 @@ const TYPE_ICONS: Record<string, string> = {
 };
 
 export default async function ChallengesPage() {
+  const t = await getTranslations('challenges');
+  const TYPE_LABELS: Record<string, string> = {
+    visit_count: t('typeLabels.visit_count'),
+    points_earned: t('typeLabels.points_earned'),
+    referral: t('typeLabels.referral'),
+    spend_amount: t('typeLabels.spend_amount'),
+    streak: t('typeLabels.streak'),
+  };
   const user = await getServerUser();
   if (!user) redirect('/login');
 
@@ -180,10 +183,8 @@ export default async function ChallengesPage() {
           className="px-5 pt-12 pb-6"
           style={{ background: 'var(--brand-primary)' }}
         >
-          <h1 className="text-2xl font-bold text-white mb-1">Desafíos</h1>
-          <p className="text-white/70 text-sm">
-            Completa desafíos y gana puntos extra
-          </p>
+          <h1 className="text-2xl font-bold text-white mb-1">{t('title')}</h1>
+          <p className="text-white/70 text-sm">{t('subtitle')}</p>
         </div>
 
         <div className="px-5 py-6 space-y-6">
@@ -192,10 +193,10 @@ export default async function ChallengesPage() {
             <div className="text-center py-16">
               <div className="text-5xl mb-4">🎯</div>
               <p className="font-semibold text-lg mb-1" style={{ color: 'var(--text)' }}>
-                Sin desafíos activos
+                {t('empty')}
               </p>
               <p className="text-sm" style={{ color: 'var(--muted)' }}>
-                Tu negocio aún no ha creado desafíos. ¡Vuelve pronto!
+                {t('emptyDesc')}
               </p>
             </div>
           )}
@@ -205,13 +206,13 @@ export default async function ChallengesPage() {
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <h2 className="font-display text-xl font-semibold" style={{ color: 'var(--text)' }}>
-                  Solo para ti
+                  {t('justForYou')}
                 </h2>
                 <span
                   className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-white"
                   style={{ background: 'var(--brand-primary)' }}
                 >
-                  Personalizado
+                  {t('personalized')}
                 </span>
               </div>
               <div className="space-y-3">
@@ -243,7 +244,7 @@ export default async function ChallengesPage() {
                             </p>
                           )}
                           <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
-                            {typeLabel} · Meta: {dc.goal_value} · Vence en {expiresIn}d
+                            {typeLabel} · {t('goal', { value: dc.goal_value, days: expiresIn })}
                           </p>
                         </div>
                         {dc.bonus_points > 0 && (
@@ -282,7 +283,7 @@ export default async function ChallengesPage() {
           {activeMissions.length > 0 && (
             <section>
               <h2 className="font-display text-xl font-semibold mb-3" style={{ color: 'var(--text)' }}>
-                Misiones
+                {t('missions')}
               </h2>
               <div className="space-y-3">
                 {activeMissions.map((m) => {
@@ -307,7 +308,7 @@ export default async function ChallengesPage() {
                             </p>
                           )}
                           <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
-                            {m.stepsCompleted} de {m.totalSteps} pasos completados
+                            {t('stepsProgress', { completed: m.stepsCompleted, total: m.totalSteps })}
                           </p>
                         </div>
                         {m.bonus_points > 0 && (
@@ -325,7 +326,7 @@ export default async function ChallengesPage() {
                       <div>
                         <div className="flex justify-between items-center mb-1.5">
                           <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>
-                            Paso {m.stepsCompleted} / {m.totalSteps}
+                            {t('stepOf', { current: m.stepsCompleted, total: m.totalSteps })}
                           </span>
                           <span className="text-xs font-semibold" style={{ color: 'var(--brand-primary-dark)' }}>
                             {pct}%
@@ -349,7 +350,7 @@ export default async function ChallengesPage() {
           {activeChallenges.length > 0 && (
             <section>
               <h2 className="font-display text-xl font-semibold mb-3" style={{ color: 'var(--text)' }}>
-                En progreso
+                {t('inProgress')}
               </h2>
               <div className="space-y-3">
                 {activeChallenges.map((challenge) => {
@@ -378,7 +379,7 @@ export default async function ChallengesPage() {
                             </p>
                           )}
                           <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
-                            {typeLabel} · Meta: {challenge.goal_value}
+                            {typeLabel} · {t('goalSimple', { value: challenge.goal_value })}
                           </p>
                         </div>
                         {challenge.bonus_points > 0 && (
@@ -420,7 +421,7 @@ export default async function ChallengesPage() {
           {(completedChallenges.length > 0 || completedMissions.length > 0) && (
             <section>
               <h2 className="font-display text-xl font-semibold mb-3" style={{ color: 'var(--text)' }}>
-                Completados
+                {t('completedSection')}
               </h2>
               <div className="space-y-3">
                 {completedMissions.map((m) => (
@@ -432,7 +433,7 @@ export default async function ChallengesPage() {
                     <span className="text-2xl leading-none">🗺️</span>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold truncate" style={{ color: 'var(--text)' }}>{m.name}</p>
-                      <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>Misión completada</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{t('missionCompleted')}</p>
                     </div>
                     <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full" style={{ background: '#d1fae5' }}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -452,7 +453,7 @@ export default async function ChallengesPage() {
                       <span className="text-2xl leading-none">{icon}</span>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold truncate" style={{ color: 'var(--text)' }}>{challenge.name}</p>
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>Completado</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{t('challengeCompleted')}</p>
                       </div>
                       <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full" style={{ background: '#d1fae5' }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

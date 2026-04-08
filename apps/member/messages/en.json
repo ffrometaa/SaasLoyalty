@@ -3,7 +3,15 @@
     "loading": "Loading...",
     "error": "Error",
     "points": "points",
-    "visits": "visits"
+    "visits": "visits",
+    "pts": "pts"
+  },
+  "nav": {
+    "home": "Home",
+    "rewards": "Rewards",
+    "challenges": "Challenges",
+    "leaderboard": "Leaderboard",
+    "profile": "Profile"
   },
   "home": {
     "greeting": "Hello",
@@ -13,7 +21,59 @@
     "history": "Visit history",
     "noHistory": "No visits recorded yet.",
     "scan": "Scan QR",
-    "rewards": "My Rewards"
+    "rewards": "My Rewards",
+    "welcomeBack": "Welcome back",
+    "recentActivity": "Recent activity",
+    "activeMultiplier": "{multiplier}x Points Active",
+    "activeMultiplierSub": "{name} · until {date}",
+    "justForYou": "Just for you",
+    "maxTierReached": "Maximum tier reached",
+    "nextTierBonus": "2x points at {tier}"
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next →",
+    "start": "Let's go!",
+    "step1Title": "Welcome, {name}!",
+    "step1Subtitle": "Your loyalty program",
+    "step1Body": "Earn points on every visit, redeem exclusive rewards and level up. All in one place.",
+    "step2Title": "Earn points",
+    "step2Subtitle": "On every visit",
+    "step2Body": "Every time you visit, you automatically earn points. The more you come, the more benefits you unlock.",
+    "step3Title": "Redeem rewards",
+    "step3Subtitle": "Use your points",
+    "step3Body": "Turn your points into real rewards: discounts, products, free services and more.",
+    "step4Title": "Ready to start!",
+    "step4Subtitle": "Explore the app",
+    "step4Body": "Find your personalized challenges, the leaderboard with other members and your full profile."
+  },
+  "quickActions": {
+    "redeem": "Redeem",
+    "book": "Book",
+    "bookSoon": "Coming soon: Book appointment",
+    "refer": "Refer"
+  },
+  "tier": {
+    "member": "Member"
+  },
+  "transactions": {
+    "today": "Today",
+    "noActivity": "No recent activity.",
+    "pts": "pts"
+  },
+  "redemptionQR": {
+    "success": "Redemption successful!",
+    "showCode": "Show this code when you arrive",
+    "scanOnArrival": "Scan on arrival",
+    "redeemCode": "Redemption code",
+    "validUntil": "Valid until {date}",
+    "backToHome": "Back to home"
+  },
+  "install": {
+    "title": "Install app",
+    "description": "Add to your home screen for quick access, even offline.",
+    "install": "Install",
+    "notNow": "Not now"
   },
   "rewards": {
     "title": "Rewards",
@@ -21,7 +81,70 @@
     "redeem": "Redeem",
     "redeemed": "Redeemed",
     "notEnough": "Not enough points",
-    "pointsRequired": "Points required"
+    "pointsRequired": "Points required",
+    "pageTitle": "Rewards",
+    "pointsAvailable": "You have {points} pts available",
+    "canRedeem": "You can redeem <strong>{count} reward{s}</strong> with your current points.",
+    "redeemNote": "Redemptions apply on your next visit.",
+    "availableForYou": "Available for you",
+    "locked": "Locked",
+    "needMore": "Need {points} more pts",
+    "empty": "No rewards yet",
+    "emptyDesc": "Keep earning points to unlock benefits."
+  },
+  "challenges": {
+    "title": "Challenges",
+    "subtitle": "Complete challenges and earn extra points",
+    "empty": "No active challenges",
+    "emptyDesc": "Your business hasn't created any challenges yet. Check back soon!",
+    "justForYou": "Just for you",
+    "personalized": "Personalized",
+    "goal": "Goal: {value} · Expires in {days}d",
+    "goalSimple": "Goal: {value}",
+    "missions": "Missions",
+    "stepsProgress": "{completed} of {total} steps completed",
+    "stepOf": "Step {current} / {total}",
+    "inProgress": "In progress",
+    "completedSection": "Completed",
+    "missionCompleted": "Mission completed",
+    "challengeCompleted": "Completed",
+    "bonusPts": "+{pts} pts",
+    "typeLabels": {
+      "visit_count": "Visits",
+      "points_earned": "Points earned",
+      "referral": "Referrals",
+      "spend_amount": "Amount spent",
+      "streak": "Consecutive days"
+    }
+  },
+  "history": {
+    "title": "History",
+    "subtitle": "All your point movements"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "newBadge": "{count} new",
+    "empty": "No notifications yet.",
+    "loadMore": "Load more",
+    "loading": "Loading..."
+  },
+  "referrals": {
+    "title": "Refer friends",
+    "loading": "Loading...",
+    "inactive": "The referral program is not active at this business yet.",
+    "earn": "Refer and earn points",
+    "earnDesc": "Share your unique link with friends and you both benefit",
+    "forYou": "pts for you",
+    "forFriend": "pts for your friend",
+    "note": "Points are credited when your friend makes their first visit to {business}.",
+    "yourLink": "Your referral link",
+    "share": "Share link",
+    "referralsCount": "referrals",
+    "pointsEarned": "points earned",
+    "myReferrals": "My referrals",
+    "visited": "Visited",
+    "registered": "Registered",
+    "shareText": "Join {business} with my link and earn {points} points!"
   },
   "profile": {
     "title": "My Profile",

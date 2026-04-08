@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { getServerUser } from '@/lib/supabase';
 import { getMemberWithTenant, getRewardsForTenant } from '@/lib/member/queries';
 import { BottomNav } from '@/components/member/BottomNav';
@@ -14,6 +15,7 @@ const CATEGORY_EMOJI: Record<string, string> = {
 };
 
 export default async function RewardsPage() {
+  const t = await getTranslations('rewards');
   const user = await getServerUser();
   if (!user) redirect('/login');
 
@@ -54,10 +56,10 @@ export default async function RewardsPage() {
           </Link>
           <div>
             <h1 className="font-display text-xl font-normal" style={{ color: 'var(--text)' }}>
-              Recompensas
+              {t('pageTitle')}
             </h1>
             <p className="text-xs" style={{ color: 'var(--muted)' }}>
-              Tenés {member.points_balance.toLocaleString()} pts disponibles
+              {t('pointsAvailable', { points: member.points_balance.toLocaleString() })}
             </p>
           </div>
         </div>
@@ -83,9 +85,12 @@ export default async function RewardsPage() {
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
               <p className="text-[13px] leading-relaxed" style={{ color: 'var(--sage-dark)' }}>
-                Podés canjear{' '}
-                <strong>{redeemableCount} recompensa{redeemableCount > 1 ? 's' : ''}</strong>{' '}
-                con tus puntos actuales. Los canjes se aplican en tu próxima visita.
+                {t.rich('canRedeem', {
+                  count: redeemableCount,
+                  s: redeemableCount > 1 ? 's' : '',
+                  strong: (chunks) => <strong>{chunks}</strong>,
+                })}
+                {' '}{t('redeemNote')}
               </p>
             </div>
           )}
@@ -97,7 +102,7 @@ export default async function RewardsPage() {
                 className="text-xs tracking-[1px] uppercase mb-3"
                 style={{ color: 'var(--muted)' }}
               >
-                Disponibles para ti
+                {t('availableForYou')}
               </p>
               <div className="flex flex-col gap-2.5">
                 {available.map((reward) => (
@@ -150,7 +155,7 @@ export default async function RewardsPage() {
                 className="text-xs tracking-[1px] uppercase mb-3"
                 style={{ color: 'var(--muted)' }}
               >
-                Próximamente (faltan puntos)
+                {t('locked')}
               </p>
               <div className="flex flex-col gap-2.5" style={{ opacity: 0.55 }}>
                 {locked.map((reward) => {
@@ -172,7 +177,7 @@ export default async function RewardsPage() {
                           {reward.name}
                         </p>
                         <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
-                          Te faltan {lacking.toLocaleString()} pts
+                          {t('needMore', { points: lacking.toLocaleString() })}
                         </p>
                       </div>
                       <div className="text-right flex-shrink-0">
@@ -192,10 +197,10 @@ export default async function RewardsPage() {
             <div className="text-center py-16">
               <p className="text-4xl mb-3">🎁</p>
               <p className="font-display text-xl mb-2" style={{ color: 'var(--text)' }}>
-                Sin recompensas aún
+                {t('empty')}
               </p>
               <p className="text-sm" style={{ color: 'var(--muted)' }}>
-                Seguí acumulando puntos para desbloquear beneficios.
+                {t('emptyDesc')}
               </p>
             </div>
           )}

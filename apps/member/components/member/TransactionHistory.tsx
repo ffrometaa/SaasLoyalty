@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import type { TransactionItem, TransactionType } from '@/lib/member/types';
 
 const TYPE_ICON: Record<TransactionType, string> = {
@@ -33,16 +34,16 @@ const TYPE_STROKE: Record<TransactionType, string> = {
   refund: 'var(--sage-dark)',
 };
 
-function formatDate(dateStr: string): string {
+function formatDate(dateStr: string, todayLabel: string): string {
   const date = new Date(dateStr);
   const now = new Date();
   const isToday = date.toDateString() === now.toDateString();
 
   if (isToday) {
-    return `Hoy, ${date.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}`;
+    return `${todayLabel}, ${date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`;
   }
 
-  return date.toLocaleDateString('es', { day: 'numeric', month: 'short' });
+  return date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
 }
 
 interface TransactionHistoryProps {
@@ -50,10 +51,12 @@ interface TransactionHistoryProps {
 }
 
 export function TransactionHistory({ transactions }: TransactionHistoryProps) {
+  const t = useTranslations('transactions');
+
   if (transactions.length === 0) {
     return (
       <div className="text-center py-6" style={{ color: 'var(--muted)' }}>
-        <p className="text-sm">Sin actividad reciente.</p>
+        <p className="text-sm">{t('noActivity')}</p>
       </div>
     );
   }
@@ -70,9 +73,7 @@ export function TransactionHistory({ transactions }: TransactionHistoryProps) {
           <div
             key={tx.id}
             className="flex items-center gap-3 py-3"
-            style={{
-              borderTop: i === 0 ? 'none' : '1px solid var(--border)',
-            }}
+            style={{ borderTop: i === 0 ? 'none' : '1px solid var(--border)' }}
           >
             {/* Icon */}
             <div
@@ -90,7 +91,7 @@ export function TransactionHistory({ transactions }: TransactionHistoryProps) {
                 {tx.description}
               </div>
               <div className="text-[11px] mt-0.5" style={{ color: 'var(--muted)' }}>
-                {formatDate(tx.created_at)}
+                {formatDate(tx.created_at, t('today'))}
               </div>
             </div>
 
@@ -99,7 +100,7 @@ export function TransactionHistory({ transactions }: TransactionHistoryProps) {
               className="text-sm font-medium flex-shrink-0"
               style={{ color: isPlus ? 'var(--sage)' : 'var(--clay-dark)' }}
             >
-              {isPlus ? '+' : '−'}{Math.abs(tx.points).toLocaleString()} pts
+              {isPlus ? '+' : '−'}{Math.abs(tx.points).toLocaleString()} {t('pts')}
             </div>
           </div>
         );
