@@ -129,13 +129,12 @@ export function QrScanner({ isActive, onScan, showFormatsLabel = true }: Props) 
           </div>
         )}
       </div>
-    </div>
 
-    {showFormatsLabel && state === 'scanning' && (
-      <p className="text-center text-xs text-gray-400">
-        QR · EAN-13 · EAN-8 · Code 128 · Code 39 · UPC
-      </p>
-    )}
-  </div>
+      {showFormatsLabel && state === 'scanning' && (
+        <p className="text-center text-xs text-gray-400">
+          QR · EAN-13 · EAN-8 · Code 128 · Code 39 · UPC
+        </p>
+      )}
+    </div>
   );
 }
