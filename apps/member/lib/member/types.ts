@@ -20,7 +20,7 @@ export interface TenantBrand {
   brand_color_primary: string;
   brand_color_secondary: string;
   slug: string;
-  points_expiry_days: number;
+  points_expiry_days?: number;
 }
 
 export interface MemberProfile {

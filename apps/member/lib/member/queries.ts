@@ -21,7 +21,7 @@ export async function getMemberWithTenant(userId: string, tenantId?: string): Pr
 
   const { data: tenant } = await supabase
     .from('tenants')
-    .select('id, business_name, brand_app_name, brand_logo_url, brand_color_primary, brand_color_secondary, slug, points_expiry_days')
+    .select('id, business_name, brand_app_name, brand_logo_url, brand_color_primary, brand_color_secondary, slug')
     .eq('id', member.tenant_id)
     .single();
 
