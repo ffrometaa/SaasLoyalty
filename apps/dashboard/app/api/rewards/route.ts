@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     const { data: ownerTenant } = await supabase
       .from('tenants')
       .select('id')
-      .eq('auth_user_id', session.user.id)
+      .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
 
@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
       const { data: staffRecord } = await supabase
         .from('tenant_users')
         .select('tenant_id')
-        .eq('auth_user_id', session.user.id)
+        .eq('auth_user_id', user.id)
         .single();
       tenantId = staffRecord?.tenant_id ?? null;
     }
