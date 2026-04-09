@@ -27,6 +27,19 @@ function getCookieTenantId(): string | undefined {
     ?.split('=')[1];
 }
 
+/** Poll until @supabase/ssr has written auth cookies to document.cookie */
+function waitForAuthCookies(timeoutMs = 2000): Promise<void> {
+  return new Promise((resolve) => {
+    const start = Date.now();
+    const check = () => {
+      if (document.cookie.split('; ').some((c) => c.startsWith('sb-'))) return resolve();
+      if (Date.now() - start > timeoutMs) return resolve();
+      setTimeout(check, 50);
+    };
+    check();
+  });
+}
+
 export default function LoginPage() {
   const [step, setStep] = useState<Step>('credentials');
   const [email, setEmail] = useState('');
@@ -75,6 +88,7 @@ export default function LoginPage() {
     // Fast path: already have a tenant cookie from a previous session
     const cookieTenantId = getCookieTenantId();
     if (cookieTenantId) {
+      await waitForAuthCookies();
       window.location.href = '/';
       return;
     }
@@ -104,6 +118,7 @@ export default function LoginPage() {
     if (list.length === 1) {
       // Only one business — auto-select without showing picker
       document.cookie = `loyalty_tenant_id=${list[0].tenantId}; path=/; max-age=2592000; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
+      await waitForAuthCookies();
       window.location.href = '/';
       return;
     }
@@ -114,8 +129,9 @@ export default function LoginPage() {
     setStep('picker');
   }
 
-  function selectTenant(tenantId: string) {
+  async function selectTenant(tenantId: string) {
     document.cookie = `loyalty_tenant_id=${tenantId}; path=/; max-age=2592000; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
+    await waitForAuthCookies();
     window.location.href = '/';
   }
 

@@ -10,6 +10,19 @@ type Step = 'code' | 'email' | 'register' | 'login';
 
 const BIZ_CODE_KEY = 'loyalty_biz_code';
 
+/** Poll until @supabase/ssr has written auth cookies to document.cookie */
+function waitForAuthCookies(timeoutMs = 2000): Promise<void> {
+  return new Promise((resolve) => {
+    const start = Date.now();
+    const check = () => {
+      if (document.cookie.split('; ').some((c) => c.startsWith('sb-'))) return resolve();
+      if (Date.now() - start > timeoutMs) return resolve(); // proceed anyway
+      setTimeout(check, 50);
+    };
+    check();
+  });
+}
+
 export default function JoinPage() {
   const t = useTranslations('join_page');
 
@@ -217,7 +230,7 @@ export default function JoinPage() {
       }).catch(() => {});
     }
 
-    setLoading(false);
+    await waitForAuthCookies();
     window.location.href = '/';
   }
 
@@ -256,7 +269,7 @@ export default function JoinPage() {
       return;
     }
 
-    setLoading(false);
+    await waitForAuthCookies();
     window.location.href = '/';
   }
 
