@@ -31,7 +31,7 @@ export function useMember() {
         .from('members')
         .select(`
           id, tenant_id, name, email, tier,
-          points_balance, points_lifetime, member_code, avatar_url,
+          points_balance, points_lifetime, member_code, first_name, last_name,
           tenant:tenants!inner (
             id, business_name, brand_app_name, brand_logo_url,
             brand_color_primary, brand_color_secondary, slug, points_expiry_days

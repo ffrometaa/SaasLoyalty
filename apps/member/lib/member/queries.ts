@@ -8,25 +8,16 @@ export async function getMemberWithTenant(userId: string, tenantId?: string): Pr
 
   let query = supabase
     .from('members')
-    .select('id, tenant_id, name, email, tier, points_balance, points_lifetime, member_code, avatar_url')
+    .select('id, tenant_id, name, email, tier, points_balance, points_lifetime, member_code, first_name, last_name')
     .eq('auth_user_id', userId)
     .eq('status', 'active');
 
   // Filter by tenant when provided — required when user has members in multiple tenants
   if (tenantId) query = query.eq('tenant_id', tenantId);
 
-  const { data: member, error: memberErr } = await query.limit(1).maybeSingle();
+  const { data: member } = await query.limit(1).maybeSingle();
 
-  if (!member) {
-    // Debug: check if member exists with ANY status for this user+tenant
-    const { data: anyMember } = await supabase
-      .from('members')
-      .select('id, tenant_id, auth_user_id, status')
-      .eq('auth_user_id', userId)
-      .limit(5);
-    console.log(`[getMemberWithTenant] NULL for user=${userId} tenant=${tenantId} | error=${memberErr?.message ?? 'none'} | all members for user: ${JSON.stringify(anyMember)}`);
-    return null;
-  }
+  if (!member) return null;
 
   const { data: tenant } = await supabase
     .from('tenants')

@@ -32,7 +32,8 @@ export interface MemberProfile {
   points_balance: number;
   points_lifetime: number;
   member_code: string;
-  avatar_url: string | null;
+  first_name: string | null;
+  last_name: string | null;
   tenant: TenantBrand;
 }
 
