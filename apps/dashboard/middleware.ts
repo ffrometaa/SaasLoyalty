@@ -49,11 +49,37 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // /admin routes: session check above ensures the user is authenticated.
-  // Additional super_admin role verification is enforced server-side in
+  // /admin routes: super_admin role verification is enforced server-side in
   // app/admin/layout.tsx via verifyAdminAccess() which redirects to /login
-  // if the user is not an active super admin. Middleware cannot call the
-  // service role client (Edge Runtime limitation), so the DB check lives there.
+  // if the user is not an active super admin.
+  if (pathname.startsWith('/admin')) {
+    return supabaseResponse;
+  }
+
+  // Authorization: verify user is a tenant owner or staff member.
+  // Regular members (loyalty program users) must NOT access the dashboard.
+  const { data: ownerTenant } = await supabase
+    .from('tenants')
+    .select('id')
+    .eq('auth_user_id', user.id)
+    .is('deleted_at', null)
+    .limit(1)
+    .maybeSingle();
+
+  if (!ownerTenant) {
+    const { data: staffRecord } = await supabase
+      .from('tenant_users')
+      .select('id')
+      .eq('auth_user_id', user.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (!staffRecord) {
+      // User is authenticated but is NOT a tenant owner or staff — block access
+      const memberAppUrl = process.env.NEXT_PUBLIC_MEMBER_APP_URL ?? 'https://member.loyalbase.dev';
+      return NextResponse.redirect(memberAppUrl);
+    }
+  }
 
   return supabaseResponse;
 }
