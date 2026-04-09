@@ -1,10 +1,25 @@
 import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET() {
-  const supabase = await createServerSupabaseClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: { user } } = await (supabase.auth as any).getUser();
+export async function GET(request: NextRequest) {
+  // Prefer Bearer token (avoids cookie race condition after signInWithPassword).
+  // Fall back to cookie-based session for normal navigation.
+  const authHeader = request.headers.get('Authorization');
+  const accessToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+  let user: { id: string } | null = null;
+
+  if (accessToken) {
+    const admin = createServiceRoleClient();
+    const { data } = await admin.auth.getUser(accessToken);
+    user = data?.user ?? null;
+  } else {
+    const supabase = await createServerSupabaseClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: { user: cookieUser } } = await (supabase.auth as any).getUser();
+    user = cookieUser;
+  }
+
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const admin = createServiceRoleClient();

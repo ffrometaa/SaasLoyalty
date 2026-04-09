@@ -61,7 +61,7 @@ export default function LoginPage() {
     setError('');
 
     const supabase = getSupabaseClient();
-    const { error: loginError } = await supabase.auth.signInWithPassword({
+    const { data: signInData, error: loginError } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
       password,
     });
@@ -79,8 +79,19 @@ export default function LoginPage() {
       return;
     }
 
-    // Resolve which businesses this user belongs to
-    const res = await fetch('/api/auth/my-tenants');
+    // Pass Bearer token explicitly to avoid cookie race condition
+    // (cookies may not be set yet when fetch fires immediately after signIn)
+    const accessToken = signInData.session?.access_token;
+    const res = await fetch('/api/auth/my-tenants', {
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+    });
+
+    if (!res.ok) {
+      setError('Error al cargar tus membresías. Intentá de nuevo.');
+      setLoading(false);
+      return;
+    }
+
     const data = await res.json();
     const list: Membership[] = data.memberships ?? [];
 

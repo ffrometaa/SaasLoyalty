@@ -38,7 +38,7 @@ const withPWA = require('next-pwa')({
       },
     },
     {
-      urlPattern: /\/api\/.*/i,
+      urlPattern: /\/api\/(?!auth).*/i,
       handler: 'NetworkFirst',
       options: {
         cacheName: 'api-cache',
