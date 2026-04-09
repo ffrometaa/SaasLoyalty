@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useLocale } from 'next-intl';
 
 interface PointsCardProps {
   balance: number;
@@ -9,6 +10,13 @@ interface PointsCardProps {
   tierLabel: string;
   tierNext: string | null;
   pointsToNext: number;
+  i18n: {
+    pointsAvailable: string;
+    validUntil: string;
+    tierLevel: string;
+    ptsToNext: string;
+    maxTier: string;
+  };
 }
 
 export function PointsCard({
@@ -18,8 +26,10 @@ export function PointsCard({
   tierLabel,
   tierNext,
   pointsToNext,
+  i18n,
 }: PointsCardProps) {
   const numRef = useRef<HTMLDivElement>(null);
+  const locale = useLocale();
 
   // Count-up animation
   useEffect(() => {
@@ -35,19 +45,18 @@ export function PointsCard({
       const current = Math.round(eased * target);
 
       if (numRef.current) {
-        numRef.current.textContent = current.toLocaleString('es-AR');
+        numRef.current.textContent = current.toLocaleString(locale);
       }
 
       if (progress < 1) requestAnimationFrame(step);
     }
 
     requestAnimationFrame(step);
-  }, [balance]);
+  }, [balance, locale]);
 
-  const expiryYear = new Date().getFullYear() + Math.floor(expiryDays / 365);
-  const expiryMonth = new Intl.DateTimeFormat('es', { month: 'long' }).format(
-    new Date(Date.now() + expiryDays * 86400000)
-  );
+  const expiryDate = new Date(Date.now() + expiryDays * 86400000);
+  const expiryMonth = new Intl.DateTimeFormat(locale, { month: 'long' }).format(expiryDate);
+  const expiryYear = expiryDate.getFullYear();
 
   return (
     <div
@@ -61,7 +70,7 @@ export function PointsCard({
         className="text-[11px] font-medium mb-2 tracking-[1.5px] uppercase"
         style={{ color: 'rgba(255,255,255,0.55)' }}
       >
-        Puntos disponibles
+        {i18n.pointsAvailable}
       </div>
 
       <div
@@ -69,11 +78,11 @@ export function PointsCard({
         className="font-display font-light text-white leading-none mb-1"
         style={{ fontSize: '52px' }}
       >
-        {balance.toLocaleString('es-AR')}
+        {balance.toLocaleString(locale)}
       </div>
 
       <div className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.5)' }}>
-        Vigentes hasta {expiryMonth} {expiryYear}
+        {i18n.validUntil.replace('{month}', expiryMonth).replace('{year}', String(expiryYear))}
       </div>
 
       {/* Progress bar */}
@@ -91,11 +100,11 @@ export function PointsCard({
       </div>
 
       <div className="flex justify-between text-[11px]" style={{ color: 'rgba(255,255,255,0.45)' }}>
-        <span>Nivel {tierLabel}</span>
+        <span>{i18n.tierLevel.replace('{tier}', tierLabel)}</span>
         {tierNext ? (
-          <span>{pointsToNext.toLocaleString()} pts para {tierNext}</span>
+          <span>{i18n.ptsToNext.replace('{points}', pointsToNext.toLocaleString(locale)).replace('{tier}', tierNext)}</span>
         ) : (
-          <span>Nivel máximo ✦</span>
+          <span>{i18n.maxTier} ✦</span>
         )}
       </div>
     </div>

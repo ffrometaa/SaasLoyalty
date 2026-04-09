@@ -4,23 +4,20 @@ import { NotificationBell } from './NotificationBell';
 import { getTierProgress } from '@/lib/member/types';
 import type { MemberProfile } from '@/lib/member/types';
 
-const TIER_LABELS: Record<string, string> = {
-  bronze: 'Bronze',
-  silver: 'Silver',
-  gold: 'Gold',
-  platinum: 'Platinum',
-};
-
 interface MemberHeroProps {
   member: MemberProfile;
 }
 
 export async function MemberHero({ member }: MemberHeroProps) {
   const t = await getTranslations('home');
+  const tp = await getTranslations('profile');
   const { percent, pointsToNext, nextTier } = getTierProgress(
     member.points_lifetime,
     member.tier
   );
+
+  const tierLabel = tp(`tierLabels.${member.tier}` as 'tierLabels.bronze');
+  const nextTierLabel = nextTier ? tp(`tierLabels.${nextTier}` as 'tierLabels.bronze') : null;
 
   const appName = member.tenant.brand_app_name ?? member.tenant.business_name;
 
@@ -81,9 +78,16 @@ export async function MemberHero({ member }: MemberHeroProps) {
           balance={member.points_balance}
           expiryDays={member.tenant.points_expiry_days ?? 365}
           tierPercent={percent}
-          tierLabel={TIER_LABELS[member.tier]}
-          tierNext={nextTier ? TIER_LABELS[nextTier] : null}
+          tierLabel={tierLabel}
+          tierNext={nextTierLabel}
           pointsToNext={pointsToNext}
+          i18n={{
+            pointsAvailable: t('pointsAvailable'),
+            validUntil: t('validUntil', { month: '{month}', year: '{year}' }),
+            tierLevel: t('tierLevel', { tier: '{tier}' }),
+            ptsToNext: t('ptsToNext', { points: '{points}', tier: '{tier}' }),
+            maxTier: t('maxTier'),
+          }}
         />
       </div>
     </div>

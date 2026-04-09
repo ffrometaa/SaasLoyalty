@@ -28,7 +28,12 @@
     "activeMultiplierSub": "{name} · hasta el {date}",
     "justForYou": "Solo para ti",
     "maxTierReached": "Nivel máximo alcanzado",
-    "nextTierBonus": "2x puntos en {tier}"
+    "nextTierBonus": "2x puntos en {tier}",
+    "pointsAvailable": "Puntos disponibles",
+    "validUntil": "Vigentes hasta {month} {year}",
+    "tierLevel": "Nivel {tier}",
+    "ptsToNext": "{points} pts para {tier}",
+    "maxTier": "Nivel máximo"
   },
   "onboarding": {
     "skip": "Saltar",
