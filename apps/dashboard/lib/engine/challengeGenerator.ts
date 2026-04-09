@@ -131,10 +131,12 @@ async function loadTemplatesForTenant(tenantId: string): Promise<Record<Motivati
   if (!data || data.length === 0) return TEMPLATES;
 
   // Group custom templates by motivation_type; fall back to built-in for missing types
+  type TemplateRow = { motivation_type: string; challenge_type: string; name: string; description: string; bonus_points: number; ttl_days: number; goal_multiplier: number };
+  const typedData = data as TemplateRow[];
   const custom: Record<MotivationType, ChallengeTemplate[]> = { ...TEMPLATES };
 
   for (const motivationType of Object.keys(TEMPLATES) as MotivationType[]) {
-    const rows = data.filter((r: { motivation_type: string; challenge_type: string; name: string; description: string; bonus_points: number; ttl_days: number; goal_multiplier: number }) => r.motivation_type === motivationType);
+    const rows = typedData.filter(r => r.motivation_type === motivationType);
     if (rows.length > 0) {
       custom[motivationType] = rows.map(r => ({
         type: r.challenge_type as ChallengeType,
