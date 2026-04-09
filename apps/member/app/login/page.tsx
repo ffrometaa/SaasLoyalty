@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { getSupabaseClient } from '@loyalty-os/lib';
 
 type Step = 'credentials' | 'picker';
@@ -41,6 +42,8 @@ function waitForAuthCookies(timeoutMs = 2000): Promise<void> {
 }
 
 export default function LoginPage() {
+  const t = useTranslations('login');
+  const tc = useTranslations('common');
   const [step, setStep] = useState<Step>('credentials');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -80,7 +83,7 @@ export default function LoginPage() {
     });
 
     if (loginError) {
-      setError('Email o contraseña incorrectos.');
+      setError(t('errorCredentials'));
       setLoading(false);
       return;
     }
@@ -101,7 +104,7 @@ export default function LoginPage() {
     });
 
     if (!res.ok) {
-      setError('Error al cargar tus membresías. Intentá de nuevo.');
+      setError(t('errorMemberships'));
       setLoading(false);
       return;
     }
@@ -110,20 +113,17 @@ export default function LoginPage() {
     const list: Membership[] = data.memberships ?? [];
 
     if (list.length === 0) {
-      // Authenticated but no active memberships — send to join wizard
       window.location.href = '/join';
       return;
     }
 
     if (list.length === 1) {
-      // Only one business — auto-select without showing picker
       document.cookie = `loyalty_tenant_id=${list[0].tenantId}; path=/; max-age=2592000; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
       await waitForAuthCookies();
       window.location.href = '/';
       return;
     }
 
-    // Multiple businesses — show picker
     setMemberships(list);
     setLoading(false);
     setStep('picker');
@@ -155,23 +155,23 @@ export default function LoginPage() {
                   letterSpacing: '-0.02em',
                 }}
               >
-                Bienvenido
+                {t('welcome')}
               </h1>
               <p className="text-sm mt-2 text-white/45">
-                Iniciá sesión en tu programa de fidelización
+                {t('subtitle')}
               </p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1.5 text-white/70">
-                  Correo electrónico
+                  {t('emailLabel')}
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="tu@correo.com"
+                  placeholder={t('emailPlaceholder')}
                   autoComplete="email"
                   autoFocus
                   required
@@ -182,10 +182,10 @@ export default function LoginPage() {
               <div>
                 <div className="flex justify-between items-center mb-1.5">
                   <label className="text-sm font-medium text-white/70">
-                    Contraseña
+                    {t('passwordLabel')}
                   </label>
                   <a href="/forgot-password" className="text-xs underline text-[#a78bfa]">
-                    ¿Olvidaste tu contraseña?
+                    {t('forgotPassword')}
                   </a>
                 </div>
                 <input
@@ -211,14 +211,14 @@ export default function LoginPage() {
                 className={btnClass}
                 style={{ ...btnStyle, opacity: loading || !email.trim() || !password ? 0.6 : 1 }}
               >
-                {loading ? <><Spinner /> Ingresando...</> : 'Ingresar'}
+                {loading ? <><Spinner /> {t('submitting')}</> : t('submit')}
               </button>
             </form>
 
             <p className="mt-6 text-center text-sm text-white/35">
-              ¿Primera vez?{' '}
+              {t('firstTime')}{' '}
               <a href="/join" className="underline text-[#a78bfa]">
-                Ingresá el código de tu negocio
+                {t('enterCode')}
               </a>
             </p>
           </>
@@ -237,16 +237,16 @@ export default function LoginPage() {
                   letterSpacing: '-0.02em',
                 }}
               >
-                Elegí tu negocio
+                {t('pickBusiness')}
               </h1>
               <p className="text-sm mt-2 text-white/45">
-                Pertenecés a {memberships.length} programas de fidelización
+                {t('belongsTo', { count: memberships.length })}
               </p>
             </div>
 
             <div className="space-y-3">
               {memberships.map((m) => {
-                const displayName = m.tenant?.brand_app_name ?? m.tenant?.business_name ?? 'Negocio';
+                const displayName = m.tenant?.brand_app_name ?? m.tenant?.business_name ?? t('business');
                 const accentColor = m.tenant?.brand_color_primary ?? '#7c3aed';
 
                 return (
@@ -259,7 +259,6 @@ export default function LoginPage() {
                       border: '1px solid rgba(255,255,255,0.1)',
                     }}
                   >
-                    {/* Logo or colored initial */}
                     <div
                       className="w-12 h-12 rounded-[12px] flex items-center justify-center shrink-0 overflow-hidden"
                       style={{ background: accentColor + '33', border: `1px solid ${accentColor}55` }}
@@ -284,7 +283,7 @@ export default function LoginPage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-[15px] font-semibold text-white truncate">{displayName}</p>
                       <p className="text-xs text-white/40 mt-0.5">
-                        {m.pointsBalance.toLocaleString()} puntos · {m.tier}
+                        {m.pointsBalance.toLocaleString()} {tc('points')} · {m.tier}
                       </p>
                     </div>
 
@@ -305,9 +304,9 @@ export default function LoginPage() {
             </div>
 
             <p className="mt-6 text-center text-sm text-white/35">
-              ¿Nuevo negocio?{' '}
+              {t('newBusiness')}{' '}
               <a href="/join" className="underline text-[#a78bfa]">
-                Ingresá el código
+                {t('enterCodeLink')}
               </a>
             </p>
           </>

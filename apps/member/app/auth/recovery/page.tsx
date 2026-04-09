@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { getSupabaseClient } from '@loyalty-os/lib';
 
 export default function AuthRecoveryPage() {
   const router = useRouter();
+  const t = useTranslations('authRecovery');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -17,7 +19,7 @@ export default function AuthRecoveryPage() {
       const type = params.get('type');
 
       if (type !== 'recovery' || !accessToken || !refreshToken) {
-        setError('Link inválido o expirado.');
+        setError(t('invalidLink'));
         return;
       }
 
@@ -28,7 +30,7 @@ export default function AuthRecoveryPage() {
       });
 
       if (sessionError) {
-        setError('El link expiró o ya fue usado. Solicitá uno nuevo.');
+        setError(t('expiredDesc'));
         return;
       }
 
@@ -46,7 +48,7 @@ export default function AuthRecoveryPage() {
             {error}
           </p>
           <a href="/forgot-password" className="text-sm underline text-[#a78bfa]">
-            Solicitar nuevo link
+            {t('requestNewLink')}
           </a>
         </div>
       </main>

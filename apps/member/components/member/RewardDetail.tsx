@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRedemption } from '@/hooks/useRedemption';
 import type { RewardItem, MemberProfile } from '@/lib/member/types';
@@ -31,6 +32,7 @@ export function RewardDetail({ reward, member }: RewardDetailProps) {
   const { redeem, loading, error } = useRedemption();
   const [confirming, setConfirming] = useState(false);
   const router = useRouter();
+  const t = useTranslations('rewardDetail');
 
   const canAfford = member.points_balance >= reward.points_cost;
   const afterBalance = member.points_balance - reward.points_cost;
@@ -67,7 +69,7 @@ export function RewardDetail({ reward, member }: RewardDetailProps) {
           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
             <polyline points="15 18 9 12 15 6" />
           </svg>
-          Recompensas
+          {t('rewards')}
         </Link>
 
         {/* Image */}
@@ -104,7 +106,7 @@ export function RewardDetail({ reward, member }: RewardDetailProps) {
         {/* Cost breakdown */}
         <div className="mb-4">
           <div className="flex justify-between items-center py-3.5" style={{ borderBottom: '1px solid var(--border)' }}>
-            <span className="text-sm" style={{ color: 'var(--text)' }}>Costo del canje</span>
+            <span className="text-sm" style={{ color: 'var(--text)' }}>{t('redemptionCost')}</span>
             <span className="text-sm font-medium" style={{ color: 'var(--brand-primary-dark)' }}>
               {reward.points_cost.toLocaleString()} pts
             </span>
@@ -112,7 +114,7 @@ export function RewardDetail({ reward, member }: RewardDetailProps) {
 
           {reward.monetary_value && (
             <div className="flex justify-between items-center py-3.5" style={{ borderBottom: '1px solid var(--border)' }}>
-              <span className="text-sm" style={{ color: 'var(--text)' }}>Valor del servicio</span>
+              <span className="text-sm" style={{ color: 'var(--text)' }}>{t('serviceValue')}</span>
               <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>
                 ${reward.monetary_value.toFixed(2)}
               </span>
@@ -120,9 +122,9 @@ export function RewardDetail({ reward, member }: RewardDetailProps) {
           )}
 
           <div className="flex justify-between items-center py-3.5" style={{ borderBottom: '1px solid var(--border)' }}>
-            <span className="text-sm" style={{ color: 'var(--text)' }}>Válido por</span>
+            <span className="text-sm" style={{ color: 'var(--text)' }}>{t('validFor')}</span>
             <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>
-              {reward.valid_days} días
+              {t('days', { count: reward.valid_days })}
             </span>
           </div>
         </div>
@@ -133,7 +135,7 @@ export function RewardDetail({ reward, member }: RewardDetailProps) {
           style={{ background: 'var(--brand-primary-light)' }}
         >
           <span className="text-[13px]" style={{ color: 'var(--brand-primary-dark)' }}>
-            Tus puntos actuales
+            {t('yourPoints')}
           </span>
           <span
             className="font-display text-xl font-medium"
@@ -149,7 +151,7 @@ export function RewardDetail({ reward, member }: RewardDetailProps) {
             style={{ background: '#f5f5f5' }}
           >
             <span className="text-[13px]" style={{ color: 'var(--muted)' }}>
-              Después del canje
+              {t('afterRedemption')}
             </span>
             <span className="text-lg font-medium" style={{ color: 'var(--muted)' }}>
               {afterBalance.toLocaleString()}
@@ -179,14 +181,12 @@ export function RewardDetail({ reward, member }: RewardDetailProps) {
               cursor: canAfford ? 'pointer' : 'not-allowed',
             }}
           >
-            {canAfford ? 'Confirmar canje' : 'Puntos insuficientes'}
+            {canAfford ? t('confirmRedeem') : t('notEnoughPoints')}
           </button>
         ) : (
           <div className="space-y-3">
             <p className="text-sm text-center mb-3" style={{ color: 'var(--muted)' }}>
-              ¿Confirmas el canje de{' '}
-              <strong style={{ color: 'var(--text)' }}>{reward.points_cost.toLocaleString()} pts</strong>{' '}
-              por esta recompensa?
+              {t('confirmMessage', { pts: reward.points_cost.toLocaleString() })}
             </p>
 
             <button
@@ -208,10 +208,10 @@ export function RewardDetail({ reward, member }: RewardDetailProps) {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                     />
                   </svg>
-                  Procesando...
+                  {t('processing')}
                 </>
               ) : (
-                'Sí, canjear ahora'
+                t('yesRedeem')
               )}
             </button>
 
@@ -220,7 +220,7 @@ export function RewardDetail({ reward, member }: RewardDetailProps) {
               className="w-full py-2.5 text-sm"
               style={{ color: 'var(--muted)' }}
             >
-              Cancelar
+              {t('cancel')}
             </button>
           </div>
         )}
@@ -231,7 +231,7 @@ export function RewardDetail({ reward, member }: RewardDetailProps) {
             className="w-full py-2.5 text-sm"
             style={{ color: 'var(--muted)' }}
           >
-            Cancelar
+            {t('cancel')}
           </button>
         )}
       </div>

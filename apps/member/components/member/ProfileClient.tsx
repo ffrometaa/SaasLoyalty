@@ -1,17 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Mail, User, LogOut, Shield, Gift } from 'lucide-react';
 import Link from 'next/link';
 import { LanguageSwitcher } from '@/components/member/LanguageSwitcher';
 import { getSupabaseClient } from '@loyalty-os/lib';
-
-const TIER_LABELS: Record<string, string> = {
-  bronze: 'Bronze',
-  silver: 'Silver',
-  gold: 'Gold',
-  platinum: 'Platinum',
-};
 
 interface ProfileClientProps {
   name: string;
@@ -24,6 +18,7 @@ interface ProfileClientProps {
 
 export function ProfileClient({ name, email, memberCode, tier, pointsBalance, pointsLifetime }: ProfileClientProps) {
   const router = useRouter();
+  const t = useTranslations('profile');
 
   async function handleLogout() {
     const supabase = getSupabaseClient();
@@ -55,18 +50,18 @@ export function ProfileClient({ name, email, memberCode, tier, pointsBalance, po
           </div>
           <div>
             <h1 className="text-xl font-semibold text-white">{name}</h1>
-            <p className="text-sm text-white/60 mt-0.5">{TIER_LABELS[tier] ?? tier} · {memberCode}</p>
+            <p className="text-sm text-white/60 mt-0.5">{t(`tierLabels.${tier}` as Parameters<typeof t>[0])} · {memberCode}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3 mt-6">
           <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.08)' }}>
             <p className="text-2xl font-bold text-white">{pointsBalance.toLocaleString()}</p>
-            <p className="text-xs text-white/60 mt-0.5">Puntos disponibles</p>
+            <p className="text-xs text-white/60 mt-0.5">{t('pointsAvailable')}</p>
           </div>
           <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.08)' }}>
             <p className="text-2xl font-bold text-white">{pointsLifetime.toLocaleString()}</p>
-            <p className="text-xs text-white/60 mt-0.5">Puntos acumulados</p>
+            <p className="text-xs text-white/60 mt-0.5">{t('pointsLifetime')}</p>
           </div>
         </div>
       </div>
@@ -75,7 +70,7 @@ export function ProfileClient({ name, email, memberCode, tier, pointsBalance, po
         {/* Contact Info */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100">
-            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Información</h3>
+            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{t('information')}</h3>
           </div>
           <div className="divide-y divide-gray-100">
             <div className="flex items-center gap-3 px-4 py-3.5">
@@ -83,7 +78,7 @@ export function ProfileClient({ name, email, memberCode, tier, pointsBalance, po
                 <Mail className="h-4 w-4 text-gray-500" />
               </div>
               <div>
-                <p className="text-xs text-gray-400">Email</p>
+                <p className="text-xs text-gray-400">{t('email')}</p>
                 <p className="text-sm font-medium text-gray-900">{email}</p>
               </div>
             </div>
@@ -92,7 +87,7 @@ export function ProfileClient({ name, email, memberCode, tier, pointsBalance, po
                 <User className="h-4 w-4 text-gray-500" />
               </div>
               <div>
-                <p className="text-xs text-gray-400">Código de miembro</p>
+                <p className="text-xs text-gray-400">{t('memberCode')}</p>
                 <p className="text-sm font-medium text-gray-900 font-mono">{memberCode}</p>
               </div>
             </div>
@@ -102,7 +97,7 @@ export function ProfileClient({ name, email, memberCode, tier, pointsBalance, po
         {/* Settings */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100">
-            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Ajustes</h3>
+            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{t('settings')}</h3>
           </div>
           <div className="divide-y divide-gray-100">
             <div className="px-4 py-3.5">
@@ -113,8 +108,8 @@ export function ProfileClient({ name, email, memberCode, tier, pointsBalance, po
                 <Gift className="h-4 w-4 text-purple-500" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">Referir amigos</p>
-                <p className="text-xs text-gray-400">Ganá puntos por cada referido</p>
+                <p className="text-sm font-medium text-gray-900">{t('referFriends')}</p>
+                <p className="text-xs text-gray-400">{t('referFriendsDesc')}</p>
               </div>
             </Link>
             <button className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-gray-50 transition-colors">
@@ -122,7 +117,7 @@ export function ProfileClient({ name, email, memberCode, tier, pointsBalance, po
                 <Shield className="h-4 w-4 text-gray-500" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">Privacidad y seguridad</p>
+                <p className="text-sm font-medium text-gray-900">{t('privacySecurity')}</p>
               </div>
             </button>
           </div>
@@ -137,11 +132,11 @@ export function ProfileClient({ name, email, memberCode, tier, pointsBalance, po
             <div className="p-2 bg-red-50 rounded-lg">
               <LogOut className="h-4 w-4 text-red-500" />
             </div>
-            <p className="text-sm font-medium text-red-600">Cerrar sesión</p>
+            <p className="text-sm font-medium text-red-600">{t('logout')}</p>
           </button>
         </div>
 
-        <p className="text-center text-xs text-gray-400 pb-4">Powered by LoyaltyOS</p>
+        <p className="text-center text-xs text-gray-400 pb-4">{t('poweredBy')}</p>
       </div>
     </div>
   );

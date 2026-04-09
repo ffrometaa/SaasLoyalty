@@ -153,7 +153,23 @@
     "phone": "Teléfono",
     "memberSince": "Miembro desde",
     "totalPoints": "Puntos totales",
-    "totalVisits": "Visitas totales"
+    "totalVisits": "Visitas totales",
+    "pointsAvailable": "Puntos disponibles",
+    "pointsLifetime": "Puntos acumulados",
+    "information": "Información",
+    "memberCode": "Código de miembro",
+    "settings": "Ajustes",
+    "referFriends": "Referir amigos",
+    "referFriendsDesc": "Gana puntos por cada referido",
+    "privacySecurity": "Privacidad y seguridad",
+    "logout": "Cerrar sesión",
+    "poweredBy": "Powered by LoyaltyOS",
+    "tierLabels": {
+      "bronze": "Bronce",
+      "silver": "Plata",
+      "gold": "Oro",
+      "platinum": "Platino"
+    }
   },
   "langSwitch": {
     "label": "Idioma",
@@ -306,6 +322,102 @@
       "5": "Mayo", "6": "Junio", "7": "Julio", "8": "Agosto",
       "9": "Septiembre", "10": "Octubre", "11": "Noviembre", "12": "Diciembre"
     }
+  },
+  "login": {
+    "welcome": "Bienvenido",
+    "subtitle": "Inicia sesión en tu programa de fidelización",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "tu@correo.com",
+    "passwordLabel": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "submitting": "Ingresando...",
+    "submit": "Ingresar",
+    "firstTime": "¿Primera vez?",
+    "enterCode": "Ingresa el código de tu negocio",
+    "pickBusiness": "Elige tu negocio",
+    "belongsTo": "Perteneces a {count} programas de fidelización",
+    "business": "Negocio",
+    "newBusiness": "¿Nuevo negocio?",
+    "enterCodeLink": "Ingresa el código",
+    "errorCredentials": "Email o contraseña incorrectos.",
+    "errorMemberships": "Error al cargar tus membresías. Intenta de nuevo."
+  },
+  "leaderboard": {
+    "title": "Ranking",
+    "monthlyClassification": "Clasificación mensual",
+    "monthLabel": "Mes {key}",
+    "weekLabel": "Semana {key}",
+    "yourPosition": "Tu posición",
+    "position": "Puesto #{rank}",
+    "points": "puntos",
+    "empty": "Aún no hay ranking",
+    "emptyDesc": "El ranking se actualiza semanalmente. ¡Empieza a acumular puntos!",
+    "you": "(tú)"
+  },
+  "redemptions": {
+    "title": "Mis Canjes",
+    "subtitle": "Muestra estos códigos al personal",
+    "active": "Activos ({count})",
+    "used": "Usados ({count})",
+    "expires": "Vence {date}",
+    "activeBadge": "Activo",
+    "usedOn": "Usado el {date}",
+    "usedBadge": "Usado",
+    "empty": "Sin canjes aún",
+    "emptyDesc": "¡Empieza a ganar puntos y canjéalos por recompensas!",
+    "browseRewards": "Ver recompensas",
+    "showToStaff": "Muestra esto al personal",
+    "qrCode": "Código QR",
+    "orEnterCode": "O ingresa el código:",
+    "validUntil": "Válido hasta {date}",
+    "close": "Cerrar"
+  },
+  "rewardDetail": {
+    "rewards": "Recompensas",
+    "redemptionCost": "Costo del canje",
+    "serviceValue": "Valor del servicio",
+    "validFor": "Válido por",
+    "days": "{count} días",
+    "yourPoints": "Tus puntos actuales",
+    "afterRedemption": "Después del canje",
+    "confirmRedeem": "Confirmar canje",
+    "notEnoughPoints": "Puntos insuficientes",
+    "confirmMessage": "¿Confirmas el canje de {pts} pts por esta recompensa?",
+    "processing": "Procesando...",
+    "yesRedeem": "Sí, canjear ahora",
+    "cancel": "Cancelar"
+  },
+  "authReset": {
+    "title": "Nueva contraseña",
+    "subtitle": "Elige una contraseña segura para tu cuenta.",
+    "passwordLabel": "Nueva contraseña",
+    "passwordPlaceholder": "Mínimo 8 caracteres",
+    "confirmLabel": "Confirmar contraseña",
+    "confirmPlaceholder": "Repite tu contraseña",
+    "submitting": "Guardando...",
+    "submit": "Guardar contraseña",
+    "errorMinLength": "La contraseña debe tener al menos 8 caracteres.",
+    "errorMismatch": "Las contraseñas no coinciden.",
+    "errorGeneric": "No se pudo actualizar la contraseña. El link puede haber expirado."
+  },
+  "authRecovery": {
+    "invalidLink": "Link inválido o expirado.",
+    "expiredDesc": "El link expiró o ya fue usado. Solicita uno nuevo.",
+    "requestNewLink": "Solicitar nuevo link"
+  },
+  "impersonation": {
+    "banner": "Sesión de impersonación activa — estás viendo la app como este miembro",
+    "ending": "Terminando...",
+    "endSession": "Terminar sesión",
+    "starting": "Iniciando sesión de impersonación..."
+  },
+  "offlineIndicator": {
+    "message": "Estás sin conexión. Algunas funciones pueden estar limitadas.",
+    "retry": "Reintentar"
+  },
+  "metadata": {
+    "title": "Mis Puntos",
+    "description": "Tu programa de recompensas"
   },
   "offline": {
     "title": "Sin conexión",

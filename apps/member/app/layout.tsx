@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Cormorant_Garamond, Jost } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, getLocale } from 'next-intl/server';
+import { getMessages, getLocale, getTranslations } from 'next-intl/server';
 import './globals.css';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { ImpersonationBanner } from '@/components/ImpersonationBanner';
@@ -23,17 +23,20 @@ const jost = Jost({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  title: 'Mis Puntos',
-  description: 'Tu programa de recompensas',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'Mis Puntos',
-  },
-  formatDetection: { telephone: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('metadata');
+  return {
+    title: t('title'),
+    description: t('description'),
+    manifest: '/manifest.json',
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'black-translucent',
+      title: t('title'),
+    },
+    formatDetection: { telephone: false },
+  };
+}
 
 export const viewport: Viewport = {
   width: 'device-width',

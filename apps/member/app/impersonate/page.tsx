@@ -2,10 +2,12 @@
 
 import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { getSupabaseClient } from '@loyalty-os/lib';
 
 export default function ImpersonatePage() {
   const searchParams = useSearchParams();
+  const t = useTranslations('impersonation');
 
   useEffect(() => {
     const token = searchParams.get('token');
@@ -39,7 +41,7 @@ export default function ImpersonatePage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-950">
-      <p className="text-white text-sm">Iniciando sesión de impersonación…</p>
+      <p className="text-white text-sm">{t('starting')}</p>
     </div>
   );
 }

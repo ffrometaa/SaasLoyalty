@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { QrCode, ChevronLeft, CheckCircle, Clock, Gift, Loader2 } from 'lucide-react';
 
 type Redemption = {
@@ -14,6 +15,7 @@ type Redemption = {
 };
 
 export default function MyRedemptionsPage() {
+  const t = useTranslations('redemptions');
   const [redemptions, setRedemptions] = useState<Redemption[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRedemption, setSelectedRedemption] = useState<Redemption | null>(null);
@@ -40,8 +42,8 @@ export default function MyRedemptionsPage() {
               <ChevronLeft className="h-6 w-6 text-gray-600" />
             </Link>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">My Redemptions</h1>
-              <p className="text-sm text-gray-500">Show these codes to the staff</p>
+              <h1 className="text-xl font-bold text-gray-900">{t('title')}</h1>
+              <p className="text-sm text-gray-500">{t('subtitle')}</p>
             </div>
           </div>
         </div>
@@ -58,7 +60,7 @@ export default function MyRedemptionsPage() {
         {pendingRedemptions.length > 0 && (
           <section>
             <h2 className="text-sm font-medium text-gray-500 mb-3">
-              Active ({pendingRedemptions.length})
+              {t('active', { count: pendingRedemptions.length })}
             </h2>
             <div className="space-y-3">
               {pendingRedemptions.map((redemption) => (
@@ -76,12 +78,12 @@ export default function MyRedemptionsPage() {
                         <p className="font-semibold text-gray-900">{redemption.reward_name}</p>
                         <p className="text-sm text-gray-500 flex items-center gap-1">
                           <Clock className="h-4 w-4" />
-                          Expires {new Date(redemption.expires_at).toLocaleDateString()}
+                          {t('expires', { date: new Date(redemption.expires_at).toLocaleDateString() })}
                         </p>
                       </div>
                     </div>
                     <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
-                      Active
+                      {t('activeBadge')}
                     </span>
                   </div>
                 </button>
@@ -94,7 +96,7 @@ export default function MyRedemptionsPage() {
         {usedRedemptions.length > 0 && (
           <section>
             <h2 className="text-sm font-medium text-gray-500 mb-3">
-              Used ({usedRedemptions.length})
+              {t('used', { count: usedRedemptions.length })}
             </h2>
             <div className="space-y-3">
               {usedRedemptions.map((redemption) => (
@@ -111,12 +113,12 @@ export default function MyRedemptionsPage() {
                         <p className="font-semibold text-gray-900">{redemption.reward_name}</p>
                         <p className="text-sm text-gray-500 flex items-center gap-1">
                           <CheckCircle className="h-4 w-4" />
-                          Used on {new Date(redemption.used_at!).toLocaleDateString()}
+                          {t('usedOn', { date: new Date(redemption.used_at!).toLocaleDateString() })}
                         </p>
                       </div>
                     </div>
                     <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
-                      Used
+                      {t('usedBadge')}
                     </span>
                   </div>
                 </div>
@@ -129,16 +131,16 @@ export default function MyRedemptionsPage() {
         {redemptions.length === 0 && (
           <div className="text-center py-12">
             <QrCode className="mx-auto h-16 w-16 text-gray-300" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No redemptions yet</h3>
+            <h3 className="mt-4 text-lg font-medium text-gray-900">{t('empty')}</h3>
             <p className="mt-2 text-gray-500">
-              Start earning points and redeem them for rewards!
+              {t('emptyDesc')}
             </p>
             <Link
               href="/rewards"
               className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium"
             >
               <Gift className="h-4 w-4" />
-              Browse Rewards
+              {t('browseRewards')}
             </Link>
           </div>
         )}
@@ -152,21 +154,21 @@ export default function MyRedemptionsPage() {
           <div className="absolute inset-0 bg-black/50" onClick={() => setSelectedRedemption(null)} />
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 text-center">
             <h2 className="text-xl font-bold text-gray-900">{selectedRedemption.reward_name}</h2>
-            <p className="text-sm text-gray-500 mt-1">Show this to the staff</p>
+            <p className="text-sm text-gray-500 mt-1">{t('showToStaff')}</p>
             
             {/* QR Code */}
             <div className="mt-6 p-4 bg-gray-100 rounded-xl inline-block">
               <div className="w-48 h-48 bg-white border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center">
                 <div className="text-center">
                   <QrCode className="h-16 w-16 text-gray-400 mx-auto" />
-                  <p className="text-xs text-gray-400 mt-2">QR Code</p>
+                  <p className="text-xs text-gray-400 mt-2">{t('qrCode')}</p>
                 </div>
               </div>
             </div>
             
             {/* Alphanumeric Code */}
             <div className="mt-6 p-4 bg-indigo-50 rounded-xl">
-              <p className="text-sm text-indigo-600">Or enter code:</p>
+              <p className="text-sm text-indigo-600">{t('orEnterCode')}</p>
               <p className="text-3xl font-mono font-bold text-indigo-700 tracking-widest mt-1">
                 {selectedRedemption.alphanumeric_code}
               </p>
@@ -174,14 +176,14 @@ export default function MyRedemptionsPage() {
             
             {/* Expiration */}
             <p className="mt-4 text-sm text-gray-500">
-              Valid until {new Date(selectedRedemption.expires_at).toLocaleDateString()}
+              {t('validUntil', { date: new Date(selectedRedemption.expires_at).toLocaleDateString() })}
             </p>
             
             <button
               onClick={() => setSelectedRedemption(null)}
               className="mt-6 w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold"
             >
-              Close
+              {t('close')}
             </button>
           </div>
         </div>

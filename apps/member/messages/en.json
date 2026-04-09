@@ -153,7 +153,23 @@
     "phone": "Phone",
     "memberSince": "Member since",
     "totalPoints": "Total points",
-    "totalVisits": "Total visits"
+    "totalVisits": "Total visits",
+    "pointsAvailable": "Available points",
+    "pointsLifetime": "Accumulated points",
+    "information": "Information",
+    "memberCode": "Member code",
+    "settings": "Settings",
+    "referFriends": "Refer friends",
+    "referFriendsDesc": "Earn points for each referral",
+    "privacySecurity": "Privacy and security",
+    "logout": "Sign out",
+    "poweredBy": "Powered by LoyaltyOS",
+    "tierLabels": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum"
+    }
   },
   "langSwitch": {
     "label": "Language",
@@ -306,6 +322,102 @@
       "5": "May", "6": "June", "7": "July", "8": "August",
       "9": "September", "10": "October", "11": "November", "12": "December"
     }
+  },
+  "login": {
+    "welcome": "Welcome",
+    "subtitle": "Sign in to your loyalty program",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@email.com",
+    "passwordLabel": "Password",
+    "forgotPassword": "Forgot your password?",
+    "submitting": "Signing in...",
+    "submit": "Sign in",
+    "firstTime": "First time?",
+    "enterCode": "Enter your business code",
+    "pickBusiness": "Choose your business",
+    "belongsTo": "You belong to {count} loyalty programs",
+    "business": "Business",
+    "newBusiness": "New business?",
+    "enterCodeLink": "Enter the code",
+    "errorCredentials": "Incorrect email or password.",
+    "errorMemberships": "Error loading your memberships. Try again."
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "monthlyClassification": "Monthly ranking",
+    "monthLabel": "Month {key}",
+    "weekLabel": "Week {key}",
+    "yourPosition": "Your position",
+    "position": "Position #{rank}",
+    "points": "points",
+    "empty": "No ranking yet",
+    "emptyDesc": "The leaderboard updates weekly. Start earning points!",
+    "you": "(you)"
+  },
+  "redemptions": {
+    "title": "My Redemptions",
+    "subtitle": "Show these codes to the staff",
+    "active": "Active ({count})",
+    "used": "Used ({count})",
+    "expires": "Expires {date}",
+    "activeBadge": "Active",
+    "usedOn": "Used on {date}",
+    "usedBadge": "Used",
+    "empty": "No redemptions yet",
+    "emptyDesc": "Start earning points and redeem them for rewards!",
+    "browseRewards": "Browse Rewards",
+    "showToStaff": "Show this to the staff",
+    "qrCode": "QR Code",
+    "orEnterCode": "Or enter code:",
+    "validUntil": "Valid until {date}",
+    "close": "Close"
+  },
+  "rewardDetail": {
+    "rewards": "Rewards",
+    "redemptionCost": "Redemption cost",
+    "serviceValue": "Service value",
+    "validFor": "Valid for",
+    "days": "{count} days",
+    "yourPoints": "Your current points",
+    "afterRedemption": "After redemption",
+    "confirmRedeem": "Confirm redemption",
+    "notEnoughPoints": "Not enough points",
+    "confirmMessage": "Confirm redeeming {pts} pts for this reward?",
+    "processing": "Processing...",
+    "yesRedeem": "Yes, redeem now",
+    "cancel": "Cancel"
+  },
+  "authReset": {
+    "title": "New password",
+    "subtitle": "Choose a secure password for your account.",
+    "passwordLabel": "New password",
+    "passwordPlaceholder": "Minimum 8 characters",
+    "confirmLabel": "Confirm password",
+    "confirmPlaceholder": "Repeat your password",
+    "submitting": "Saving...",
+    "submit": "Save password",
+    "errorMinLength": "Password must be at least 8 characters.",
+    "errorMismatch": "Passwords do not match.",
+    "errorGeneric": "Could not update password. The link may have expired."
+  },
+  "authRecovery": {
+    "invalidLink": "Invalid or expired link.",
+    "expiredDesc": "The link expired or was already used. Request a new one.",
+    "requestNewLink": "Request new link"
+  },
+  "impersonation": {
+    "banner": "Impersonation session active — you are viewing the app as this member",
+    "ending": "Ending...",
+    "endSession": "End session",
+    "starting": "Starting impersonation session..."
+  },
+  "offlineIndicator": {
+    "message": "You're offline. Some features may be limited.",
+    "retry": "Retry"
+  },
+  "metadata": {
+    "title": "My Points",
+    "description": "Your rewards program"
   },
   "offline": {
     "title": "You're Offline",

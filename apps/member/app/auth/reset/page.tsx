@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { getSupabaseClient } from '@loyalty-os/lib';
 
 export default function AuthResetPage() {
   const router = useRouter();
+  const t = useTranslations('authReset');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,11 +17,11 @@ export default function AuthResetPage() {
     e.preventDefault();
 
     if (password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres.');
+      setError(t('errorMinLength'));
       return;
     }
     if (password !== confirm) {
-      setError('Las contraseñas no coinciden.');
+      setError(t('errorMismatch'));
       return;
     }
 
@@ -32,7 +34,7 @@ export default function AuthResetPage() {
     setLoading(false);
 
     if (updateError) {
-      setError('No se pudo actualizar la contraseña. El link puede haber expirado.');
+      setError(t('errorGeneric'));
       return;
     }
 
@@ -49,22 +51,22 @@ export default function AuthResetPage() {
           className="mb-2 text-white"
           style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em' }}
         >
-          Nueva contraseña
+          {t('title')}
         </h1>
         <p className="text-sm mb-8 text-white/45">
-          Elige una contraseña segura para tu cuenta.
+          {t('subtitle')}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1.5 text-white/70">
-              Nueva contraseña
+              {t('passwordLabel')}
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mínimo 8 caracteres"
+              placeholder={t('passwordPlaceholder')}
               autoComplete="new-password"
               minLength={8}
               autoFocus
@@ -75,13 +77,13 @@ export default function AuthResetPage() {
 
           <div>
             <label className="block text-sm font-medium mb-1.5 text-white/70">
-              Confirmar contraseña
+              {t('confirmLabel')}
             </label>
             <input
               type="password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              placeholder="Repite tu contraseña"
+              placeholder={t('confirmPlaceholder')}
               autoComplete="new-password"
               required
               className={darkInput}
@@ -109,10 +111,10 @@ export default function AuthResetPage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4" />
                   <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Guardando...
+                {t('submitting')}
               </>
             ) : (
-              'Guardar contraseña'
+              t('submit')
             )}
           </button>
         </form>

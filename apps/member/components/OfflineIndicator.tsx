@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { WifiOff, RefreshCw } from 'lucide-react';
 
 export function OfflineIndicator() {
+  const t = useTranslations('offlineIndicator');
   const [, setIsOnline] = useState(true);
   const [showBanner, setShowBanner] = useState(false);
 
@@ -48,7 +50,7 @@ export function OfflineIndicator() {
           <div className="flex items-center gap-2">
             <WifiOff className="h-5 w-5" />
             <span className="text-sm font-medium">
-              You&apos;re offline. Some features may be limited.
+              {t('message')}
             </span>
           </div>
           <button
@@ -56,7 +58,7 @@ export function OfflineIndicator() {
             className="inline-flex items-center gap-1 px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm font-medium transition-colors"
           >
             <RefreshCw className="h-4 w-4" />
-            Retry
+            {t('retry')}
           </button>
         </div>
       </div>

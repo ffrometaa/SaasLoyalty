@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { getServerUser } from '@/lib/supabase';
 import { getMemberWithTenant } from '@/lib/member/queries';
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
@@ -54,14 +55,15 @@ export default async function LeaderboardPage() {
   const member = await getMemberWithTenant(user.id);
   if (!member) redirect('/login');
 
+  const t = await getTranslations('leaderboard');
   const snapshot = await getLeaderboard(member.tenant_id);
   const entries = (snapshot?.entries ?? []) as LeaderboardEntry[];
   const memberEntry = entries.find(e => e.memberId === member.id);
 
   const periodLabel = snapshot
     ? snapshot.period_type === 'month'
-      ? `Mes ${snapshot.period_key}`
-      : `Semana ${snapshot.period_key}`
+      ? t('monthLabel', { key: snapshot.period_key })
+      : t('weekLabel', { key: snapshot.period_key })
     : '';
 
   return (
@@ -74,8 +76,8 @@ export default async function LeaderboardPage() {
       <main className="min-h-screen pb-24" style={{ background: 'var(--cream)' }}>
         {/* Header */}
         <div className="px-5 pt-12 pb-6" style={{ background: 'var(--brand-primary)' }}>
-          <h1 className="text-2xl font-bold text-white mb-1">Ranking</h1>
-          <p className="text-white/70 text-sm">{periodLabel || 'Clasificación mensual'}</p>
+          <h1 className="text-2xl font-bold text-white mb-1">{t('title')}</h1>
+          <p className="text-white/70 text-sm">{periodLabel || t('monthlyClassification')}</p>
         </div>
 
         {/* My position sticky card */}
@@ -89,12 +91,12 @@ export default async function LeaderboardPage() {
                 {RANK_MEDALS[memberEntry.rank] ?? `#${memberEntry.rank}`}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-white/70">Tu posición</p>
-                <p className="text-lg font-bold leading-tight">Puesto #{memberEntry.rank}</p>
+                <p className="text-xs text-white/70">{t('yourPosition')}</p>
+                <p className="text-lg font-bold leading-tight">{t('position', { rank: memberEntry.rank })}</p>
               </div>
               <div className="text-right">
                 <p className="text-xl font-black">{memberEntry.points.toLocaleString()}</p>
-                <p className="text-xs text-white/70">puntos</p>
+                <p className="text-xs text-white/70">{t('points')}</p>
               </div>
             </div>
           </div>
@@ -106,10 +108,10 @@ export default async function LeaderboardPage() {
             <div className="text-center py-16">
               <div className="text-5xl mb-4">🏆</div>
               <p className="font-semibold text-lg mb-1" style={{ color: 'var(--text)' }}>
-                Aún no hay ranking
+                {t('empty')}
               </p>
               <p className="text-sm" style={{ color: 'var(--muted)' }}>
-                El ranking se actualiza semanalmente. ¡Empezá a acumular puntos!
+                {t('emptyDesc')}
               </p>
             </div>
           ) : (
@@ -155,7 +157,7 @@ export default async function LeaderboardPage() {
                       className="flex-1 text-sm font-semibold truncate"
                       style={{ color: 'var(--text)' }}
                     >
-                      {entry.name}{isMe ? ' (vos)' : ''}
+                      {entry.name}{isMe ? ` ${t('you')}` : ''}
                     </span>
 
                     {/* Delta */}
