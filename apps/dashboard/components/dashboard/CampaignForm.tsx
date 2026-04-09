@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { SEGMENTS } from '../../lib/campaigns/segment-constants';
+import type { CustomSegment } from '../../lib/campaigns/custom-segment-types';
 import { createCampaign, updateCampaign, scheduleCampaign, sendCampaignNow } from '../../lib/campaigns/actions';
 import type { Campaign } from '../../lib/campaigns/queries';
 
@@ -157,9 +158,11 @@ function parsePushBilingual(campaign?: Campaign) {
 export default function CampaignForm({
   campaign,
   tenantId,
+  customSegments = [],
 }: {
   campaign?: Campaign;
   tenantId: string;
+  customSegments?: CustomSegment[];
 }) {
   const t = useTranslations('campaigns');
   const router = useRouter();
@@ -541,6 +544,35 @@ export default function CampaignForm({
                     </div>
                   </button>
                 ))}
+                {customSegments.length > 0 && (
+                  <>
+                    <div className="col-span-full pt-1 pb-0.5">
+                      <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Custom segments</p>
+                    </div>
+                    {customSegments.map((seg) => (
+                      <button
+                        key={seg.id}
+                        type="button"
+                        onClick={() => setSegment(seg.id)}
+                        className={`flex items-start gap-3 p-3 rounded-xl border-2 text-left transition-all ${
+                          segment === seg.id
+                            ? 'border-brand-purple bg-brand-purple-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className={`h-4 w-4 rounded-full border-2 mt-0.5 flex-shrink-0 ${segment === seg.id ? 'border-brand-purple bg-brand-purple' : 'border-gray-300'}`} />
+                        <div>
+                          <p className={`text-sm font-medium ${segment === seg.id ? 'text-brand-purple' : 'text-gray-700'}`}>
+                            {seg.name}
+                          </p>
+                          {seg.description && (
+                            <p className="text-xs text-gray-400 mt-0.5">{seg.description}</p>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </>
+                )}
               </div>
             </div>
 

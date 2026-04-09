@@ -2,7 +2,7 @@
 
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 import { requireCampaignSlot } from '../plans/guardFeature';
-import { getMemberIdsForSegment, isValidSegment, type SegmentId } from './segments';
+import { getMemberIdsForSegment, isValidSegment, isCustomSegmentId } from './segments';
 import { revalidatePath } from 'next/cache';
 import type { Plan } from '../plans/features';
 import { buildBilingualEmail, buildCampaignEmail } from '@loyalty-os/email';
@@ -60,7 +60,7 @@ function validateCampaignInput(input: {
   } else {
     if (!input.body || input.body.trim() === '') return 'Message body is required.';
   }
-  if (!input.segment || !isValidSegment(input.segment)) return 'Please select a valid audience segment.';
+  if (!input.segment || (!isValidSegment(input.segment) && !isCustomSegmentId(input.segment))) return 'Please select a valid audience segment.';
   if (input.type === 'push' && (!input.subject || input.subject.trim() === '')) {
     return 'Push notification subject is required.';
   }
@@ -253,7 +253,7 @@ export async function sendCampaignNow(campaignId: string) {
   if (campaign.status !== 'draft' && campaign.status !== 'scheduled') {
     return { error: 'Campaign cannot be sent in its current state.' };
   }
-  if (!campaign.segment || !isValidSegment(campaign.segment as string)) {
+  if (!campaign.segment || (!isValidSegment(campaign.segment as string) && !isCustomSegmentId(campaign.segment as string))) {
     return { error: 'Invalid segment.' };
   }
 
@@ -265,7 +265,7 @@ export async function sendCampaignNow(campaignId: string) {
 
   let memberIds: string[] = [];
   try {
-    memberIds = await getMemberIdsForSegment(tenant.tenantId, campaign.segment as SegmentId);
+    memberIds = await getMemberIdsForSegment(tenant.tenantId, campaign.segment as string);
   } catch {
     await supabase
       .from('campaigns')

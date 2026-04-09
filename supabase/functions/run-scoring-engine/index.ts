@@ -34,16 +34,16 @@ function daysBetween(from: string | null, to: Date): number {
 
 function computeChurnScore(daysSince: number, visitVelocity: number, status: string): number {
   if (status !== 'active') return 1;
-  const recency = Math.min(daysSince / 90, 1);
-  const velocity = visitVelocity <= 0 ? 1 : Math.max(0, 1 - visitVelocity / 10);
-  return parseFloat(Math.min(1, recency * 0.5 + velocity * 0.3 + 0.2).toFixed(3));
+  const recency = Math.min(daysSince / CHURN_RECENCY_HORIZON, 1);
+  const velocity = visitVelocity <= 0 ? 1 : Math.max(0, 1 - visitVelocity / CHURN_VELOCITY_CAP);
+  return parseFloat(Math.min(1, recency * CHURN_RECENCY_WEIGHT + velocity * CHURN_VELOCITY_WEIGHT + CHURN_BASE_SCORE).toFixed(3));
 }
 
 function computeEngagementScore(visitVel: number, completed: number, pointsVel: number): number {
-  const v = Math.min(visitVel / 12, 1);
-  const c = Math.min(completed / 5, 1);
-  const p = Math.min(pointsVel / 1000, 1);
-  return parseFloat(Math.min(1, v * 0.5 + c * 0.3 + p * 0.2).toFixed(3));
+  const v = Math.min(visitVel / ENGAGEMENT_VELOCITY_CAP, 1);
+  const c = Math.min(completed / ENGAGEMENT_CHALLENGE_CAP, 1);
+  const p = Math.min(pointsVel / ENGAGEMENT_POINTS_CAP, 1);
+  return parseFloat(Math.min(1, v * ENGAGEMENT_VELOCITY_WEIGHT + c * ENGAGEMENT_CHALLENGE_WEIGHT + p * ENGAGEMENT_POINTS_WEIGHT).toFixed(3));
 }
 
 function classifyMotivation(visitVel: number, pointsVel: number, completed: number): MotivationType {
@@ -53,6 +53,26 @@ function classifyMotivation(visitVel: number, pointsVel: number, completed: numb
   if (visitVel >= 4) return 'explorer';
   return 'socializer';
 }
+
+// ── Scoring weights (must stay in sync with dashboard/lib/engine/behaviorScoring.ts) ──
+const CHURN_RECENCY_WEIGHT   = 0.5;  // weight of days-since-visit in churn score
+const CHURN_VELOCITY_WEIGHT  = 0.3;  // weight of visit velocity drop in churn score
+const CHURN_BASE_SCORE       = 0.2;  // baseline score applied to all active members
+const CHURN_RECENCY_HORIZON  = 90;   // days at which recency score reaches maximum (1.0)
+const CHURN_VELOCITY_CAP     = 10;   // visits/day at which velocity is considered healthy
+
+const ENGAGEMENT_VELOCITY_WEIGHT  = 0.5;
+const ENGAGEMENT_CHALLENGE_WEIGHT = 0.3;
+const ENGAGEMENT_POINTS_WEIGHT    = 0.2;
+const ENGAGEMENT_VELOCITY_CAP     = 12;   // visits/day cap for velocity factor
+const ENGAGEMENT_CHALLENGE_CAP    = 5;    // challenge completions cap
+const ENGAGEMENT_POINTS_CAP       = 1000; // points/30d cap for points factor
+
+// ── Intervention thresholds ──────────────────────────────────────────────────
+const CHURN_THRESHOLD         = 0.6;  // minimum churn score to trigger a challenge/intervention
+const INTERVENTION_WIN_BACK   = 0.85; // churn score → win_back_campaign
+const INTERVENTION_BONUS      = 0.70; // churn score → bonus_offer
+const INTERVENTION_DAYS_WIN_BACK = 60; // days since visit → win_back_campaign
 
 const CHALLENGE_TEMPLATES: Record<MotivationType, { type: ChallengeType; name: string; description: string; bonusPoints: number; ttlDays: number; goalBase: number }> = {
   achiever:   { type: 'points_earned', name: 'Points Powerhouse', description: 'Earn more points than ever this week.', bonusPoints: 150, ttlDays: 7, goalBase: 300 },
@@ -170,7 +190,7 @@ serve(async (req: Request) => {
           }
 
           // Dynamic challenge creation for high-churn members
-          if (runTasks.includes('challenges') && churnScore >= 0.6 && !hasActiveDynamic.has(m.id)) {
+          if (runTasks.includes('challenges') && churnScore >= CHURN_THRESHOLD && !hasActiveDynamic.has(m.id)) {
             const tpl = CHALLENGE_TEMPLATES[motivation];
             const goalValue = Math.max(1, tpl.goalBase);
             challengeInserts.push({
@@ -187,10 +207,10 @@ serve(async (req: Request) => {
           }
 
           // Intervention for high-churn members
-          if (runTasks.includes('interventions') && churnScore >= 0.6 && !hasIntervention.has(m.id)) {
+          if (runTasks.includes('interventions') && churnScore >= CHURN_THRESHOLD && !hasIntervention.has(m.id)) {
             let interventionType = 'tier_reminder';
-            if (churnScore >= 0.85 || daysSince >= 60) interventionType = 'win_back_campaign';
-            else if (churnScore >= 0.70) interventionType = 'bonus_offer';
+            if (churnScore >= INTERVENTION_WIN_BACK || daysSince >= INTERVENTION_DAYS_WIN_BACK) interventionType = 'win_back_campaign';
+            else if (churnScore >= INTERVENTION_BONUS) interventionType = 'bonus_offer';
             else if (engScore >= 0.4) interventionType = 'personal_challenge';
 
             interventionInserts.push({

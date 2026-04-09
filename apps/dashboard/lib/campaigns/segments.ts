@@ -1,18 +1,38 @@
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 import type { SegmentId } from './segment-constants';
+import type { SegmentCondition } from './custom-segment-types';
 
 // Re-export constants so existing imports still work
 export { SEGMENTS, type SegmentId, isValidSegment } from './segment-constants';
 
-export async function getMemberIdsForSegment(
-  tenantId: string,
-  segmentId: SegmentId
-): Promise<string[]> {
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function daysAgo(now: Date, days: number): string {
+  return new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
+}
+
+const TIER_BY_SEGMENT: Partial<Record<SegmentId, string>> = {
+  tier_bronze:   'bronze',
+  tier_silver:   'silver',
+  tier_gold:     'gold',
+  tier_platinum: 'platinum',
+};
+
+// UUID v4 pattern — used to detect custom segment IDs vs built-in string IDs
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function isCustomSegmentId(id: string): boolean {
+  return UUID_RE.test(id);
+}
+
+// ─── Built-in segment resolver ────────────────────────────────────────────────
+
+async function resolveBuiltInSegment(tenantId: string, segmentId: SegmentId): Promise<string[]> {
   const supabase = await createServerSupabaseClient();
   const now = new Date();
 
   if (segmentId === 'birthday_month') {
-    // Query all active members with a birthday and filter by month in JS
+    const month = now.getMonth() + 1;
     const { data } = await supabase
       .from('members')
       .select('id, birthday')
@@ -20,9 +40,10 @@ export async function getMemberIdsForSegment(
       .eq('status', 'active')
       .not('birthday', 'is', null);
 
-    const month = now.getMonth() + 1;
     return (data ?? [])
-      .filter((m: { id: string; birthday: string | null }) => m.birthday && new Date(m.birthday).getMonth() + 1 === month)
+      .filter((m: { id: string; birthday: string | null }) =>
+        m.birthday && new Date(m.birthday).getMonth() + 1 === month
+      )
       .map((m: { id: string }) => m.id);
   }
 
@@ -32,24 +53,15 @@ export async function getMemberIdsForSegment(
     .eq('tenant_id', tenantId)
     .eq('status', 'active');
 
-  if (segmentId === 'active') {
-    const cutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    query = query.gte('last_visit_at', cutoff);
+  const tier = TIER_BY_SEGMENT[segmentId];
+  if (tier) {
+    query = query.eq('tier', tier);
+  } else if (segmentId === 'active') {
+    query = query.gte('last_visit_at', daysAgo(now, 30));
   } else if (segmentId === 'at_risk') {
-    const from = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString();
-    const to = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    query = query.lt('last_visit_at', to).gte('last_visit_at', from);
+    query = query.lt('last_visit_at', daysAgo(now, 30)).gte('last_visit_at', daysAgo(now, 60));
   } else if (segmentId === 'inactive') {
-    const cutoff = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString();
-    query = query.lt('last_visit_at', cutoff);
-  } else if (segmentId === 'tier_bronze') {
-    query = query.eq('tier', 'bronze');
-  } else if (segmentId === 'tier_silver') {
-    query = query.eq('tier', 'silver');
-  } else if (segmentId === 'tier_gold') {
-    query = query.eq('tier', 'gold');
-  } else if (segmentId === 'tier_platinum') {
-    query = query.eq('tier', 'platinum');
+    query = query.lt('last_visit_at', daysAgo(now, 60));
   }
   // 'all' — no additional filter beyond tenant + active
 
@@ -58,7 +70,65 @@ export async function getMemberIdsForSegment(
   return (data ?? []).map((m: { id: string }) => m.id);
 }
 
-export async function getSegmentCount(tenantId: string, segmentId: SegmentId): Promise<number> {
+// ─── Custom segment evaluator ─────────────────────────────────────────────────
+
+export async function evaluateCustomSegment(tenantId: string, segmentId: string): Promise<string[]> {
+  const supabase = await createServerSupabaseClient();
+
+  const { data: segment, error: segErr } = await supabase
+    .from('tenant_custom_segments')
+    .select('conditions')
+    .eq('id', segmentId)
+    .eq('tenant_id', tenantId)
+    .single();
+
+  if (segErr || !segment) return [];
+
+  const conditions = (segment.conditions ?? []) as SegmentCondition[];
+  const now = new Date();
+
+  let query = supabase
+    .from('members')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('status', 'active');
+
+  for (const cond of conditions) {
+    if (cond.field === 'tier') {
+      query = query.eq('tier', cond.value);
+    } else if (cond.field === 'days_since_visit') {
+      // "days_since_visit >= N" → last_visit_at <= N days ago
+      // "days_since_visit <= N" → last_visit_at >= N days ago
+      const cutoff = daysAgo(now, cond.value);
+      query = cond.operator === 'gte'
+        ? query.lte('last_visit_at', cutoff)
+        : query.gte('last_visit_at', cutoff);
+    } else {
+      // points_balance, points_lifetime, visits_total
+      query = cond.operator === 'gte'
+        ? query.gte(cond.field, cond.value)
+        : query.lte(cond.field, cond.value);
+    }
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data ?? []).map((m: { id: string }) => m.id);
+}
+
+// ─── Unified entry point ──────────────────────────────────────────────────────
+
+export async function getMemberIdsForSegment(
+  tenantId: string,
+  segmentId: string
+): Promise<string[]> {
+  if (isCustomSegmentId(segmentId)) {
+    return evaluateCustomSegment(tenantId, segmentId);
+  }
+  return resolveBuiltInSegment(tenantId, segmentId as SegmentId);
+}
+
+export async function getSegmentCount(tenantId: string, segmentId: string): Promise<number> {
   const ids = await getMemberIdsForSegment(tenantId, segmentId);
   return ids.length;
 }

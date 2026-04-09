@@ -1,7 +1,7 @@
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 import { redirect } from 'next/navigation';
-import CampaignForm from '../../../../components/dashboard/CampaignForm';
-import { getCustomSegments } from '../../../../lib/campaigns/custom-segment-queries';
+import { getChallengeTemplates } from '../../../../lib/engine/challenge-template-queries';
+import ChallengeTemplateEditor from '../../../../components/dashboard/ChallengeTemplateEditor';
 import type { Plan } from '../../../../lib/plans/features';
 
 async function resolveAuthedTenant(
@@ -11,33 +11,29 @@ async function resolveAuthedTenant(
   if (!session?.user) return null;
 
   const { data: ownerTenant } = await supabase
-    .from('tenants')
-    .select('id, plan')
-    .eq('auth_user_id', session.user.id)
-    .is('deleted_at', null)
-    .single();
-
+    .from('tenants').select('id, plan')
+    .eq('auth_user_id', session.user.id).is('deleted_at', null).single();
   if (ownerTenant?.id) return { tenantId: ownerTenant.id, plan: ownerTenant.plan as Plan };
 
   const { data: staffRecord } = await supabase
-    .from('tenant_users')
-    .select('tenant_id, tenants(plan)')
-    .eq('auth_user_id', session.user.id)
-    .single();
-
+    .from('tenant_users').select('tenant_id, tenants(plan)')
+    .eq('auth_user_id', session.user.id).single();
   if (staffRecord?.tenant_id) {
     const plan = (staffRecord.tenants as { plan: string } | null)?.plan ?? 'starter';
     return { tenantId: staffRecord.tenant_id, plan: plan as Plan };
   }
-
   return null;
 }
 
-export default async function NewCampaignPage() {
+export default async function ChallengeTemplatesPage() {
   const supabase = await createServerSupabaseClient();
   const tenant = await resolveAuthedTenant(supabase);
   if (!tenant) redirect('/login');
 
-  const customSegments = await getCustomSegments(tenant.tenantId);
-  return <CampaignForm tenantId={tenant.tenantId} customSegments={customSegments} />;
+  // Challenge templates are an enterprise feature
+  if (tenant.plan !== 'enterprise') redirect('/gamification');
+
+  const templates = await getChallengeTemplates(tenant.tenantId);
+
+  return <ChallengeTemplateEditor templates={templates} />;
 }

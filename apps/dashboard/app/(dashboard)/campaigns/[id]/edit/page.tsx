@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 import { redirect, notFound } from 'next/navigation';
 import { getCampaignById } from '../../../../../lib/campaigns/queries';
+import { getCustomSegments } from '../../../../../lib/campaigns/custom-segment-queries';
 import CampaignForm from '../../../../../components/dashboard/CampaignForm';
 import type { Plan } from '../../../../../lib/plans/features';
 
@@ -49,5 +50,6 @@ export default async function EditCampaignPage({
     redirect('/campaigns');
   }
 
-  return <CampaignForm campaign={campaign} tenantId={tenant.tenantId} />;
+  const customSegments = await getCustomSegments(tenant.tenantId);
+  return <CampaignForm campaign={campaign} tenantId={tenant.tenantId} customSegments={customSegments} />;
 }

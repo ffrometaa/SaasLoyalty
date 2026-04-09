@@ -1,7 +1,8 @@
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 import type { BehaviorScore, MotivationType } from './behaviorScoring';
+import type { ChallengeType } from './challenge-template-queries';
 
-type ChallengeType = 'visit_count' | 'points_earned' | 'referral' | 'spend_amount' | 'streak';
+export type { ChallengeType };
 
 interface ChallengeTemplate {
   type: ChallengeType;
@@ -115,6 +116,41 @@ function computeGoal(type: ChallengeType, score: BehaviorScore, multiplier = 1):
 }
 
 /**
+ * Load templates for a tenant — custom overrides if defined, defaults otherwise.
+ * Custom templates are stored per (tenant, motivation_type, challenge_type).
+ * If a tenant has no custom templates, the built-in TEMPLATES are used.
+ */
+async function loadTemplatesForTenant(tenantId: string): Promise<Record<MotivationType, ChallengeTemplate[]>> {
+  const supabase = await createServerSupabaseClient();
+  const { data } = await supabase
+    .from('tenant_challenge_templates')
+    .select('motivation_type, challenge_type, name, description, bonus_points, ttl_days, goal_multiplier')
+    .eq('tenant_id', tenantId)
+    .eq('is_active', true);
+
+  if (!data || data.length === 0) return TEMPLATES;
+
+  // Group custom templates by motivation_type; fall back to built-in for missing types
+  const custom: Record<MotivationType, ChallengeTemplate[]> = { ...TEMPLATES };
+
+  for (const motivationType of Object.keys(TEMPLATES) as MotivationType[]) {
+    const rows = data.filter(r => r.motivation_type === motivationType);
+    if (rows.length > 0) {
+      custom[motivationType] = rows.map(r => ({
+        type: r.challenge_type as ChallengeType,
+        name: r.name,
+        description: r.description,
+        goalMultiplier: r.goal_multiplier,
+        bonusPoints: r.bonus_points,
+        ttlDays: r.ttl_days,
+      }));
+    }
+  }
+
+  return custom;
+}
+
+/**
  * Generate a personalized dynamic challenge for one member based on their behavior score.
  * Returns null if the member already has an active non-dismissed dynamic challenge.
  */
@@ -133,7 +169,8 @@ export async function generateDynamicChallenge(score: BehaviorScore) {
 
   if (existing && existing.length > 0) return null;
 
-  const templates = TEMPLATES[score.motivationType];
+  const allTemplates = await loadTemplatesForTenant(score.tenantId);
+  const templates = allTemplates[score.motivationType];
   const template = templates[Math.floor(Math.random() * templates.length)];
   const goalValue = computeGoal(template.type, score, template.goalMultiplier);
   const expiresAt = new Date(Date.now() + template.ttlDays * 86400000).toISOString();
@@ -156,53 +193,6 @@ export async function generateDynamicChallenge(score: BehaviorScore) {
 
   if (error) return null;
   return data;
-}
-
-/**
- * Generate dynamic challenges for all high-churn members in a tenant.
- * Only generates for members with churn_score >= threshold.
- */
-export async function generateChallengesForTenant(
-  tenantId = '',
-  churnThreshold = 0.6
-) {
-  const supabase = await createServerSupabaseClient();
-
-  const { data: scores } = await supabase
-    .from('member_behavior_scores')
-    .select('*')
-    .eq('tenant_id', tenantId)
-    .gte('churn_score', churnThreshold);
-
-  if (!scores || scores.length === 0) return [];
-
-  interface ScoreRow {
-    member_id: string;
-    tenant_id: string;
-    churn_score: number;
-    engagement_score: number;
-    motivation_type: MotivationType;
-    visit_velocity: number;
-    points_velocity: number;
-    days_since_visit: number;
-  }
-
-  const results = await Promise.all(
-    scores.map((row: ScoreRow) =>
-      generateDynamicChallenge({
-        memberId: row.member_id,
-        tenantId: row.tenant_id,
-        churnScore: row.churn_score,
-        engagementScore: row.engagement_score,
-        motivationType: row.motivation_type,
-        visitVelocity: row.visit_velocity,
-        pointsVelocity: row.points_velocity,
-        daysSinceVisit: row.days_since_visit,
-      })
-    )
-  );
-
-  return results.filter(Boolean);
 }
 
 /**
