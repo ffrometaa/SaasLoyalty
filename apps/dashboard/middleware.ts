@@ -40,7 +40,7 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await (supabase.auth as any).getUser();
 
   // Unauthenticated users: redirect to login for all protected routes
   if (!user) {
