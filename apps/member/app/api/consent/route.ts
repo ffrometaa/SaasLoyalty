@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (token) {
       const service = createServiceRoleClient();
-      const { data } = await service.auth.getUser(token);
+      const { data } = await (service.auth as any).getUser(token); // eslint-disable-line @typescript-eslint/no-explicit-any
       user = data?.user ?? null;
     }
   }
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (token) {
       const service = createServiceRoleClient();
-      const { data } = await service.auth.getUser(token);
+      const { data } = await (service.auth as any).getUser(token); // eslint-disable-line @typescript-eslint/no-explicit-any
       user = data?.user ?? null;
     }
   }
