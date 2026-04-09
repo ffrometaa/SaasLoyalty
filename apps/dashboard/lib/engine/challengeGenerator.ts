@@ -134,7 +134,7 @@ async function loadTemplatesForTenant(tenantId: string): Promise<Record<Motivati
   const custom: Record<MotivationType, ChallengeTemplate[]> = { ...TEMPLATES };
 
   for (const motivationType of Object.keys(TEMPLATES) as MotivationType[]) {
-    const rows = data.filter(r => r.motivation_type === motivationType);
+    const rows = data.filter((r: { motivation_type: string; challenge_type: string; name: string; description: string; bonus_points: number; ttl_days: number; goal_multiplier: number }) => r.motivation_type === motivationType);
     if (rows.length > 0) {
       custom[motivationType] = rows.map(r => ({
         type: r.challenge_type as ChallengeType,
