@@ -15,9 +15,18 @@ export async function getMemberWithTenant(userId: string, tenantId?: string): Pr
   // Filter by tenant when provided — required when user has members in multiple tenants
   if (tenantId) query = query.eq('tenant_id', tenantId);
 
-  const { data: member } = await query.limit(1).maybeSingle();
+  const { data: member, error: memberErr } = await query.limit(1).maybeSingle();
 
-  if (!member) return null;
+  if (!member) {
+    // Debug: check if member exists with ANY status for this user+tenant
+    const { data: anyMember } = await supabase
+      .from('members')
+      .select('id, tenant_id, auth_user_id, status')
+      .eq('auth_user_id', userId)
+      .limit(5);
+    console.log(`[getMemberWithTenant] NULL for user=${userId} tenant=${tenantId} | error=${memberErr?.message ?? 'none'} | all members for user: ${JSON.stringify(anyMember)}`);
+    return null;
+  }
 
   const { data: tenant } = await supabase
     .from('tenants')
