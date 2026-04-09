@@ -35,8 +35,8 @@ export async function GET() {
       email: row.email,
       role: row.role as 'staff',
       joinedAt: row.created_at,
-      isCurrentUser: row.auth_user_id === session.user.id,
-      canRemove: result.role === 'owner' && row.auth_user_id !== session.user.id,
+      isCurrentUser: row.auth_user_id === user.id,
+      canRemove: result.role === 'owner' && row.auth_user_id !== user.id,
     }));
 
     return NextResponse.json({ members: [ownerEntry, ...staffEntries] });
