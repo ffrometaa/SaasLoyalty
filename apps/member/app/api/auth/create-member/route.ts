@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
   let meta: Record<string, unknown>;
 
   if (accessToken) {
-    const { data: { user } } = await serviceClient.auth.getUser(accessToken);
+    const { data: { user } } = await (serviceClient.auth as any).getUser(accessToken);
     if (!user) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     userId = user.id;
     userEmail = user.email ?? '';

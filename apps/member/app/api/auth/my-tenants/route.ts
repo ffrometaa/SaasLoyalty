@@ -11,7 +11,8 @@ export async function GET(request: NextRequest) {
 
   if (accessToken) {
     const admin = createServiceRoleClient();
-    const { data } = await admin.auth.getUser(accessToken);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = await (admin.auth as any).getUser(accessToken);
     user = data?.user ?? null;
   } else {
     const supabase = await createServerSupabaseClient();
