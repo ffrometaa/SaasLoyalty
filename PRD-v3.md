@@ -842,3 +842,64 @@ Tenant → formulario in-app → POST /api/trials/request
 - [ ] El link "Solicitar prueba gratuita de 45 días" aparece en los upsell cards de Gamification y Heatmap
 
 > ⚠️ La tabla `feature_trials` y la lógica de activación **no están implementadas aún**. Esta sección es la especificación para la implementación futura.
+
+---
+
+## Nota de auditoría — Features incompletos por plan _(no relevante para el roadmap actual)_
+
+> Esta nota es puramente informativa. No representa trabajo pendiente prioritario ni afecta el alcance del PRD v3. Se registra para trazabilidad.
+
+Durante una auditoría del código (2026-04-08) se identificaron las siguientes inconsistencias menores entre lo que cada plan muestra en la UI de Plan & Billing y lo que realmente está implementado:
+
+### Starter ($199/mo)
+
+El plan es coherente con lo que expone en la UI. No hay features prometidos sin implementar.
+
+- `Gamification` y `Heatmap` no están disponibles en Starter — existe un sistema de trial de 45 días por solicitud manual, documentado en la sección anterior.
+
+### Pro ($399/mo)
+
+| Item | Estado |
+|------|--------|
+| **Analytics Export** | Definido en `features.ts` pero gateado a Scale+. El botón existe en la UI pero está oculto via `FeatureGate`. Pro no lo tiene aunque podría argumentarse que debería. |
+| **Advanced Campaigns** | Feature name (`advanced_campaigns`) definido en el schema pero sin UI ni enforcement real. Existe en código sin funcionalidad asociada. |
+| **Gamification avanzado** | Mission Builder, Leaderboard, Churn Risk Monitor, Motivation Breakdown, Engine Activity Feed, Point Multipliers — todos gateados a Scale. Coherente con el diseño actual. |
+
+### Acción requerida
+
+Ninguna en el contexto de este PRD. Si en el futuro se decide mover Analytics Export a Pro o implementar Advanced Campaigns, actualizar `apps/dashboard/lib/plans/features.ts` y esta nota.
+
+---
+
+## §7 — Auditoría de seguridad (2026-04-09)
+
+Se realizó una auditoría de seguridad del codebase completo. A continuación el resumen de hallazgos, prioridad y estado de resolución.
+
+### Hallazgos y estado
+
+| # | Hallazgo | Severidad | Estado |
+|---|----------|-----------|--------|
+| 1 | **Middleware usaba `getSession()` en lugar de `getUser()`** — `getSession()` lee cookies localmente sin validación server-side; un token manipulado podría eludir la protección de rutas. | 🔴 Alta | ✅ Resuelto |
+| 2 | **`createServiceRoleClient` usaba `require()` en ESM** — CommonJS `require()` dentro de un módulo ESM es frágil y puede fallar en ciertos bundlers/entornos. | 🟡 Media | ✅ Resuelto |
+| 3 | **Service role key expuesta en cliente** | 🔴 Alta | ✅ No aplica — verificado que sólo se instancia en contextos server-side |
+| 4 | **Cookies `loyalty_tenant_id` sin flag `Secure`** — enviadas en texto plano sobre HTTP; en producción deben estar restringidas a HTTPS. | 🟡 Media | ✅ Resuelto |
+| 5 | **`(supabase.auth as any).getSession()` con cast `as any`** — evitaba validación de tipos; oculta errores y es señal de deuda técnica. Afectaba varios handlers y server components. | 🟡 Media | ✅ Resuelto |
+| 6 | **RLS con `auth_tenant_id()` siempre NULL** | 🔴 Alta | ✅ Resuelto en sesión anterior (migration + service role bypass) |
+| 7 | **`sortBy` inyectado directamente a `.order()` sin whitelist** — parámetro de query untrusted pasado como nombre de columna; riesgo de column injection. | 🟡 Media | ✅ Resuelto |
+| 8 | **Falta de rate limiting en endpoints críticos** (`/api/members`, `/api/campaigns`) | 🟠 Baja-Media | ⏳ Pendiente — mitigado parcialmente por Supabase RLS |
+| 9 | **Headers de seguridad HTTP ausentes** (CSP, X-Frame-Options, etc.) | 🟠 Baja | ⏳ Pendiente — candidato para `next.config.js` headers |
+| 10 | **Validación de email sólo en cliente** en flujo de registro del member app | 🟠 Baja | ✅ Resuelto — `isValidEmail()` en POST /api/members |
+| 11 | **`unstable_cache` sin aislamiento por tenant** | 🟡 Media | ✅ Verificado — `tenantId` es parte de la cache key; no hay cross-tenant leakage |
+
+### Helpers de seguridad introducidos
+
+- `getAuthedUser()` — `packages/lib/src/supabase-server.ts` — wrapper sobre `supabase.auth.getUser()` validado server-side. Usar en todos los route handlers en lugar de `getSession()`.
+- `sanitizeSortBy(value, allowed, fallback)` — `apps/dashboard/lib/validate.ts` — whitelist de columnas permitidas para prevenir column injection.
+- `isValidEmail(value)` — `apps/dashboard/lib/validate.ts` — validación básica de formato de email en servidor.
+- `ALLOWED_MEMBER_SORT_COLUMNS` — conjunto de columnas válidas para ordenamiento de miembros.
+
+### Pendientes priorizados
+
+1. **Rate limiting** — implementar con Upstash Rate Limit o middleware de Vercel cuando se escale.
+2. **Security headers** — agregar en `next.config.js` (CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy).
+

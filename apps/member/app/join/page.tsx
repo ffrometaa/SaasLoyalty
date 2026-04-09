@@ -124,7 +124,7 @@ export default function JoinPage() {
       return;
     }
     localStorage.setItem(BIZ_CODE_KEY, trimmed);
-    document.cookie = `loyalty_tenant_id=${data.tenantId}; path=/; max-age=2592000; SameSite=Lax`;
+    document.cookie = `loyalty_tenant_id=${data.tenantId}; path=/; max-age=2592000; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
     setTenant({ id: data.tenantId, name: data.tenantName });
     setStep('email');
   }

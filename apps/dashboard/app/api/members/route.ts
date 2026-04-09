@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
-import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 import { canAddMember } from '../../../lib/plans/features';
 import type { Plan } from '../../../lib/plans/features';
 import { buildBilingualEmail, buildMemberInviteEmail } from '@loyalty-os/email';
+import { sanitizeSortBy, ALLOWED_MEMBER_SORT_COLUMNS, isValidEmail } from '../../../lib/validate';
 
 const fetchMembersList = unstable_cache(
   async (
@@ -61,17 +62,17 @@ const fetchMembersList = unstable_cache(
 // GET /api/members - List members
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) {
+    const user = await getAuthedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const supabase = await createServerSupabaseClient();
 
     const { data: ownerTenant } = await supabase
       .from('tenants')
       .select('id')
-      .eq('auth_user_id', session.user.id)
+      .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
 
@@ -81,7 +82,7 @@ export async function GET(request: NextRequest) {
       const { data: staffRecord } = await supabase
         .from('tenant_users')
         .select('tenant_id')
-        .eq('auth_user_id', session.user.id)
+        .eq('auth_user_id', user.id)
         .single();
       tenantId = staffRecord?.tenant_id ?? null;
     }
@@ -96,8 +97,8 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || '';
     const tier = searchParams.get('tier') ?? null;
     const status = searchParams.get('status') ?? null;
-    const sortBy = searchParams.get('sortBy') || 'created_at';
-    const sortOrder = searchParams.get('sortOrder') || 'desc';
+    const sortBy = sanitizeSortBy(searchParams.get('sortBy'), ALLOWED_MEMBER_SORT_COLUMNS, 'created_at');
+    const sortOrder = searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc';
 
     const data = await fetchMembersList(tenantId, page, limit, search, tier, status, sortBy, sortOrder);
     return NextResponse.json(data);
@@ -124,17 +125,19 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    if (!isValidEmail(email)) {
+      return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
+    }
 
-    // Get tenant from session
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) {
+    const user = await getAuthedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { data: tenant } = await supabase
       .from('tenants')
       .select('id, slug, business_name, brand_logo_url, brand_color_primary, plan, plan_status')
-      .eq('auth_user_id', session.user.id)
+      .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
 

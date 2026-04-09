@@ -1,4 +1,5 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
 // Server client for API routes and server components
@@ -32,9 +33,8 @@ export async function createServerSupabaseClient() {
   );
 }
 
-// Service role client for admin operations (use carefully)
+// Service role client for admin operations (use carefully — bypasses RLS)
 export function createServiceRoleClient() {
-  const { createClient } = require('@supabase/supabase-js');
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -45,4 +45,16 @@ export function createServiceRoleClient() {
       },
     }
   );
+}
+
+/**
+ * Returns the authenticated user validated against the Supabase Auth server.
+ * Prefer this over getSession() in all server contexts — getSession() reads
+ * from cookies without server-side validation and can accept stale tokens.
+ */
+export async function getAuthedUser() {
+  const supabase = await createServerSupabaseClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return null;
+  return user;
 }

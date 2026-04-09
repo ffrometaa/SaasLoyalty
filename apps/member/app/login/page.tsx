@@ -92,7 +92,7 @@ export default function LoginPage() {
 
     if (list.length === 1) {
       // Only one business — auto-select without showing picker
-      document.cookie = `loyalty_tenant_id=${list[0].tenantId}; path=/; max-age=2592000; SameSite=Lax`;
+      document.cookie = `loyalty_tenant_id=${list[0].tenantId}; path=/; max-age=2592000; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
       window.location.href = '/';
       return;
     }
@@ -104,7 +104,7 @@ export default function LoginPage() {
   }
 
   function selectTenant(tenantId: string) {
-    document.cookie = `loyalty_tenant_id=${tenantId}; path=/; max-age=2592000; SameSite=Lax`;
+    document.cookie = `loyalty_tenant_id=${tenantId}; path=/; max-age=2592000; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
     window.location.href = '/';
   }
 

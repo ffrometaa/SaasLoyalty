@@ -40,10 +40,10 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
-  const { data: { session } } = await (supabase.auth as any).getSession();
+  const { data: { user } } = await supabase.auth.getUser();
 
   // Unauthenticated users: redirect to login for all protected routes
-  if (!session) {
+  if (!user) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);

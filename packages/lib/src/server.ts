@@ -1,1 +1,1 @@
-export { createServerSupabaseClient, createServiceRoleClient } from './supabase-server';
+export { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } from './supabase-server';
