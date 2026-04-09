@@ -54,7 +54,8 @@ export function createServiceRoleClient() {
  */
 export async function getAuthedUser() {
   const supabase = await createServerSupabaseClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: { user }, error } = await (supabase.auth as any).getUser();
   if (error || !user) return null;
   return user;
 }
