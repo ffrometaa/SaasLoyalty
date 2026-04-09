@@ -92,24 +92,34 @@ export default async function HomePage() {
   const supabase = await createServerSupabaseClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: { user } } = await (supabase.auth as any).getUser();
-  if (!user) redirect('/join');
 
+  const allCookies = cookies().getAll().map((c) => c.name);
   const tenantId = cookies().get('loyalty_tenant_id')?.value;
+
+  console.log(`[home] user: ${user?.id ?? 'NULL'} | loyalty_tenant_id: ${tenantId ?? '(MISSING)'} | all cookies: [${allCookies.join(', ')}]`);
+
+  if (!user) {
+    console.log('[home] REDIRECT #1: getUser() returned null');
+    redirect('/join');
+  }
 
   if (!tenantId) {
     const memberships = await getMembersByUserId(user.id);
+    console.log(`[home] no tenantId cookie, memberships found: ${memberships.length}`);
     if (memberships.length === 1) {
       redirect(`/api/auth/set-tenant?tenantId=${memberships[0].tenant_id}`);
     } else if (memberships.length > 1) {
-      // TODO: /select-tenant
+      console.log(`[home] REDIRECT #2: multiple memberships (${memberships.length}), no tenant cookie`);
       redirect('/join');
     } else {
+      console.log('[home] REDIRECT #3: zero memberships');
       redirect('/join');
     }
   }
 
   const member = await getMemberWithTenant(user.id, tenantId);
   if (!member) {
+    console.log(`[home] REDIRECT #4: getMemberWithTenant returned null for user: ${user.id} tenant: ${tenantId}`);
     redirect('/join');
   }
 
