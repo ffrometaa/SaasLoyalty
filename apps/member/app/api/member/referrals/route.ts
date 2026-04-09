@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { createServiceRoleClient, getServerUser } from '@/lib/supabase';
 
 const MEMBER_APP_URL = process.env.NEXT_PUBLIC_MEMBER_APP_URL ?? 'https://member.loyalbase.dev';
@@ -8,17 +9,21 @@ export async function GET() {
     const user = await getServerUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+    const tenantId = cookies().get('loyalty_tenant_id')?.value;
     const db = createServiceRoleClient();
 
     // Get current member with referral info
-    const { data: member, error: memberErr } = await db
+    let memberQuery = db
       .from('members')
       .select('id, tenant_id, referral_code')
       .eq('auth_user_id', user.id)
-      .eq('status', 'active')
-      .single();
+      .eq('status', 'active');
 
-    if (memberErr || !member) {
+    if (tenantId) memberQuery = memberQuery.eq('tenant_id', tenantId);
+
+    const { data: member } = await memberQuery.limit(1).maybeSingle();
+
+    if (!member) {
       return NextResponse.json({ error: 'Member not found' }, { status: 404 });
     }
 

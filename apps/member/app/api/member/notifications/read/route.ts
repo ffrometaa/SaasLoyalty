@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { createServiceRoleClient, getServerUser } from '@/lib/supabase';
 
 // POST /api/member/notifications/read
@@ -8,14 +9,18 @@ export async function POST(request: NextRequest) {
     const user = await getServerUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+    const tenantId = cookies().get('loyalty_tenant_id')?.value;
     const db = createServiceRoleClient();
 
-    const { data: member } = await db
+    let memberQuery = db
       .from('members')
       .select('id')
       .eq('auth_user_id', user.id)
-      .eq('status', 'active')
-      .single();
+      .eq('status', 'active');
+
+    if (tenantId) memberQuery = memberQuery.eq('tenant_id', tenantId);
+
+    const { data: member } = await memberQuery.limit(1).maybeSingle();
 
     if (!member) return NextResponse.json({ error: 'Member not found' }, { status: 404 });
 

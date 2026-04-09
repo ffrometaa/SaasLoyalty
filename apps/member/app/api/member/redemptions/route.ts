@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient, getServerUser } from '@/lib/supabase';
+import { cookies } from 'next/headers';
+import { createServiceRoleClient, getServerUser } from '@/lib/supabase';
 
 export async function GET() {
   try {
@@ -9,20 +10,24 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabase = await createServerSupabaseClient();
+    const tenantId = cookies().get('loyalty_tenant_id')?.value;
+    const db = createServiceRoleClient();
 
-    const { data: member } = await supabase
+    let memberQuery = db
       .from('members')
       .select('id')
       .eq('auth_user_id', user.id)
-      .eq('status', 'active')
-      .single();
+      .eq('status', 'active');
+
+    if (tenantId) memberQuery = memberQuery.eq('tenant_id', tenantId);
+
+    const { data: member } = await memberQuery.limit(1).maybeSingle();
 
     if (!member) {
       return NextResponse.json({ error: 'Member not found' }, { status: 404 });
     }
 
-    const { data: redemptions } = await supabase
+    const { data: redemptions } = await db
       .from('redemptions')
       .select(`
         id,
