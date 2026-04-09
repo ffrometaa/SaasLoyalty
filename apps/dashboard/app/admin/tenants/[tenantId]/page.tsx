@@ -20,7 +20,8 @@ async function getTenantDetail(tenantId = '') {
   // Owner email
   let ownerEmail = '';
   if (tenant.auth_user_id) {
-    const { data } = await service.auth.admin.getUserById(tenant.auth_user_id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = await (service.auth as any).admin.getUserById(tenant.auth_user_id);
     ownerEmail = data?.user?.email ?? '';
   }
 
