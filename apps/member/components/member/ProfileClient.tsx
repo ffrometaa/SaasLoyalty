@@ -112,14 +112,14 @@ export function ProfileClient({ name, email, memberCode, tier, pointsBalance, po
                 <p className="text-xs text-gray-400">{t('referFriendsDesc')}</p>
               </div>
             </Link>
-            <button className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-gray-50 transition-colors">
+            <Link href="/legal/privacy-policy" className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-gray-50 transition-colors">
               <div className="p-2 bg-gray-100 rounded-lg">
                 <Shield className="h-4 w-4 text-gray-500" />
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-900">{t('privacySecurity')}</p>
               </div>
-            </button>
+            </Link>
           </div>
         </div>
 
