@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, getAuthedUser } from '@loyalty-os/lib/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
-
-    if (!session?.user) {
+    const user = await getAuthedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const supabase = await createServerSupabaseClient();
 
     const { data: ownerTenant } = await supabase
       .from('tenants')
       .select('id')
-      .eq('auth_user_id', session.user.id)
+      .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
 
@@ -23,7 +22,7 @@ export async function GET(request: NextRequest) {
       const { data: staffRecord } = await supabase
         .from('tenant_users')
         .select('tenant_id')
-        .eq('auth_user_id', session.user.id)
+        .eq('auth_user_id', user.id)
         .single();
       tenantId = staffRecord?.tenant_id ?? null;
     }

@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, getAuthedUser } from '@loyalty-os/lib/server';
 import { redirect } from 'next/navigation';
 import CampaignForm from '../../../../components/dashboard/CampaignForm';
 import { getCustomSegments } from '../../../../lib/campaigns/custom-segment-queries';
@@ -7,13 +7,13 @@ import type { Plan } from '../../../../lib/plans/features';
 async function resolveAuthedTenant(
   supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>
 ): Promise<{ tenantId: string; plan: Plan } | null> {
-  const { data: { session } } = await (supabase.auth as any).getSession();
-  if (!session?.user) return null;
+  const user = await getAuthedUser();
+  if (!user) return null;
 
   const { data: ownerTenant } = await supabase
     .from('tenants')
     .select('id, plan')
-    .eq('auth_user_id', session.user.id)
+    .eq('auth_user_id', user.id)
     .is('deleted_at', null)
     .single();
 
@@ -22,7 +22,7 @@ async function resolveAuthedTenant(
   const { data: staffRecord } = await supabase
     .from('tenant_users')
     .select('tenant_id, tenants(plan)')
-    .eq('auth_user_id', session.user.id)
+    .eq('auth_user_id', user.id)
     .single();
 
   if (staffRecord?.tenant_id) {

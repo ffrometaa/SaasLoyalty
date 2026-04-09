@@ -2,7 +2,7 @@
 // DELETE /api/auth/impersonate — end impersonation session (mark ended_at in log)
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
+import { createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 import crypto from 'crypto';
 
 // ─── JWT helpers (no extra deps — use Node.js crypto) ────────────────────────
@@ -35,9 +35,8 @@ function decodeJWT(token: string): Record<string, unknown> | null {
 export async function POST(request: NextRequest) {
   try {
     // 1. Authenticate caller
-    const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) {
+    const user = await getAuthedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -47,7 +46,7 @@ export async function POST(request: NextRequest) {
     const { data: superAdmin } = await service
       .from('super_admins')
       .select('id, email, full_name')
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
       .eq('is_active', true)
       .single();
 
@@ -126,7 +125,7 @@ export async function POST(request: NextRequest) {
       role:               'authenticated',
       email:              targetEmail,
       tenant_id:          targetTenantId,
-      impersonated_by:    session.user.id,
+      impersonated_by:    user.id,
       impersonation_level: impersonationLevel,
       iat:                now,
       exp:                now + expiresIn,
@@ -179,7 +178,7 @@ export async function POST(request: NextRequest) {
         action:        'IMPERSONATION_STARTED',
         resource_type: 'SYSTEM',
         details: {
-          impersonated_by: session.user.id,
+          impersonated_by: user.id,
           admin_email:     superAdmin.email,
           reason:          reason ?? null,
           timestamp:       new Date().toISOString(),
@@ -210,9 +209,8 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) {
+    const user = await getAuthedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

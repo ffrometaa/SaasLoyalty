@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, getAuthedUser } from '@loyalty-os/lib/server';
 
 // GET /api/redemptions/verify?code=X
 // Preview a redemption code WITHOUT marking it as used.
 // Returns member + reward info so staff can verify validity before processing.
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) {
+    const user = await getAuthedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const supabase = await createServerSupabaseClient();
     const code = request.nextUrl.searchParams.get('code');
     if (!code) {
       return NextResponse.json({ error: 'code is required' }, { status: 400 });

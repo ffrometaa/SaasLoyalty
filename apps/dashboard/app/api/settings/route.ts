@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, getAuthedUser } from '@loyalty-os/lib/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
-
-    if (!session) {
+    const user = await getAuthedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const supabase = await createServerSupabaseClient();
 
     const { data: tenant } = await supabase
       .from('tenants')
       .select('business_name, brand_logo_url, brand_color_primary, brand_color_secondary, plan, plan_status, trial_ends_at, business_phone, business_address, owner_first_name, owner_last_name, owner_phone, owner_email, secondary_contact_first_name, secondary_contact_last_name, secondary_contact_phone, secondary_contact_email, referral_enabled, referral_points_referrer, referral_points_referee')
-      .eq('auth_user_id', session.user.id)
+      .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
 
@@ -23,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       businessName: tenant.business_name,
-      email: session.user.email,
+      email: user.email,
       logoUrl: tenant.brand_logo_url,
       businessPhone: tenant.business_phone,
       businessAddress: tenant.business_address,
@@ -53,12 +52,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
-
-    if (!session) {
+    const user = await getAuthedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const supabase = await createServerSupabaseClient();
 
     const body = await request.json();
     const {
@@ -89,7 +87,7 @@ export async function POST(request: NextRequest) {
     const { error } = await supabase
       .from('tenants')
       .update(updates)
-      .eq('auth_user_id', session.user.id)
+      .eq('auth_user_id', user.id)
       .is('deleted_at', null);
 
     if (error) {

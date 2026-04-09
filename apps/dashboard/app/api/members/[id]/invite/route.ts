@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 import { buildBilingualEmail, buildMemberActivationEmail } from '@loyalty-os/email';
 
 // POST /api/members/[id]/invite — Create invitation token and send email
@@ -9,10 +9,8 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const supabase = await createServerSupabaseClient();
-
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) {
+    const user = await getAuthedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

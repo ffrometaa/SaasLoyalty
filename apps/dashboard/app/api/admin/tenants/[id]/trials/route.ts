@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
+import { createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 
 type FeatureName = 'gamification' | 'heatmap';
 
@@ -10,9 +10,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const supabase = await createServerSupabaseClient();
-  const { data: { session } } = await (supabase.auth as any).getSession();
-  const user = session?.user;
+  const user = await getAuthedUser();
 
   if (!user || user.email !== process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -55,9 +53,7 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const supabase = await createServerSupabaseClient();
-  const { data: { session } } = await (supabase.auth as any).getSession();
-  const user = session?.user;
+  const user = await getAuthedUser();
 
   if (!user || user.email !== process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

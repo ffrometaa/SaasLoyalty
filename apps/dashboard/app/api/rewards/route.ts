@@ -1,20 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 
 // GET /api/rewards - List rewards
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) {
+    const user = await getAuthedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const supabase = await createServerSupabaseClient();
 
     const { data: ownerTenant } = await supabase
       .from('tenants')
       .select('id')
-      .eq('auth_user_id', session.user.id)
+      .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
 
@@ -24,7 +23,7 @@ export async function GET(request: NextRequest) {
       const { data: staffRecord } = await supabase
         .from('tenant_users')
         .select('tenant_id')
-        .eq('auth_user_id', session.user.id)
+        .eq('auth_user_id', user.id)
         .single();
       tenantId = staffRecord?.tenant_id ?? null;
     }
@@ -96,11 +95,11 @@ export async function GET(request: NextRequest) {
 // POST /api/rewards - Create reward
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) {
+    const user = await getAuthedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const supabase = await createServerSupabaseClient();
 
     const body = await request.json();
     const { name, description, points_required, max_redemptions, valid_from, valid_until, is_active } = body;
@@ -120,7 +119,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get tenant ID from user's session
+    // Get tenant ID from authenticated user
     const { data: ownerTenant } = await supabase
       .from('tenants')
       .select('id')

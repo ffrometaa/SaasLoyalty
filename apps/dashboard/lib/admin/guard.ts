@@ -1,14 +1,12 @@
 import { redirect } from 'next/navigation';
-import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
+import { getAuthedUser, createServiceRoleClient } from '@loyalty-os/lib/server';
 
 // Verifies that the current authenticated user is an active super admin.
 // Returns the admin record on success.
 // Throws a redirect to /login if the user is not authenticated or not a super admin.
 export async function verifyAdminAccess() {
-  const supabase = await createServerSupabaseClient();
-  const { data: { session } } = await (supabase.auth as any).getSession();
-
-  if (!session?.user) {
+  const user = await getAuthedUser();
+  if (!user) {
     redirect('/login');
   }
 
@@ -17,7 +15,7 @@ export async function verifyAdminAccess() {
   const { data: admin, error } = await service
     .from('super_admins')
     .select('id, email, full_name, is_active, last_login_at, created_at')
-    .eq('user_id', session.user.id)
+    .eq('user_id', user.id)
     .eq('is_active', true)
     .single();
 

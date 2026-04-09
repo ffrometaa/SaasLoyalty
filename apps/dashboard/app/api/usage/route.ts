@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, getAuthedUser } from '@loyalty-os/lib/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
-
-    if (!session) {
+    const user = await getAuthedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const supabase = await createServerSupabaseClient();
 
     const { data: tenant } = await supabase
       .from('tenants')
       .select('id, max_members, plan')
-      .eq('auth_user_id', session.user.id)
+      .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
 

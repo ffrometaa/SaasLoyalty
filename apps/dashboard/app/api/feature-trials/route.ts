@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, getAuthedUser } from '@loyalty-os/lib/server';
 
 export async function GET() {
-  const supabase = await createServerSupabaseClient();
-  const { data: { session } } = await (supabase.auth as any).getSession();
+  const user = await getAuthedUser();
+  if (!user) return NextResponse.json({ trials: [] });
 
-  if (!session) return NextResponse.json({ trials: [] });
+  const supabase = await createServerSupabaseClient();
 
   // Resolve tenant
   const { data: ownerTenant } = await supabase
     .from('tenants')
     .select('id')
-    .eq('auth_user_id', session.user.id)
+    .eq('auth_user_id', user.id)
     .is('deleted_at', null)
     .single();
 
@@ -21,7 +21,7 @@ export async function GET() {
     const { data: staffRecord } = await supabase
       .from('tenant_users')
       .select('tenant_id')
-      .eq('auth_user_id', session.user.id)
+      .eq('auth_user_id', user.id)
       .single();
     tenantId = staffRecord?.tenant_id;
   }

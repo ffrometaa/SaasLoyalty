@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
+import { createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,9 +8,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) {
+    const user = await getAuthedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -20,7 +19,7 @@ export async function POST(request: NextRequest) {
     const { data: otpRecord } = await service
       .from('login_otps')
       .select('id, otp_code, expires_at')
-      .eq('auth_user_id', session.user.id)
+      .eq('auth_user_id', user.id)
       .is('used_at', null)
       .order('created_at', { ascending: false })
       .limit(1)
@@ -48,7 +47,7 @@ export async function POST(request: NextRequest) {
     await service
       .from('trusted_devices')
       .upsert({
-        auth_user_id: session.user.id,
+        auth_user_id: user.id,
         device_id,
         device_name: device_name || 'Unknown device',
         last_seen_at: new Date().toISOString(),

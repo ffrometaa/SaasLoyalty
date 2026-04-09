@@ -1,20 +1,20 @@
 'use server';
 
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, getAuthedUser } from '@loyalty-os/lib/server';
 import { revalidatePath } from 'next/cache';
 import type { ChallengeType, ChallengeStatus } from './queries';
 
 // ─── HELPERS ───────────────────────────────────────────────
 
 async function resolveAuthedTenantId(): Promise<string | null> {
-  const supabase = await createServerSupabaseClient();
-  const { data: { session } } = await (supabase.auth as any).getSession();
-  if (!session?.user) return null;
+  const user = await getAuthedUser();
+  if (!user) return null;
 
+  const supabase = await createServerSupabaseClient();
   const { data: ownerTenant } = await supabase
     .from('tenants')
     .select('id')
-    .eq('auth_user_id', session.user.id)
+    .eq('auth_user_id', user.id)
     .is('deleted_at', null)
     .single();
 
@@ -23,7 +23,7 @@ async function resolveAuthedTenantId(): Promise<string | null> {
   const { data: staffRecord } = await supabase
     .from('tenant_users')
     .select('tenant_id')
-    .eq('auth_user_id', session.user.id)
+    .eq('auth_user_id', user.id)
     .single();
 
   return staffRecord?.tenant_id ?? null;

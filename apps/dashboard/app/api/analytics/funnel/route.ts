@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
-import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 
 const fetchFunnelData = unstable_cache(
   async (tenantId: string) => {
@@ -68,11 +68,11 @@ async function resolveTenantId(supabase: Awaited<ReturnType<typeof createServerS
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const user = await getAuthedUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const tenantId = await resolveTenantId(supabase, session.user.id);
+    const supabase = await createServerSupabaseClient();
+    const tenantId = await resolveTenantId(supabase, user.id);
     if (!tenantId) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
 
     const data = await fetchFunnelData(tenantId);

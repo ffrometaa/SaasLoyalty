@@ -1,21 +1,21 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, getAuthedUser } from '@loyalty-os/lib/server';
 import { getTenantForUser } from '../../../../lib/tenant';
 
 export async function GET() {
   try {
+    const user = await getAuthedUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const result = await getTenantForUser(supabase, session.user.id);
+    const result = await getTenantForUser(supabase, user.id);
     if (!result) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
 
     // Owner entry (always first)
     const ownerEntry = {
       id: `owner-${result.tenant.auth_user_id}`,
       authUserId: result.tenant.auth_user_id,
-      email: result.role === 'owner' ? session.user.email : null,
+      email: result.role === 'owner' ? user.email : null,
       role: 'owner' as const,
       joinedAt: result.tenant.created_at,
       isCurrentUser: result.role === 'owner',

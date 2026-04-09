@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
+import { createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 import { buildBilingualEmail, buildOtpVerificationEmail } from '@loyalty-os/email';
 
 function generateOtp(): string {
@@ -8,9 +8,8 @@ function generateOtp(): string {
 
 export async function POST() {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) {
+    const user = await getAuthedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -22,11 +21,11 @@ export async function POST() {
     await service
       .from('login_otps')
       .update({ used_at: new Date().toISOString() })
-      .eq('auth_user_id', session.user.id)
+      .eq('auth_user_id', user.id)
       .is('used_at', null);
 
     await service.from('login_otps').insert({
-      auth_user_id: session.user.id,
+      auth_user_id: user.id,
       otp_code: otp,
       expires_at: expiresAt.toISOString(),
     });
@@ -50,7 +49,7 @@ export async function POST() {
       },
       body: JSON.stringify({
         from: 'LoyaltyOS <security@loyalbase.dev>',
-        to: [session.user.email],
+        to: [user.email],
         subject,
         html,
       }),
@@ -61,7 +60,7 @@ export async function POST() {
       return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
     }
 
-    return NextResponse.json({ sent: true, email: session.user.email });
+    return NextResponse.json({ sent: true, email: user.email });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
-import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 
 const fetchAnalyticsData = unstable_cache(
   async (tenantId: string) => {
@@ -146,18 +146,19 @@ const fetchAnalyticsData = unstable_cache(
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
+    const user = await getAuthedUser();
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const supabase = await createServerSupabaseClient();
 
     // Resolve tenant — works for both owners and staff
     const { data: ownerTenant } = await supabase
       .from('tenants')
       .select('id')
-      .eq('auth_user_id', session.user.id)
+      .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
 
@@ -167,7 +168,7 @@ export async function GET(request: NextRequest) {
       const { data: staffRecord } = await supabase
         .from('tenant_users')
         .select('tenant_id')
-        .eq('auth_user_id', session.user.id)
+        .eq('auth_user_id', user.id)
         .single();
       tenantId = staffRecord?.tenant_id ?? null;
     }

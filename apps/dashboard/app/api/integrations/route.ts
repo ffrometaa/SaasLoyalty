@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, getAuthedUser } from '@loyalty-os/lib/server';
 
 function generateApiKey(): string {
   return `llo_${crypto.randomUUID().replace(/-/g, '')}`;
@@ -8,18 +8,18 @@ function generateApiKey(): string {
 // GET /api/integrations - Get integration settings (api_key, join URL, widget URL)
 export async function GET(_request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) {
+    const user = await getAuthedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const supabase = await createServerSupabaseClient();
 
     // Owner only — api_key is sensitive
     const { data: tenant, error: tenantError } = await supabase
       .from('tenants')
       .select('id, slug, api_key')
-      .eq('auth_user_id', session.user.id)
+      .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
 
@@ -58,18 +58,17 @@ export async function GET(_request: NextRequest) {
 // POST /api/integrations - Regenerate api_key
 export async function POST(_request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) {
+    const user = await getAuthedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const supabase = await createServerSupabaseClient();
 
     // Owner only
     const { data: tenant, error: tenantError } = await supabase
       .from('tenants')
       .select('id')
-      .eq('auth_user_id', session.user.id)
+      .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
 

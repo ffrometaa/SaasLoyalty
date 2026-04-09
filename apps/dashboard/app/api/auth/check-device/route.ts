@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
+import { createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,14 +8,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ trusted: false });
     }
 
-    const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) {
+    const user = await getAuthedUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Demo accounts always bypass device verification
-    if (session.user.email?.endsWith('@loyaltyos.com')) {
+    if (user.email?.endsWith('@loyaltyos.com')) {
       return NextResponse.json({ trusted: true });
     }
 
@@ -23,7 +22,7 @@ export async function POST(request: NextRequest) {
     const { data } = await service
       .from('trusted_devices')
       .select('id')
-      .eq('auth_user_id', session.user.id)
+      .eq('auth_user_id', user.id)
       .eq('device_id', device_id)
       .single();
 

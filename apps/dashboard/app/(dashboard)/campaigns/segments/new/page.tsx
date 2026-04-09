@@ -1,15 +1,15 @@
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, getAuthedUser } from '@loyalty-os/lib/server';
 import { redirect } from 'next/navigation';
 import SegmentBuilder from '../../../../../components/dashboard/SegmentBuilder';
 
 async function assertAuthed(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>) {
-  const { data: { session } } = await (supabase.auth as any).getSession();
-  if (!session?.user) return false;
+  const user = await getAuthedUser();
+  if (!user) return false;
   const { data: ownerTenant } = await supabase.from('tenants').select('id')
-    .eq('auth_user_id', session.user.id).is('deleted_at', null).single();
+    .eq('auth_user_id', user.id).is('deleted_at', null).single();
   if (ownerTenant?.id) return true;
   const { data: staffRecord } = await supabase.from('tenant_users').select('tenant_id')
-    .eq('auth_user_id', session.user.id).single();
+    .eq('auth_user_id', user.id).single();
   return !!staffRecord?.tenant_id;
 }
 

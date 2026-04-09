@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, getAuthedUser } from '@loyalty-os/lib/server';
 import { getTenantForUser } from '../../../../lib/tenant';
 import { buildBilingualEmail, buildTeamInviteEmail } from '@loyalty-os/email';
 
 export async function GET() {
   try {
+    const user = await getAuthedUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const result = await getTenantForUser(supabase, session.user.id);
+    const result = await getTenantForUser(supabase, user.id);
     if (!result) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
 
     const { data: invites } = await supabase
@@ -27,11 +27,11 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const user = await getAuthedUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const result = await getTenantForUser(supabase, session.user.id);
+    const result = await getTenantForUser(supabase, user.id);
     if (!result) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     if (result.role !== 'owner') return NextResponse.json({ error: 'Only owners can invite team members' }, { status: 403 });
 
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       .from('invitations')
       .insert({
         tenant_id: result.tenant.id,
-        invited_by: session.user.id,
+        invited_by: user.id,
         email,
         role: 'staff',
         token,
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     await sendInviteEmail({
       to: email,
       businessName: result.tenant.business_name,
-      inviterEmail: session.user.email ?? '',
+      inviterEmail: user.email ?? '',
       token,
     });
 

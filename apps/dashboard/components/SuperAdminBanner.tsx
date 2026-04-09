@@ -1,17 +1,16 @@
 import Link from 'next/link';
-import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, getAuthedUser } from '@loyalty-os/lib/server';
 
 export async function SuperAdminBanner() {
   try {
+    const user = await getAuthedUser();
+    if (!user) return null;
+
     const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
-
-    if (!session?.user) return null;
-
     const { data } = await supabase
       .from('super_admins')
       .select('id')
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
       .eq('is_active', true)
       .single();
 
