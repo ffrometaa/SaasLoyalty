@@ -21,7 +21,8 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = createServiceRoleClient();
-    const { data, error } = await supabase.auth.admin.generateLink({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.auth as any).admin.generateLink({
       type: 'magiclink',
       email,
       options: {

@@ -32,7 +32,8 @@ async function getAllTenants() {
       // Get owner email from auth.users via auth_user_id
       let ownerEmail = '';
       if (t.auth_user_id) {
-        const { data: user } = await service.auth.admin.getUserById(t.auth_user_id);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: user } = await (service.auth as any).admin.getUserById(t.auth_user_id);
         ownerEmail = user?.user?.email ?? '';
       }
 

@@ -84,7 +84,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
       }
 
-      const { data: authUser } = await service.auth.admin.getUserById(tenant.auth_user_id);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: authUser } = await (service.auth as any).admin.getUserById(tenant.auth_user_id);
 
       targetAuthUserId = tenant.auth_user_id;
       targetTenantId   = tenant.id;

@@ -12,7 +12,8 @@ export async function POST(request: NextRequest) {
   const serviceClient = createServiceRoleClient();
   const dashboardUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://dashboard.loyalbase.dev';
 
-  const { data, error } = await serviceClient.auth.admin.generateLink({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (serviceClient.auth as any).admin.generateLink({
     type: 'recovery',
     email: email.trim().toLowerCase(),
     options: {
