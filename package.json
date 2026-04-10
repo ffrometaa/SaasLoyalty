@@ -34,7 +34,9 @@
     "test:coverage": "pnpm --filter @loyalty-os/dashboard test:coverage",
     "test:e2e": "pnpm --filter @loyalty-os/dashboard test:e2e",
     "test:e2e:ui": "pnpm --filter @loyalty-os/dashboard test:e2e:ui",
-    "test:all": "pnpm test && pnpm test:e2e"
+    "test:all": "pnpm test && pnpm test:e2e",
+
+    "license:check": "cd apps/dashboard && license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;CC0-1.0;LGPL-2.0;LGPL-2.1;LGPL-3.0' --excludePrivatePackages && cd ../member && license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;CC0-1.0;LGPL-2.0;LGPL-2.1;LGPL-3.0' --excludePrivatePackages && cd ../web && license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;CC0-1.0;LGPL-2.0;LGPL-2.1;LGPL-3.0' --excludePrivatePackages"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",

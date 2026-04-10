@@ -26,6 +26,9 @@ Thumbs.db
 # Testing
 coverage
 
+# License audit outputs
+**/licenses-audit.csv
+
 # Misc
 *.log
 npm-debug.log*
