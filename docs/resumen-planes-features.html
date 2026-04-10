@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resumen del planes features — LoyalBase</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f4f4f8;
+      color: #1a1a3e;
+      padding: 2rem;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    header .logo {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    header .logo span:first-child { color: #1a1a3e; }
+    header .logo span:last-child  { color: #5C50E8; }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1a1a3e;
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitle {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-bottom: 2rem;
+    }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 1rem 1.5rem;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      color: #374151;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    /* ── Summary cards ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      text-align: center;
+    }
+    .card .count {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+    .card .label {
+      font-size: 0.78rem;
+      color: #6b7280;
+      line-height: 1.3;
+    }
+    .card.green  .count { color: #16a34a; }
+    .card.yellow .count { color: #d97706; }
+    .card.red    .count { color: #dc2626; }
+    .card.gray   .count { color: #6b7280; }
+
+    /* ── Table ── */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      margin-bottom: 2.5rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.855rem;
+    }
+
+    thead th {
+      background: #1a1a3e;
+      color: #fff;
+      padding: 0.75rem 1rem;
+      text-align: center;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    thead th:first-child {
+      text-align: left;
+      border-radius: 12px 0 0 0;
+    }
+    thead th:last-child {
+      border-radius: 0 12px 0 0;
+    }
+
+    tbody tr:nth-child(even) { background: #f9fafb; }
+    tbody tr:hover           { background: #eef2ff; }
+
+    td {
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid #f0f0f0;
+      text-align: center;
+      vertical-align: middle;
+    }
+    td:first-child {
+      text-align: left;
+      color: #374151;
+      min-width: 260px;
+    }
+
+    /* Section header rows */
+    tr.section-header td {
+      background: #5C50E8;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.5rem 1rem;
+      text-align: left;
+    }
+
+    /* Plan header badges */
+    .plan-starter  { color: #4b5563; }
+    .plan-pro      { color: #2563eb; }
+    .plan-scale    { color: #7c3aed; }
+    .plan-enterprise { color: #059669; }
+
+    /* Status icons */
+    .ok       { font-size: 1.1rem; }
+    .dash     { color: #d1d5db; font-size: 1rem; }
+    .impl-ok  { color: #16a34a; font-weight: 600; font-size: 0.8rem; }
+    .impl-warn{ color: #d97706; font-weight: 600; font-size: 0.8rem; }
+    .impl-no  { color: #dc2626; font-weight: 600; font-size: 0.8rem; }
+    .impl-unk { color: #6b7280; font-weight: 600; font-size: 0.8rem; }
+    .doc-ok   { color: #16a34a; }
+    .doc-warn { color: #d97706; }
+    .doc-no   { color: #dc2626; }
+
+    .note {
+      font-size: 0.72rem;
+      color: #6b7280;
+      display: block;
+      margin-top: 0.2rem;
+      line-height: 1.3;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.78rem;
+      color: #9ca3af;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>Loyal</span><span>Base</span></div>
+</header>
+
+<h1>Resumen del planes &amp; features</h1>
+<p class="subtitle">Generado: 2026-04-10 · Auditado contra el código fuente en producción</p>
+
+<!-- Summary cards -->
+<div class="summary-grid">
+  <div class="card green">
+    <div class="count">17</div>
+    <div class="label">Implementado y funciona</div>
+  </div>
+  <div class="card yellow">
+    <div class="count">8</div>
+    <div class="label">Parcialmente implementado</div>
+  </div>
+  <div class="card red">
+    <div class="count">14</div>
+    <div class="label">No implementado (promesa sin código)</div>
+  </div>
+  <div class="card gray">
+    <div class="count">7</div>
+    <div class="label">Sin verificar</div>
+  </div>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item"><span class="badge">✅</span> Incluido en el plan</div>
+  <div class="legend-item"><span class="badge">—</span> No incluido</div>
+  <div class="legend-item"><span style="color:#16a34a;font-weight:700;">✅ Sí</span> Implementado</div>
+  <div class="legend-item"><span style="color:#d97706;font-weight:700;">⚠️ Parcial</span> Implementado con gaps</div>
+  <div class="legend-item"><span style="color:#dc2626;font-weight:700;">❌ No</span> No implementado</div>
+  <div class="legend-item"><span style="color:#6b7280;font-weight:700;">❓</span> Sin verificar</div>
+</div>
+
+<!-- Main table -->
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th class="plan-starter" style="color:#e5e7eb;">Starter<br/><small style="font-weight:400;font-size:0.75rem;">$199/mo</small></th>
+        <th class="plan-pro" style="color:#e5e7eb;">Pro<br/><small style="font-weight:400;font-size:0.75rem;">$399/mo</small></th>
+        <th class="plan-scale" style="color:#e5e7eb;">Scale<br/><small style="font-weight:400;font-size:0.75rem;">$599/mo</small></th>
+        <th class="plan-enterprise" style="color:#e5e7eb;">Enterprise<br/><small style="font-weight:400;font-size:0.75rem;">Custom</small></th>
+        <th>Implementado</th>
+        <th>En PRD</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- MIEMBROS -->
+      <tr class="section-header"><td colspan="7">Miembros</td></tr>
+      <tr>
+        <td>Hasta 500 miembros</td>
+        <td>✅</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+        <td><span class="impl-ok">✅ Sí</span></td>
+        <td><span class="doc-warn">⚠️</span> <span class="note">Deuda: cambiar a 800</span></td>
+      </tr>
+      <tr>
+        <td>Hasta 2000 miembros</td>
+        <td class="dash">—</td><td>✅</td><td class="dash">—</td><td class="dash">—</td>
+        <td><span class="impl-ok">✅ Sí</span></td>
+        <td><span class="doc-ok">✅</span></td>
+      </tr>
+      <tr>
+        <td>Miembros ilimitados</td>
+        <td class="dash">—</td><td class="dash">—</td><td>✅</td><td>✅</td>
+        <td><span class="impl-ok">✅ Sí</span></td>
+        <td><span class="doc-ok">✅</span></td>
+      </tr>
+
+      <!-- CAMPAÑAS -->
+      <tr class="section-header"><td colspan="7">Campañas</td></tr>
+      <tr>
+        <td>2 campañas/mes</td>
+        <td>✅</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+        <td><span class="impl-ok">✅ Sí</span></td>
+        <td><span class="doc-warn">⚠️</span> <span class="note">Deuda: cambiar a 3</span></td>
+      </tr>
+      <tr>
+        <td>10 campañas/mes</td>
+        <td class="dash">—</td><td>✅</td><td class="dash">—</td><td class="dash">—</td>
+        <td><span class="impl-ok">✅ Sí</span></td>
+        <td><span class="doc-ok">✅</span></td>
+      </tr>
+      <tr>
+        <td>Campañas ilimitadas</td>
+        <td class="dash">—</td><td class="dash">—</td><td>✅</td><td>✅</td>
+        <td><span class="impl-ok">✅ Sí</span></td>
+        <td><span class="doc-ok">✅</span></td>
+      </tr>
+
+      <!-- ANALYTICS -->
+      <tr class="section-header"><td colspan="7">Analytics</td></tr>
+      <tr>
+        <td>Analytics básico</td>
+        <td>✅</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td>
+        <td><span class="impl-ok">✅ Sí</span></td>
+        <td><span class="doc-ok">✅</span></td>
+      </tr>
+      <tr>
+        <td>Analytics completo</td>
+        <td class="dash">—</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-ok">✅ Sí</span></td>
+        <td><span class="doc-ok">✅</span></td>
+      </tr>
+      <tr>
+        <td>Heatmap analytics</td>
+        <td class="dash">—</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-unk">❓ Sin verificar</span></td>
+        <td><span class="doc-no">❌</span></td>
+      </tr>
+      <tr>
+        <td>Exportación de datos (CSV)</td>
+        <td class="dash">—</td><td class="dash">—</td><td>✅</td><td>✅</td>
+        <td><span class="impl-ok">✅ Sí</span> <span class="note">API completa, 5000 filas máx.</span></td>
+        <td><span class="doc-ok">✅</span></td>
+      </tr>
+
+      <!-- MARCA -->
+      <tr class="section-header"><td colspan="7">Marca (White-label)</td></tr>
+      <tr>
+        <td>Logo white-label</td>
+        <td class="dash">—</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-ok">✅ Sí</span></td>
+        <td><span class="doc-warn">⚠️</span> <span class="note">Deuda: quitar de Starter</span></td>
+      </tr>
+      <tr>
+        <td>Marca completa white-label</td>
+        <td class="dash">—</td><td class="dash">—</td><td>✅</td><td>✅</td>
+        <td><span class="impl-unk">❓ Sin verificar</span></td>
+        <td><span class="doc-no">❌</span></td>
+      </tr>
+
+      <!-- GAMIFICACIÓN -->
+      <tr class="section-header"><td colspan="7">Gamificación</td></tr>
+      <tr>
+        <td>Puntos por visita / compra</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-ok">✅ Sí</span></td>
+        <td><span class="doc-ok">✅</span></td>
+      </tr>
+      <tr>
+        <td>Challenges &amp; misiones</td>
+        <td class="dash">—</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-warn">⚠️ Parcial</span> <span class="note">Código listo, falta data del tenant</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">NEEDS DATA</span></td>
+      </tr>
+      <tr>
+        <td>Leaderboard</td>
+        <td class="dash">—</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-warn">⚠️ Parcial</span> <span class="note">Falta cron para generar snapshots</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">NEEDS DATA</span></td>
+      </tr>
+      <tr>
+        <td>Multiplicadores de puntos</td>
+        <td class="dash">—</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-warn">⚠️ Parcial</span> <span class="note">Tabla OK · UI muestra "2x" hardcodeado</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">Deuda documentada</span></td>
+      </tr>
+      <tr>
+        <td>Gamificación avanzada</td>
+        <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td>✅</td>
+        <td><span class="impl-unk">❓ Sin verificar</span></td>
+        <td><span class="doc-no">❌</span></td>
+      </tr>
+      <tr>
+        <td>Tiers Bronze / Silver / Gold / Platinum</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-warn">⚠️ Parcial</span> <span class="note">Thresholds hardcodeados (no configurables)</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">Deuda documentada</span></td>
+      </tr>
+      <tr>
+        <td>Puntos por dólar configurables</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-no">❌ No</span> <span class="note">Columna en DB · la UI no la expone</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">Deuda documentada</span></td>
+      </tr>
+      <tr>
+        <td>Campañas avanzadas</td>
+        <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td>✅</td>
+        <td><span class="impl-unk">❓ Sin verificar</span></td>
+        <td><span class="doc-no">❌</span></td>
+      </tr>
+
+      <!-- SOPORTE -->
+      <tr class="section-header"><td colspan="7">Soporte al tenant</td></tr>
+      <tr>
+        <td>Soporte por email</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-no">❌ No</span> <span class="note">Solo un mailto: en el schema, nada en el dashboard</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">Deuda documentada</span></td>
+      </tr>
+      <tr>
+        <td>Chat prioritario</td>
+        <td class="dash">—</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-no">❌ No</span> <span class="note">Flag existe · sin widget instalado</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">Deuda documentada</span></td>
+      </tr>
+      <tr>
+        <td>Account manager dedicado</td>
+        <td class="dash">—</td><td class="dash">—</td><td>✅</td><td>✅</td>
+        <td><span class="impl-no">❌ No</span> <span class="note">Flag existe · sin operativa ni asignación</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">Deuda documentada</span></td>
+      </tr>
+      <tr>
+        <td>SLA</td>
+        <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td>✅</td>
+        <td><span class="impl-no">❌ No</span> <span class="note">Flag existe · sin documento ni garantía definida</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">Deuda documentada</span></td>
+      </tr>
+
+      <!-- ENTERPRISE AVANZADO -->
+      <tr class="section-header"><td colspan="7">Features Enterprise (sin verificar)</td></tr>
+      <tr>
+        <td>API access</td>
+        <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td>✅</td>
+        <td><span class="impl-unk">❓ Sin verificar</span></td>
+        <td><span class="doc-no">❌</span></td>
+      </tr>
+      <tr>
+        <td>SSO</td>
+        <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td>✅</td>
+        <td><span class="impl-unk">❓ Sin verificar</span></td>
+        <td><span class="doc-no">❌</span></td>
+      </tr>
+      <tr>
+        <td>Integraciones custom</td>
+        <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td>✅</td>
+        <td><span class="impl-unk">❓ Sin verificar</span></td>
+        <td><span class="doc-no">❌</span></td>
+      </tr>
+      <tr>
+        <td>Multi-location</td>
+        <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td>✅</td>
+        <td><span class="impl-unk">❓ Sin verificar</span></td>
+        <td><span class="doc-no">❌</span></td>
+      </tr>
+
+      <!-- FACTURACIÓN & CICLO DE VIDA -->
+      <tr class="section-header"><td colspan="7">Facturación &amp; Ciclo de vida</td></tr>
+      <tr>
+        <td>Trial de 14 días</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-ok">✅ Sí</span> <span class="note">DB + Stripe OK</span></td>
+        <td><span class="doc-ok">✅</span></td>
+      </tr>
+      <tr>
+        <td>Email recordatorio 3 días antes del vencimiento</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-no">❌ No</span> <span class="note">Template existe · falta cron y Edge Function</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">Deuda documentada</span></td>
+      </tr>
+      <tr>
+        <td>Email por fallo de pago</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-no">❌ No</span> <span class="note">Webhook actualiza DB · no envía email</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">Deuda documentada</span></td>
+      </tr>
+      <tr>
+        <td>Email cierre de cuenta + exportación</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-no">❌ No</span> <span class="note">deleteTenant silencioso · sin export ZIP</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">Deuda documentada</span></td>
+      </tr>
+
+      <!-- MEMBER APP -->
+      <tr class="section-header"><td colspan="7">Member App</td></tr>
+      <tr>
+        <td>Auth (registro, login, reset)</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-ok">✅ Sí</span> <span class="note">Email + password, multi-tenant, i18n</span></td>
+        <td><span class="doc-ok">✅</span></td>
+      </tr>
+      <tr>
+        <td>Catálogo de recompensas + canje con QR</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-ok">✅ Sí</span></td>
+        <td><span class="doc-ok">✅</span></td>
+      </tr>
+      <tr>
+        <td>Historial de puntos</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-ok">✅ Sí</span></td>
+        <td><span class="doc-ok">✅</span></td>
+      </tr>
+      <tr>
+        <td>Referidos</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-ok">✅ Sí</span></td>
+        <td><span class="doc-ok">✅</span></td>
+      </tr>
+      <tr>
+        <td>PWA + Push Notifications</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-ok">✅ Sí</span> <span class="note">OneSignal + Service Worker</span></td>
+        <td><span class="doc-ok">✅</span></td>
+      </tr>
+      <tr>
+        <td>Editar perfil / cambiar password</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-no">❌ No</span> <span class="note">Profile tab es solo lectura</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">Deuda documentada</span></td>
+      </tr>
+      <tr>
+        <td>Eliminar cuenta (self-service)</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-no">❌ No</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">Deuda documentada</span></td>
+      </tr>
+
+      <!-- LEGAL -->
+      <tr class="section-header"><td colspan="7">Legal &amp; Compliance</td></tr>
+      <tr>
+        <td>Terms of Service</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-warn">⚠️ Parcial</span> <span class="note">Página existe · contenido sin revisar</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">Deuda documentada</span></td>
+      </tr>
+      <tr>
+        <td>Privacy Policy</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-warn">⚠️ Parcial</span> <span class="note">Página existe · contenido sin revisar</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">Deuda documentada</span></td>
+      </tr>
+      <tr>
+        <td>Data Processing Agreement (DPA)</td>
+        <td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="impl-no">❌ No</span> <span class="note">No existe · requerido antes del primer cliente</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">Deuda documentada</span></td>
+      </tr>
+      <tr>
+        <td>SLA document</td>
+        <td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td>✅</td>
+        <td><span class="impl-no">❌ No</span></td>
+        <td><span class="doc-ok">✅</span> <span class="note">Deuda documentada</span></td>
+      </tr>
+
+    </tbody>
+  </table>
+</div>
+
+<footer>LoyalBase LLC · docs/resumen-planes-features.html · 2026-04-10</footer>
+
+</body>
+</html>
