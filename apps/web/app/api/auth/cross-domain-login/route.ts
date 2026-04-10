@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
   // Use service role to generate a magic link that creates a session on the dashboard domain
   const admin = createServiceRoleClient();
-  const { data, error } = await admin.auth.admin.generateLink({
+  const { data, error } = await (admin.auth as any).admin.generateLink({
     type: 'magiclink',
     email: user.email,
     options: {
