@@ -16,8 +16,8 @@ export function buildBilingualEmail({
   const subject = `${enSubject} / ${esSubject}`;
 
   const logo = tenantLogoUrl
-    ? `<img src="${tenantLogoUrl}" alt="${tenantName || 'LoyaltyOS'}" style="max-height:48px; max-width:180px; display:block; margin:0 auto;" />`
-    : `<span style="font-size:22px; font-weight:800; color:${accent}; letter-spacing:-0.5px;">LoyaltyOS</span>`;
+    ? `<img src="${tenantLogoUrl}" alt="${tenantName || 'LoyalBase'}" style="max-height:48px; max-width:180px; display:block; margin:0 auto;" />`
+    : `<span style="font-size:24px; font-weight:800; letter-spacing:-0.5px; font-family:system-ui,-apple-system,sans-serif;"><span style="color:#1a1a3e;">Loyal</span><span style="color:#5C50E8;">Base</span></span>`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -99,10 +99,10 @@ export function buildBilingualEmail({
                       <a href="{{unsubscribe_url}}" style="color:#94a3b8; text-decoration:underline;">Cancelar suscripción</a>
                     </p>
                     <p style="margin:0; font-size:12px; color:#94a3b8;">
-                      LoyaltyOS LLC · West Palm Beach, FL, USA
+                      LoyalBase LLC · West Palm Beach, FL, USA
                     </p>
                     <p style="margin:4px 0 0; font-size:11px; color:#cbd5e1;">
-                      Powered by <strong style="color:#7c3aed;">LoyaltyOS</strong>
+                      Powered by <strong style="color:#5C50E8;">Loyal</strong><strong style="color:#5C50E8;">Base</strong>
                     </p>
                   </td>
                 </tr>

@@ -1,9 +1,8 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Maskable icons need a safe zone in the center (80% of the icon) -->
-  <rect width="512" height="512" fill="#6366F1"/>
-  <!-- Safe zone area: 410x410 centered -->
-  <rect x="51" y="51" width="410" height="410" rx="80" fill="#6366F1"/>
-  <path d="M256 130C202.1 130 160 172.1 160 226C160 279.9 202.1 322 256 322C309.9 322 352 279.9 352 226C352 172.1 309.9 130 256 130ZM256 290C220.7 290 192 261.3 192 226C192 190.7 220.7 162 256 162C291.3 162 320 190.7 320 226C320 261.3 291.3 290 256 290Z" fill="white"/>
-  <path d="M256 186C238.3 186 224 200.3 224 218C224 235.7 238.3 250 256 250C273.7 250 288 235.7 288 218C288 200.3 273.7 186 256 186ZM256 226C248.8 226 242 219.2 242 212C242 204.8 248.8 198 256 198C263.2 198 270 204.8 270 212C270 219.2 263.2 226 256 226Z" fill="white"/>
-  <circle cx="256" cy="218" r="12" fill="white"/>
+  <!-- Maskable: full bleed background, icon within 80% safe zone (±205px from center) -->
+  <rect width="512" height="512" fill="#5C50E8"/>
+  <g transform="translate(256,256) scale(2.5)">
+    <path d="M0,-34 L7.5,-12 L30,-12 L12.5,2.5 L20,24 L0,12 L-20,24 L-12.5,2.5 L-30,-12 L-7.5,-12 Z" fill="#ffffff"/>
+    <circle cx="12" cy="-20" r="5" fill="#ffffff" opacity="0.5"/>
+  </g>
 </svg>
