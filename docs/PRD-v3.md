@@ -16,6 +16,7 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 - **Deuda técnica liquidada:** Todo el backlog técnico de las semanas pre-Phase 3 está cerrado (tests, types, rate limiting, cache, edge functions, i18n completo).
 - **Decisión de pricing pendiente (MKT-1):** API Access y Custom Domains siguen bloqueados por falta de validación de mercado. Sin respuesta de marketing antes del 2026-06-08, se adopta Opción C (solo Enterprise) por defecto.
 - **Phase 4 en definición:** Los tres gaps críticos de Enterprise (SSO, Multi-location, Secure Compute) pasan formalmente a Phase 4, sujeto a validación de demanda por marketing (MKT-2).
+- **Founding Partners Program activo (Abril 2026):** Programa de adquisición de primeros 15 clientes con trial extendido de 60 días y 20% de descuento de por vida. Ver `Founding Partner Program.md`.
 
 ---
 
@@ -259,6 +260,29 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 | Soporte | Email | Priority | Dedicado | SLA |
 
 > **(†) Pendiente decisión MKT-1** — API Access y Custom Domains están fuera del plan Scale hasta que marketing valide el modelo de pricing. Ver §3.
+
+> **Precio Starter bloqueado en $199/mo** — El plan Starter no se modifica como precio de entrada al mercado, independientemente del Founding Partners Program u otras iniciativas de marketing.
+
+### 2.8 Founding Partners Program
+
+**Referencia:** Ver `Founding Partner Program.md` para la especificación completa.
+
+**Resumen:**
+- Programa de adquisición de los primeros **15 clientes** de pago
+- **Trial extendido:** 60 días (vs. 14 días estándar del registro regular)
+- **Descuento:** 20% de por vida en cualquier plan — bloqueado permanentemente
+- **Precios Founding Partner:** Starter $159/mo · Pro $319/mo · Scale $479/mo
+- **Deadline:** 90 días desde el anuncio de Marketing (fecha TBD por Marketing)
+- **Stripe:** Coupon `FOUNDING20` — 20% forever, max 15 canjes
+
+**Cambios técnicos requeridos en la plataforma:**
+- Columnas `is_founding_partner`, `founding_partner_number`, `founding_trial_ends_at` en `tenants`
+- Modificación de `apps/web/app/api/register/route.ts` para soportar trial de 60 días y coupon
+- Sección `<FoundingPartners />` en landing page con countdown y contador de cupos
+- Endpoint `/api/founding-spots` para conteo en tiempo real
+- Registro de Stripe: Scale ya soportado en el route (`STRIPE_SCALE_PRICE_ID`)
+
+**Estado:** Pendiente de implementación — bloqueado hasta configuración de Stripe Price IDs en producción.
 
 ---
 
