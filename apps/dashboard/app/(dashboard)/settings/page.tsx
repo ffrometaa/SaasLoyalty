@@ -1070,7 +1070,7 @@ export default function SettingsPage() {
               <div className="grid gap-3 sm:grid-cols-2 max-w-md">
                 {[
                   { code: 'en', label: 'English', flag: '🇺🇸' },
-                  { code: 'es', label: 'Español', flag: '🇦🇷' },
+                  { code: 'es', label: 'Español', flag: '🇪🇸' },
                 ].map(({ code, label, flag }) => {
                   const current = typeof document !== 'undefined'
                     ? document.cookie.split('; ').find(r => r.startsWith('NEXT_LOCALE='))?.split('=')[1] ?? 'en'
