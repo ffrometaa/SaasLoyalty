@@ -356,5 +356,27 @@
     "dayFri": "Fri",
     "daySat": "Sat",
     "daySun": "Sun"
+  },
+  "founding": {
+    "badge": "Limited Offer",
+    "heading": "Become a Founding Partner",
+    "subheading": "Lock in 20% off — forever. Only 15 spots.",
+    "spotsLeft": "{count} spots remaining",
+    "spotsNone": "All spots claimed",
+    "benefit0": "60-day free trial (vs. 14 standard)",
+    "benefit1": "20% lifetime discount on any plan",
+    "benefit2": "Direct access to the founding team",
+    "benefit3": "Shape the product roadmap",
+    "priceNote": "Your card won't be charged for 60 days.",
+    "cta": "Claim Your Spot",
+    "starterWas": "$199",
+    "starterNow": "$159",
+    "proWas": "$399",
+    "proNow": "$319",
+    "scaleWas": "$599",
+    "scaleNow": "$479",
+    "perMonth": "/mo",
+    "registerBannerTitle": "You're registering as a Founding Partner",
+    "registerBannerDesc": "20% lifetime discount · 60-day trial · No charge for 60 days."
   }
 }

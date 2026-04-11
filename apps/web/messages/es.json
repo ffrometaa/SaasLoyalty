@@ -356,5 +356,27 @@
     "dayFri": "Vie",
     "daySat": "Sáb",
     "daySun": "Dom"
+  },
+  "founding": {
+    "badge": "Oferta Limitada",
+    "heading": "Convertite en Founding Partner",
+    "subheading": "20% de descuento de por vida. Solo 15 cupos.",
+    "spotsLeft": "{count} cupos disponibles",
+    "spotsNone": "Todos los cupos tomados",
+    "benefit0": "60 días de trial (vs. 14 estándar)",
+    "benefit1": "20% de descuento de por vida en cualquier plan",
+    "benefit2": "Acceso directo al equipo fundador",
+    "benefit3": "Participá en el roadmap del producto",
+    "priceNote": "Tu tarjeta no será cobrada durante 60 días.",
+    "cta": "Reclamar Mi Cupo",
+    "starterWas": "$199",
+    "starterNow": "$159",
+    "proWas": "$399",
+    "proNow": "$319",
+    "scaleWas": "$599",
+    "scaleNow": "$479",
+    "perMonth": "/mes",
+    "registerBannerTitle": "Estás registrándote como Founding Partner",
+    "registerBannerDesc": "20% de descuento de por vida · 60 días de trial · Sin cobro por 60 días."
   }
 }

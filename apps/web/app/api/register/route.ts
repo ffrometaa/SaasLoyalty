@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@loyalty-os/lib/server';
 import Stripe from 'stripe';
+import {
+  FOUNDING_PARTNER_MAX_SPOTS,
+  FOUNDING_PARTNER_TRIAL_DAYS,
+  FOUNDING_PARTNER_COUPON_ID,
+} from '@loyalty-os/config';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
@@ -26,7 +31,7 @@ const ANNUAL_PRICE_IDS = {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { businessName, businessType, slug, email, userId, plan = 'starter', billingPeriod = 'monthly' } = body;
+    const { businessName, businessType, slug, email, userId, plan = 'starter', billingPeriod = 'monthly', isFoundingPartner = false } = body;
 
     // Validate input
     if (!businessName || !businessType || !slug || !email || !userId) {
@@ -60,6 +65,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check founding partner spots if applicable
+    let foundingPartnerNumber: number | null = null;
+    if (isFoundingPartner) {
+      const { count, error: countError } = await supabase
+        .from('tenants')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_founding_partner', true);
+
+      if (countError) {
+        console.error('Failed to count founding partners:', countError);
+        return NextResponse.json({ error: 'Failed to verify founding partner availability' }, { status: 500 });
+      }
+
+      const taken = count ?? 0;
+      if (taken >= FOUNDING_PARTNER_MAX_SPOTS) {
+        return NextResponse.json({ error: 'All founding partner spots have been claimed.' }, { status: 409 });
+      }
+
+      foundingPartnerNumber = taken + 1;
+    }
+
     // Get price ID for the selected plan (annual takes priority if configured)
     const isAnnual = billingPeriod === 'annual';
     const annualPriceId = ANNUAL_PRICE_IDS[plan as keyof typeof ANNUAL_PRICE_IDS];
@@ -72,8 +98,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Create tenant record now so the slug is reserved and the webhook can update it
+    const trialDays = isFoundingPartner ? FOUNDING_PARTNER_TRIAL_DAYS : 14;
     const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+    trialEndsAt.setDate(trialEndsAt.getDate() + trialDays);
 
     const { error: tenantError } = await supabase
       .from('tenants')
@@ -86,6 +113,11 @@ export async function POST(request: NextRequest) {
         plan_status: 'trialing',
         trial_ends_at: trialEndsAt.toISOString(),
         owner_email: email,
+        ...(isFoundingPartner && {
+          is_founding_partner: true,
+          founding_partner_number: foundingPartnerNumber,
+          founding_trial_ends_at: trialEndsAt.toISOString(),
+        }),
       });
 
     if (tenantError) {
@@ -110,7 +142,7 @@ export async function POST(request: NextRequest) {
         },
       ],
       subscription_data: {
-        trial_period_days: 14,
+        trial_period_days: trialDays,
         metadata: {
           tenant_slug: slug,
           business_name: businessName,
@@ -118,6 +150,9 @@ export async function POST(request: NextRequest) {
           plan: plan,
         },
       },
+      ...(isFoundingPartner && {
+        discounts: [{ coupon: FOUNDING_PARTNER_COUPON_ID }],
+      }),
       automatic_tax: {
         enabled: true,
       },

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { createServiceRoleClient } from '@loyalty-os/lib/server';
-import { buildBilingualEmail, buildWelcomeTenantEmail } from '@loyalty-os/email';
+import { buildBilingualEmail, buildWelcomeTenantEmail, buildPaymentFailedEmail } from '@loyalty-os/email';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
@@ -120,18 +120,16 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
     return;
   }
 
-  // Update tenant with Stripe customer info
-  const trialEndsAt = new Date();
-  trialEndsAt.setDate(trialEndsAt.getDate() + 14);
-
+  // Update tenant with Stripe customer info.
+  // Do NOT override trial_ends_at — it was set correctly during registration
+  // (14 days standard, 60 days for founding partners).
   await supabase
     .from('tenants')
     .update({
       stripe_customer_id: session.customer as string,
       stripe_subscription_id: session.subscription as string,
       plan: plan,
-      plan_status: 'active',
-      trial_ends_at: trialEndsAt.toISOString(),
+      plan_status: 'trialing',
     })
     .eq('slug', tenantSlug);
 
@@ -382,22 +380,138 @@ async function handlePaymentFailed(supabase: any, invoice: Stripe.Invoice) {
 
   const customerId = invoice.customer as string;
 
+  const { data: tenant } = await supabase
+    .from('tenants')
+    .select('business_name, owner_email, preferred_language')
+    .eq('stripe_customer_id', customerId)
+    .single();
+
   await supabase
     .from('tenants')
     .update({ plan_status: 'past_due' })
     .eq('stripe_customer_id', customerId);
 
-  // TODO: Send email notification to tenant
-  console.log('Tenant marked as past_due:', customerId);
+  if (!tenant?.owner_email) return;
+
+  const amountDue = invoice.amount_due
+    ? `$${(invoice.amount_due / 100).toFixed(2)} USD`
+    : '';
+
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  if (!RESEND_API_KEY) {
+    console.error('RESEND_API_KEY not set — skipping payment failed email');
+    return;
+  }
+
+  const { enSubject, esSubject, enHtmlContent, esHtmlContent } = buildPaymentFailedEmail({
+    businessName: tenant.business_name,
+    amountDue,
+    billingUrl: 'https://dashboard.loyalbase.dev/settings/billing',
+  });
+
+  const { subject, html } = buildBilingualEmail({ enSubject, esSubject, enHtmlContent, esHtmlContent });
+
+  // Email to tenant
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}` },
+    body: JSON.stringify({
+      from: 'LoyaltyOS <billing@loyalbase.dev>',
+      to: [tenant.owner_email],
+      subject,
+      html,
+    }),
+  });
+
+  // Internal alert
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}` },
+    body: JSON.stringify({
+      from: 'LoyaltyOS Billing <billing@loyalbase.dev>',
+      to: ['felixdfrometa@gmail.com'],
+      subject: `⚠️ Pago fallido: ${tenant.business_name} — ${amountDue}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0f; color: #fff; border-radius: 12px; overflow: hidden;">
+          <div style="background: linear-gradient(135deg, #dc2626, #7c3aed); padding: 24px 32px;">
+            <h1 style="margin: 0; font-size: 20px; font-weight: 800;">⚠️ Pago fallido</h1>
+          </div>
+          <div style="padding: 32px;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 10px 0; color: rgba(255,255,255,0.5); font-size: 13px; width: 140px;">Tenant</td>
+                <td style="padding: 10px 0; font-weight: 700;">${tenant.business_name}</td>
+              </tr>
+              <tr style="border-top: 1px solid rgba(255,255,255,0.07);">
+                <td style="padding: 10px 0; color: rgba(255,255,255,0.5); font-size: 13px;">Email</td>
+                <td style="padding: 10px 0;"><a href="mailto:${tenant.owner_email}" style="color: #a78bfa;">${tenant.owner_email}</a></td>
+              </tr>
+              <tr style="border-top: 1px solid rgba(255,255,255,0.07);">
+                <td style="padding: 10px 0; color: rgba(255,255,255,0.5); font-size: 13px;">Monto</td>
+                <td style="padding: 10px 0; font-weight: 600; color: #f87171;">${amountDue}</td>
+              </tr>
+              <tr style="border-top: 1px solid rgba(255,255,255,0.07);">
+                <td style="padding: 10px 0; color: rgba(255,255,255,0.5); font-size: 13px;">Intentos</td>
+                <td style="padding: 10px 0;">${invoice.attempt_count ?? 1}</td>
+              </tr>
+              <tr style="border-top: 1px solid rgba(255,255,255,0.07);">
+                <td style="padding: 10px 0; color: rgba(255,255,255,0.5); font-size: 13px;">Stripe</td>
+                <td style="padding: 10px 0; font-size: 12px;"><a href="https://dashboard.stripe.com/customers/${customerId}" style="color: #a78bfa;">Ver en Stripe</a></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      `,
+    }),
+  });
 }
 
 async function handlePaymentSucceeded(supabase: any, invoice: Stripe.Invoice) {
   console.log('Payment succeeded:', invoice.id);
 
+  // Skip zero-amount invoices (e.g. trial activation)
+  if (!invoice.amount_paid || invoice.amount_paid === 0) return;
+
   const customerId = invoice.customer as string;
+
+  const { data: tenant } = await supabase
+    .from('tenants')
+    .select('business_name, owner_email')
+    .eq('stripe_customer_id', customerId)
+    .single();
 
   await supabase
     .from('tenants')
     .update({ plan_status: 'active' })
     .eq('stripe_customer_id', customerId);
+
+  if (!tenant?.owner_email) return;
+
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  if (!RESEND_API_KEY) return;
+
+  const amountPaid = `$${(invoice.amount_paid / 100).toFixed(2)} USD`;
+
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}` },
+    body: JSON.stringify({
+      from: 'LoyaltyOS <billing@loyalbase.dev>',
+      to: [tenant.owner_email],
+      subject: `Payment confirmed — ${amountPaid} / Pago confirmado — ${amountPaid}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0f; color: #fff; border-radius: 12px; overflow: hidden;">
+          <div style="background: linear-gradient(135deg, #059669, #2563eb); padding: 24px 32px;">
+            <h1 style="margin: 0; font-size: 20px; font-weight: 800;">✓ Payment confirmed</h1>
+            <p style="margin: 6px 0 0; opacity: 0.85; font-size: 14px;">Your LoyaltyOS subscription is active.</p>
+          </div>
+          <div style="padding: 32px;">
+            <p style="color: rgba(255,255,255,0.7); font-size: 14px;">Hi <strong>${tenant.business_name}</strong>, we successfully processed your payment of <strong>${amountPaid}</strong>.</p>
+            <p style="color: rgba(255,255,255,0.7); font-size: 14px;">Tu pago de <strong>${amountPaid}</strong> fue procesado con éxito. Tu suscripción a LoyaltyOS está activa.</p>
+            <a href="https://dashboard.loyalbase.dev" style="display: inline-block; margin-top: 16px; padding: 12px 24px; background: linear-gradient(135deg, #7c3aed, #2563eb); color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">Go to Dashboard</a>
+          </div>
+        </div>
+      `,
+    }),
+  });
 }

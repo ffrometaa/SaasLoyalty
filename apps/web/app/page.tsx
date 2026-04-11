@@ -7,6 +7,7 @@ import { HowItWorks } from '@/components/landing/HowItWorks';
 import { DashboardPreview } from '@/components/landing/DashboardPreview';
 import { Testimonials } from '@/components/landing/Testimonials';
 import { PricingPreview } from '@/components/landing/PricingPreview';
+import { FoundingPartners } from '@/components/landing/FoundingPartners';
 import { FAQ } from '@/components/landing/FAQ';
 import { FinalCTA } from '@/components/landing/FinalCTA';
 import { Footer } from '@/components/landing/Footer';
@@ -90,6 +91,7 @@ export default function HomePage() {
       <DashboardPreview />
       <Testimonials />
       <PricingPreview />
+      <FoundingPartners />
       <FAQ />
       <FinalCTA />
       <Footer />

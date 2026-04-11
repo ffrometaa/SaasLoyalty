@@ -81,6 +81,12 @@ export const BUSINESS_TYPES = [
   { value: 'salon', label: 'Salon & Beauty' },
 ] as const;
 
+// Founding Partner Program
+export const FOUNDING_PARTNER_DISCOUNT = 0.20;
+export const FOUNDING_PARTNER_MAX_SPOTS = 15;
+export const FOUNDING_PARTNER_TRIAL_DAYS = 60;
+export const FOUNDING_PARTNER_COUPON_ID = 'FOUNDING20';
+
 // Session
 export const JWT_EXPIRY_HOURS = 1;
 export const REFRESH_TOKEN_DAYS = 7;

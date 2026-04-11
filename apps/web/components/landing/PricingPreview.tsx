@@ -28,6 +28,15 @@ export function PricingPreview() {
       highlight: true,
       enterprise: false,
     },
+    {
+      name: t('plan2_name'),
+      monthly: 599,
+      annual: 499,
+      subtitle: t('plan2_subtitle'),
+      features: [t('plan2_f0'), t('plan2_f1'), t('plan2_f2'), t('plan2_f3'), t('plan2_f4'), t('plan2_f5')],
+      highlight: false,
+      enterprise: false,
+    },
   ];
 
   useEffect(() => {
@@ -113,7 +122,7 @@ export function PricingPreview() {
         </div>
 
         {/* Plans */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch max-w-3xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch max-w-5xl mx-auto">
           {PLANS.map((plan) => (
             <div
               key={plan.name}

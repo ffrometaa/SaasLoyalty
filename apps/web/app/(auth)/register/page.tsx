@@ -1,18 +1,34 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { getSupabaseClient } from '@loyalty-os/lib';
-import { BUSINESS_TYPES, PLANS } from '@loyalty-os/config';
+import { BUSINESS_TYPES, PLANS, FOUNDING_PARTNER_DISCOUNT } from '@loyalty-os/config';
 
-export default function RegisterPage() {
+function RegisterPageInner() {
   const t = useTranslations('auth.register');
+  const ft = useTranslations('founding');
+  const searchParams = useSearchParams();
+  const isFoundingSource = searchParams.get('source') === 'founding';
+
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<string>('starter');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
+  const [foundingAvailable, setFoundingAvailable] = useState(false);
+
+  useEffect(() => {
+    if (!isFoundingSource) return;
+    fetch('/api/founding-spots')
+      .then((r) => r.json())
+      .then((d) => setFoundingAvailable((d.remaining ?? 0) > 0))
+      .catch(() => setFoundingAvailable(false));
+  }, [isFoundingSource]);
+
+  const isFoundingPartner = isFoundingSource && foundingAvailable;
 
   const [formData, setFormData] = useState({
     businessName: '',
@@ -82,6 +98,7 @@ export default function RegisterPage() {
           userId: authData.user.id,
           plan: selectedPlan,
           billingPeriod,
+          isFoundingPartner,
         }),
       });
 
@@ -193,6 +210,17 @@ export default function RegisterPage() {
           <div className="mt-8">
             <h3 className="text-base font-semibold text-white mb-4 font-display">{t('choosePlan')}</h3>
 
+            {/* Founding Partner banner */}
+            {isFoundingPartner && (
+              <div
+                className="mb-5 px-4 py-3 rounded-xl text-sm"
+                style={{ background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.35)' }}
+              >
+                <p className="font-semibold text-purple-300 mb-0.5">{ft('registerBannerTitle')}</p>
+                <p className="text-white/50 text-xs">{ft('registerBannerDesc')}</p>
+              </div>
+            )}
+
             {/* Billing period toggle */}
             <div className="flex items-center justify-center gap-3 mb-6">
               <button
@@ -222,7 +250,7 @@ export default function RegisterPage() {
             </div>
 
             <div className="grid gap-3">
-              {(['starter', 'pro'] as const).map((plan) => {
+              {(['starter', 'pro', 'scale'] as const).map((plan) => {
                 const details = PLANS[plan];
                 const isSelected = selectedPlan === plan;
                 return (
@@ -242,15 +270,22 @@ export default function RegisterPage() {
                         </p>
                       </div>
                       <div className="text-right">
+                        {isFoundingPartner && (
+                          <p className="text-xs line-through" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                            ${billingPeriod === 'annual' ? Math.round(details.price * 10 / 12) : details.price}
+                          </p>
+                        )}
                         <p className="text-lg font-bold text-white">
-                          ${billingPeriod === 'annual' ? Math.round(details.price * 10 / 12) : details.price}
+                          ${billingPeriod === 'annual'
+                            ? Math.round(details.price * (1 - FOUNDING_PARTNER_DISCOUNT) * 10 / 12)
+                            : Math.round(details.price * (isFoundingPartner ? (1 - FOUNDING_PARTNER_DISCOUNT) : 1))}
                         </p>
                         <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
                           {billingPeriod === 'annual' ? 'per month, billed annually' : t('perMonth')}
                         </p>
                         {billingPeriod === 'annual' && (
                           <p className="text-xs" style={{ color: '#22c55e' }}>
-                            ${details.price * 10}/yr
+                            ${Math.round(details.price * (isFoundingPartner ? (1 - FOUNDING_PARTNER_DISCOUNT) : 1) * 10)}/yr
                           </p>
                         )}
                       </div>
@@ -355,5 +390,13 @@ export default function RegisterPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterPageInner />
+    </Suspense>
   );
 }

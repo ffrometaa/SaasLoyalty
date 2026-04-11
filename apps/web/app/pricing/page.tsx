@@ -35,6 +35,15 @@ const pricingSchema = {
       description: 'For growing local businesses. Up to 2,000 members, 10 campaigns/month.',
       url: 'https://loyalbase.dev/pricing',
     },
+    {
+      '@type': 'Offer',
+      name: 'Scale',
+      price: '599',
+      priceCurrency: 'USD',
+      priceSpecification: { '@type': 'UnitPriceSpecification', price: '599', priceCurrency: 'USD', unitText: 'MONTH' },
+      description: 'For multi-location businesses. Unlimited members, unlimited campaigns, full white-label.',
+      url: 'https://loyalbase.dev/pricing',
+    },
   ],
 };
 
@@ -42,15 +51,17 @@ export default async function PricingPage() {
   const t = await getTranslations('pricingPage');
 
   const TABLE_ROWS = [
-    { feature: 'Member App (PWA)', starter: true, pro: true },
-    { feature: 'Points & Rewards Engine', starter: true, pro: true },
-    { feature: 'QR Code Onboarding', starter: true, pro: true },
-    { feature: 'Members', starter: '500', pro: '2,000' },
-    { feature: 'Campaigns / month', starter: '2', pro: '10' },
-    { feature: 'Analytics Dashboard', starter: 'Basic', pro: 'Full + Heatmap' },
-    { feature: 'White-label Branding', starter: false, pro: true },
-    { feature: 'Gamification Engine', starter: false, pro: true },
-    { feature: 'Support', starter: 'Email', pro: 'Priority Chat' },
+    { feature: 'Member App (PWA)', starter: true, pro: true, scale: true },
+    { feature: 'Points & Rewards Engine', starter: true, pro: true, scale: true },
+    { feature: 'QR Code Onboarding', starter: true, pro: true, scale: true },
+    { feature: 'Members', starter: '500', pro: '2,000', scale: 'Unlimited' },
+    { feature: 'Campaigns / month', starter: '2', pro: '10', scale: 'Unlimited' },
+    { feature: 'Analytics Dashboard', starter: 'Basic', pro: 'Full + Heatmap', scale: 'Full + Export' },
+    { feature: 'White-label Branding', starter: false, pro: true, scale: 'Full' },
+    { feature: 'Gamification Engine', starter: false, pro: true, scale: true },
+    { feature: 'Account Manager', starter: false, pro: false, scale: true },
+    { feature: 'API Access', starter: false, pro: false, scale: true },
+    { feature: 'Support', starter: 'Email', pro: 'Priority Chat', scale: 'Account Manager' },
   ];
 
   return (
@@ -93,9 +104,9 @@ export default async function PricingPage() {
               <div className="overflow-x-auto" style={{ background: '#0d0d14' }}>
                 <div style={{ minWidth: '560px' }}>
                   {/* Header */}
-                  <div className="grid grid-cols-3 gap-4 px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="grid grid-cols-4 gap-4 px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                     <div className="text-white/40 text-xs font-semibold tracking-wide uppercase">{t('featureLabel')}</div>
-                    {['Starter', 'Pro'].map((p) => (
+                    {['Starter', 'Pro', 'Scale'].map((p) => (
                       <div key={p} className="text-center text-white font-semibold text-sm">{p}</div>
                     ))}
                   </div>
@@ -103,11 +114,11 @@ export default async function PricingPage() {
                   {TABLE_ROWS.map((row, i) => (
                     <div
                       key={i}
-                      className="grid grid-cols-3 gap-4 px-6 py-4"
+                      className="grid grid-cols-4 gap-4 px-6 py-4"
                       style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
                     >
                       <div className="text-white/60 text-sm">{row.feature}</div>
-                      {[row.starter, row.pro].map((val, j) => (
+                      {[row.starter, row.pro, row.scale].map((val, j) => (
                         <div key={j} className="text-center">
                           {val === true ? (
                             <svg
