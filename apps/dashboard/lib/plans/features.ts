@@ -2,10 +2,10 @@
 export type Plan = 'starter' | 'pro' | 'scale' | 'enterprise';
 
 export type Feature =
-  | 'members_up_to_500'
+  | 'members_up_to_800'
   | 'members_up_to_2000'
   | 'members_unlimited'
-  | 'campaigns_per_month_2'
+  | 'campaigns_per_month_3'
   | 'campaigns_per_month_10'
   | 'campaigns_unlimited'
   | 'analytics_basic'
@@ -68,13 +68,13 @@ export const PLAN_CONFIGS: Record<Plan, PlanConfig> = {
   starter: {
     id: 'starter',
     name: 'Starter',
-    monthlyPrice: 199,
-    annualPrice: 166,
-    maxMembers: 500,
-    maxCampaignsPerMonth: 2,
+    monthlyPrice: 99,
+    annualPrice: 82,
+    maxMembers: 800,
+    maxCampaignsPerMonth: 3,
     features: [
-      'members_up_to_500',
-      'campaigns_per_month_2',
+      'members_up_to_800',
+      'campaigns_per_month_3',
       'analytics_basic',
       'support_email',
     ],

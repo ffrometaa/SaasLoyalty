@@ -12,8 +12,8 @@ export function PricingPreview() {
   const PLANS = [
     {
       name: t('plan0_name'),
-      monthly: 199,
-      annual: 166,
+      monthly: 99,
+      annual: 82,
       subtitle: t('plan0_subtitle'),
       features: [t('plan0_f0'), t('plan0_f1'), t('plan0_f2'), t('plan0_f3'), t('plan0_f4')],
       highlight: false,
