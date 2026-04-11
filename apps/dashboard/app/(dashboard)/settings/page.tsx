@@ -20,6 +20,7 @@ import {
   X,
   Shield,
   Link2,
+  Zap,
 } from 'lucide-react';
 import { MemberAppTab } from '../../../components/MemberAppTab';
 import { planHasFeature } from '../../../lib/plans/features';
@@ -40,7 +41,7 @@ type Invoice = {
 
 export default function SettingsPage() {
   const t = useTranslations('settings');
-  const [activeTab, setActiveTab] = useState<'profile' | 'branding' | 'member-app' | 'billing' | 'language' | 'team' | 'danger' | 'integrations'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'branding' | 'member-app' | 'billing' | 'language' | 'team' | 'danger' | 'integrations' | 'loyalty'>('profile');
   const [saved, setSaved] = useState(false);
   const [settingsLoading, setSettingsLoading] = useState(true);
 
@@ -108,6 +109,13 @@ export default function SettingsPage() {
     accentColor: '#818cf8',
   });
 
+  const [loyaltyRules, setLoyaltyRules] = useState({
+    pointsPerDollar: 1,
+    silverThreshold: 1000,
+    goldThreshold: 5000,
+    platinumThreshold: 10000,
+  });
+
   useEffect(() => {
     fetch('/api/settings')
       .then(r => r.ok ? r.json() : null)
@@ -140,6 +148,12 @@ export default function SettingsPage() {
           if (data.plan) setPlan(data.plan);
           if (data.planStatus) setPlanStatus(data.planStatus);
           if (data.trialEndsAt !== undefined) setTrialEndsAt(data.trialEndsAt ?? null);
+          setLoyaltyRules({
+            pointsPerDollar: data.pointsPerDollar ?? 1,
+            silverThreshold: data.tierSilverThreshold ?? 1000,
+            goldThreshold: data.tierGoldThreshold ?? 5000,
+            platinumThreshold: data.tierPlatinumThreshold ?? 10000,
+          });
         }
       })
       .finally(() => setSettingsLoading(false));
@@ -235,6 +249,7 @@ export default function SettingsPage() {
     { id: 'member-app', label: t('memberApp'), icon: QrCode },
     { id: 'billing', label: t('billing'), icon: CreditCard },
     { id: 'team', label: t('team'), icon: Users },
+    { id: 'loyalty', label: t('loyalty'), icon: Zap },
     { id: 'integrations', label: t('integrations'), icon: Link2 },
     { id: 'language', label: t('language'), icon: Globe },
     { id: 'danger', label: t('danger'), icon: AlertTriangle },
@@ -351,6 +366,30 @@ export default function SettingsPage() {
       setTimeout(() => setSaved(false), 2000);
     } else {
       alert('Failed to save branding colors. Please try again.');
+    }
+  };
+
+  const handleSaveLoyalty = async () => {
+    if (loyaltyRules.silverThreshold >= loyaltyRules.goldThreshold ||
+        loyaltyRules.goldThreshold >= loyaltyRules.platinumThreshold) {
+      alert('Thresholds must be in ascending order: Silver < Gold < Platinum.');
+      return;
+    }
+    const res = await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        pointsPerDollar: loyaltyRules.pointsPerDollar,
+        tierSilverThreshold: loyaltyRules.silverThreshold,
+        tierGoldThreshold: loyaltyRules.goldThreshold,
+        tierPlatinumThreshold: loyaltyRules.platinumThreshold,
+      }),
+    });
+    if (res.ok) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } else {
+      alert('Failed to save loyalty rules. Please try again.');
     }
   };
 
@@ -1098,6 +1137,81 @@ export default function SettingsPage() {
                     </button>
                   );
                 })}
+              </div>
+            </div>
+          )}
+
+          {/* Loyalty Rules Tab */}
+          {activeTab === 'loyalty' && (
+            <div className="bg-white rounded-xl border p-6 space-y-8">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Loyalty Rules</h2>
+                <p className="text-sm text-gray-500 mt-1">Configure how customers earn points and advance through tiers.</p>
+              </div>
+
+              {/* Points per dollar */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-4">Points Earned</h3>
+                <div className="max-w-xs">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Points per $1 spent
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="number"
+                      min={1}
+                      max={1000}
+                      value={loyaltyRules.pointsPerDollar}
+                      onChange={(e) => setLoyaltyRules({ ...loyaltyRules, pointsPerDollar: Number(e.target.value) })}
+                      className="w-28 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple text-center text-lg font-semibold"
+                    />
+                    <span className="text-sm text-gray-500">pts / $1</span>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">
+                    A $50 purchase earns {loyaltyRules.pointsPerDollar * 50} points.
+                  </p>
+                </div>
+              </div>
+
+              {/* Tier thresholds */}
+              <div className="pt-6 border-t">
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">Tier Thresholds</h3>
+                <p className="text-xs text-gray-400 mb-4">Lifetime points required to reach each tier. Must be ascending.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-xl">
+                  {[
+                    { label: 'Silver', color: '#94a3b8', key: 'silverThreshold' as const },
+                    { label: 'Gold', color: '#f59e0b', key: 'goldThreshold' as const },
+                    { label: 'Platinum', color: '#8b5cf6', key: 'platinumThreshold' as const },
+                  ].map(({ label, color, key }) => (
+                    <div key={key}>
+                      <label className="block text-sm font-medium mb-1" style={{ color }}>
+                        {label}
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={loyaltyRules[key]}
+                        onChange={(e) => setLoyaltyRules({ ...loyaltyRules, [key]: Number(e.target.value) })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple text-center font-semibold"
+                      />
+                      <p className="text-xs text-gray-400 mt-1 text-center">{loyaltyRules[key].toLocaleString()} pts</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t flex items-center gap-3">
+                <button
+                  onClick={handleSaveLoyalty}
+                  className="px-5 py-2 bg-brand-purple text-white text-sm font-semibold rounded-lg hover:bg-brand-purple-600 transition-colors"
+                >
+                  Save Loyalty Rules
+                </button>
+                {saved && (
+                  <span className="flex items-center gap-1 text-sm text-green-600 font-medium">
+                    <Check className="h-4 w-4" /> Saved
+                  </span>
+                )}
               </div>
             </div>
           )}

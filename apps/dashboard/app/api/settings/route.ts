@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
     const { data: tenant } = await supabase
       .from('tenants')
-      .select('business_name, brand_logo_url, brand_color_primary, brand_color_secondary, plan, plan_status, trial_ends_at, business_phone, business_address, owner_first_name, owner_last_name, owner_phone, owner_email, secondary_contact_first_name, secondary_contact_last_name, secondary_contact_phone, secondary_contact_email, referral_enabled, referral_points_referrer, referral_points_referee')
+      .select('business_name, brand_logo_url, brand_color_primary, brand_color_secondary, plan, plan_status, trial_ends_at, business_phone, business_address, owner_first_name, owner_last_name, owner_phone, owner_email, secondary_contact_first_name, secondary_contact_last_name, secondary_contact_phone, secondary_contact_email, referral_enabled, referral_points_referrer, referral_points_referee, points_per_dollar, tier_silver_threshold, tier_gold_threshold, tier_platinum_threshold')
       .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
@@ -44,6 +44,10 @@ export async function GET(request: NextRequest) {
       referralEnabled: tenant.referral_enabled ?? false,
       referralPointsReferrer: tenant.referral_points_referrer ?? 50,
       referralPointsReferee: tenant.referral_points_referee ?? 50,
+      pointsPerDollar: tenant.points_per_dollar ?? 1,
+      tierSilverThreshold: tenant.tier_silver_threshold ?? 1000,
+      tierGoldThreshold: tenant.tier_gold_threshold ?? 5000,
+      tierPlatinumThreshold: tenant.tier_platinum_threshold ?? 10000,
     });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -64,6 +68,7 @@ export async function POST(request: NextRequest) {
       ownerFirstName, ownerLastName, ownerPhone, ownerEmail,
       secondaryContactFirstName, secondaryContactLastName, secondaryContactPhone, secondaryContactEmail,
       referralEnabled, referralPointsReferrer, referralPointsReferee,
+      pointsPerDollar, tierSilverThreshold, tierGoldThreshold, tierPlatinumThreshold,
     } = body;
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
@@ -83,6 +88,10 @@ export async function POST(request: NextRequest) {
     if (referralEnabled !== undefined) updates.referral_enabled = referralEnabled;
     if (referralPointsReferrer !== undefined) updates.referral_points_referrer = Math.max(0, Math.min(10000, Number(referralPointsReferrer)));
     if (referralPointsReferee !== undefined) updates.referral_points_referee = Math.max(0, Math.min(10000, Number(referralPointsReferee)));
+    if (pointsPerDollar !== undefined) updates.points_per_dollar = Math.max(1, Math.min(1000, Number(pointsPerDollar)));
+    if (tierSilverThreshold !== undefined) updates.tier_silver_threshold = Math.max(1, Number(tierSilverThreshold));
+    if (tierGoldThreshold !== undefined) updates.tier_gold_threshold = Math.max(1, Number(tierGoldThreshold));
+    if (tierPlatinumThreshold !== undefined) updates.tier_platinum_threshold = Math.max(1, Number(tierPlatinumThreshold));
 
     const { error } = await supabase
       .from('tenants')
