@@ -61,6 +61,10 @@ export default function SettingsPage() {
 
   // Billing state
   const [portalLoading, setPortalLoading] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [closeConfirmName, setCloseConfirmName] = useState('');
+  const [closing, setClosing] = useState(false);
+  const [closeDone, setCloseDone] = useState(false);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
   const [invoicesError, setInvoicesError] = useState<string | null>(null);
@@ -1356,26 +1360,74 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Delete Account */}
-                <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center">
-                      <Trash2 className="h-5 w-5 text-red-600" />
+                <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center">
+                        <Trash2 className="h-5 w-5 text-red-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-red-900">Close Account</p>
+                        <p className="text-sm text-red-700">Your data will be deleted after 30 days. Reactivation possible before then.</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-red-900">Delete Account</p>
-                      <p className="text-sm text-red-700">Permanently delete your account and all data</p>
-                    </div>
+                    {!showCloseConfirm && !closeDone && (
+                      <button
+                        onClick={() => setShowCloseConfirm(true)}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                      >
+                        Close Account
+                      </button>
+                    )}
                   </div>
-                  <button
-                    onClick={() => {
-                      if (confirm('Are you sure? This action cannot be undone. All your data will be permanently deleted.')) {
-                        alert('Account deletion requires confirmation via email. Please contact support.');
-                      }
-                    }}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
-                  >
-                    Delete Account
-                  </button>
+
+                  {closeDone && (
+                    <p className="text-sm text-red-700 font-medium">
+                      Account closed. You will receive a confirmation email. Data will be deleted in 30 days.
+                    </p>
+                  )}
+
+                  {showCloseConfirm && !closeDone && (
+                    <div className="mt-2 space-y-3">
+                      <p className="text-sm text-red-700">
+                        Type your business name <strong>{profile.businessName}</strong> to confirm:
+                      </p>
+                      <input
+                        type="text"
+                        value={closeConfirmName}
+                        onChange={e => setCloseConfirmName(e.target.value)}
+                        placeholder={profile.businessName}
+                        className="w-full px-3 py-2 border border-red-300 rounded-lg text-sm focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-white"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => { setShowCloseConfirm(false); setCloseConfirmName(''); }}
+                          className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          disabled={closeConfirmName !== profile.businessName || closing}
+                          onClick={async () => {
+                            setClosing(true);
+                            const res = await fetch('/api/tenant/close', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ businessName: profile.businessName }),
+                            });
+                            setClosing(false);
+                            if (res.ok) {
+                              setCloseDone(true);
+                              setShowCloseConfirm(false);
+                            }
+                          }}
+                          className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-40 transition-colors"
+                        >
+                          {closing ? 'Closing…' : 'Confirm closure'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

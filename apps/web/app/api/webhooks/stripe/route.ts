@@ -343,7 +343,7 @@ async function handleSubscriptionUpdated(supabase: any, subscription: Stripe.Sub
   console.log('Subscription updated:', subscription.id);
 
   const customerId = subscription.customer as string;
-  const plan = subscription.metadata?.plan || 'starter';
+  const newPlan = subscription.metadata?.plan || 'starter';
 
   let planStatus = 'active';
   if (subscription.status === 'past_due') {
@@ -352,13 +352,44 @@ async function handleSubscriptionUpdated(supabase: any, subscription: Stripe.Sub
     planStatus = 'canceled';
   }
 
+  // Fetch previous plan before updating to detect Scale upgrades
+  const { data: existing } = await supabase
+    .from('tenants')
+    .select('plan, business_name, owner_email')
+    .eq('stripe_customer_id', customerId)
+    .single();
+
   await supabase
     .from('tenants')
-    .update({
-      plan,
-      plan_status: planStatus,
-    })
+    .update({ plan: newPlan, plan_status: planStatus })
     .eq('stripe_customer_id', customerId);
+
+  // Send Account Manager assignment email when tenant upgrades to Scale
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  const AM_EMAIL = process.env.ACCOUNT_MANAGER_EMAIL || 'am@loyalbase.dev';
+  if (
+    RESEND_API_KEY &&
+    newPlan === 'scale' &&
+    existing?.plan !== 'scale' &&
+    existing?.owner_email
+  ) {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'LoyaltyOS <noreply@loyalbase.dev>',
+        to: AM_EMAIL,
+        subject: `New Scale customer: ${existing.business_name}`,
+        html: `<p>A tenant just upgraded to <strong>Scale</strong>.</p>
+<ul>
+  <li><strong>Business:</strong> ${existing.business_name}</li>
+  <li><strong>Email:</strong> ${existing.owner_email}</li>
+  <li><strong>Previous plan:</strong> ${existing.plan}</li>
+</ul>
+<p>Reach out within 24 hours to introduce yourself as their Account Manager.</p>`,
+      }),
+    });
+  }
 }
 
 async function handleSubscriptionDeleted(supabase: any, subscription: Stripe.Subscription) {

@@ -124,7 +124,7 @@
     "item0_q": "¿Mis clientes tienen que descargar una app?",
     "item0_a": "No. LoyaltyOS es una Progressive Web App (PWA). Los clientes acceden directamente desde su navegador y pueden agregarla a su pantalla de inicio con un toque — sin App Store, sin fricción.",
     "item1_q": "¿Puedo personalizar las reglas de puntos y las recompensas?",
-    "item1_a": "Sí. Vos definís los puntos por dólar, los umbrales de nivel (Bronze, Silver, Gold, Platinum) y creás tu propio catálogo de premios. Los clientes acumulan a tu ritmo y canjean en tus términos.",
+    "item1_a": "Sí. Puedes definir los puntos por dólar, los umbrales de nivel (Bronze, Silver, Gold, Platinum) y crear tu propio catálogo de premios. Los clientes acumulan a tu ritmo y canjean en tus términos.",
     "item2_q": "¿Qué significa exactamente \"white-label\"?",
     "item2_a": "Tus clientes ven el nombre de tu negocio, tu logo y tus colores — no LoyaltyOS. Se ve y se siente como una app de fidelización que tú mismo construiste, a una fracción del costo.",
     "item3_q": "¿Qué tan rápido puedo empezar?",
@@ -132,7 +132,7 @@
     "item4_q": "¿Mis datos de clientes están seguros?",
     "item4_a": "Sí. Usamos encriptación de nivel bancario en tránsito y en reposo, aislamiento a nivel de base de datos entre todas las cuentas, y nunca vendemos ni compartimos los datos de tus clientes bajo ninguna circunstancia.",
     "item5_q": "¿Puedo cancelar en cualquier momento?",
-    "item5_a": "Sí. Cancela desde tu dashboard cuando quieras. Sin contratos a largo plazo, sin cargos por cancelación. Tus datos quedan disponibles para exportar por 90 días después de la cancelación.",
+    "item5_a": "Sí. Cancela desde tu dashboard cuando quieras. Sin contratos a largo plazo, sin cargos por cancelación. Tus datos quedan disponibles para exportar por 30 días después de la cancelación.",
     "item6_q": "¿Qué pasa cuando termina mi prueba gratis?",
     "item6_a": "Recibirás un recordatorio por email 3 días antes de que termine tu prueba. Si no agregas un método de pago, tu cuenta se pausa — no se elimina. Tus datos están seguros por 30 días."
   },

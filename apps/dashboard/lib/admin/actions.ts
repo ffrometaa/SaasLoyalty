@@ -61,6 +61,12 @@ export async function suspendTenant(tenantId = '', reason = '') {
   const admin = await verifyAdminAccess();
   const service = createServiceRoleClient();
 
+  const { data: tenant } = await service
+    .from('tenants')
+    .select('business_name, owner_email')
+    .eq('id', tenantId)
+    .single();
+
   await service.from('tenants').update({ plan_status: 'canceled' }).eq('id', tenantId);
 
   await service.from('platform_events').insert({
@@ -69,6 +75,38 @@ export async function suspendTenant(tenantId = '', reason = '') {
     target_type: 'tenant',
     target_id: tenantId,
     metadata: { reason },
+  });
+
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  if (!RESEND_API_KEY || !tenant?.owner_email) return;
+
+  // Email to tenant
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: 'LoyaltyOS <noreply@loyalbase.dev>',
+      to: tenant.owner_email,
+      subject: 'Your LoyaltyOS account has been suspended',
+      html: `<p>Hi ${tenant.business_name},</p>
+<p>Your LoyaltyOS account has been <strong>suspended</strong>.</p>
+${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
+<p>To resolve this, please reply to this email or contact <a href="mailto:support@loyalbase.dev">support@loyalbase.dev</a>.</p>`,
+    }),
+  });
+
+  // Internal alert
+  const INTERNAL_EMAIL = process.env.INTERNAL_ALERT_EMAIL || 'alerts@loyalbase.dev';
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: 'LoyaltyOS Alerts <noreply@loyalbase.dev>',
+      to: INTERNAL_EMAIL,
+      subject: `[ADMIN] Tenant suspended: ${tenant.business_name}`,
+      html: `<p>Tenant <strong>${tenant.business_name}</strong> (${tenant.owner_email}) was suspended by admin ${admin.email}.</p>
+<p><strong>Reason:</strong> ${reason || '(none provided)'}</p>`,
+    }),
   });
 }
 

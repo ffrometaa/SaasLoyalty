@@ -45,6 +45,8 @@ export function TenantDetailClient({ data = { tenant: { id: '', business_name: '
   const [newPlan, setNewPlan] = useState(tenant.plan);
   const [planReason, setPlanReason] = useState('');
   const [planExpiry, setPlanExpiry] = useState('');
+  const [showSuspendModal, setShowSuspendModal] = useState(false);
+  const [suspendReason, setSuspendReason] = useState('');
 
   type FeatureTrial = { id: string; feature_name: string; status: string; trial_start: string; trial_end: string };
   const [trials, setTrials] = useState<FeatureTrial[]>([]);
@@ -92,8 +94,11 @@ export function TenantDetailClient({ data = { tenant: { id: '', business_name: '
   }
 
   function handleSuspend() {
+    if (!suspendReason.trim()) return;
     startTransition(async () => {
-      await suspendTenant(tenant.id, '');
+      await suspendTenant(tenant.id, suspendReason.trim());
+      setShowSuspendModal(false);
+      setSuspendReason('');
       router.refresh();
     });
   }
@@ -181,12 +186,35 @@ export function TenantDetailClient({ data = { tenant: { id: '', business_name: '
               Reactivate
             </button>
           ) : (
-            <button onClick={handleSuspend} disabled={isPending}
+            <button onClick={() => setShowSuspendModal(true)} disabled={isPending}
               className="px-4 py-2 rounded-lg text-xs font-semibold text-yellow-400 bg-yellow-500/10 hover:bg-yellow-500/20 transition-colors disabled:opacity-50">
               Suspend
             </button>
           )}
         </div>
+
+        {showSuspendModal && (
+          <div className="mt-4 p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-lg">
+            <p className="text-xs font-semibold text-yellow-400 mb-2">Suspension reason (required)</p>
+            <textarea
+              value={suspendReason}
+              onChange={e => setSuspendReason(e.target.value)}
+              placeholder="e.g. Non-payment after 3 attempts…"
+              rows={3}
+              className="w-full bg-white/[0.04] border border-white/[0.08] text-white text-xs rounded-lg px-3 py-2 mb-3 resize-none focus:outline-none"
+            />
+            <div className="flex gap-2">
+              <button onClick={() => { setShowSuspendModal(false); setSuspendReason(''); }}
+                className="flex-1 px-3 py-2 rounded-lg text-xs text-slate-300 bg-white/[0.04] hover:bg-white/[0.08] transition-colors">
+                Cancel
+              </button>
+              <button onClick={handleSuspend} disabled={isPending || !suspendReason.trim()}
+                className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold text-yellow-900 bg-yellow-400 hover:bg-yellow-300 disabled:opacity-40 transition-colors">
+                Confirm Suspension
+              </button>
+            </div>
+          </div>
+        )}
 
         {showPlanForm ? (
           <div className="mt-4 p-4 bg-white/[0.03] border border-white/[0.06] rounded-lg">
