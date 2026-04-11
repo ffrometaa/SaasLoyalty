@@ -11,9 +11,15 @@ interface MemberHeroProps {
 export async function MemberHero({ member }: MemberHeroProps) {
   const t = await getTranslations('home');
   const tp = await getTranslations('profile');
+  const tierThresholds = {
+    silver: member.tenant.tier_silver_threshold ?? 1000,
+    gold: member.tenant.tier_gold_threshold ?? 5000,
+    platinum: member.tenant.tier_platinum_threshold ?? 10000,
+  };
   const { percent, pointsToNext, nextTier } = getTierProgress(
     member.points_lifetime,
-    member.tier
+    member.tier,
+    tierThresholds
   );
 
   const tierLabel = tp(`tierLabels.${member.tier}` as 'tierLabels.bronze');

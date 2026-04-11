@@ -29,7 +29,10 @@ export async function POST(
         tenants (
           id,
           slug,
-          points_per_dollar
+          points_per_dollar,
+          tier_silver_threshold,
+          tier_gold_threshold,
+          tier_platinum_threshold
         )
       `)
       .eq('id', memberId)
@@ -56,11 +59,15 @@ export async function POST(
     const newLifetime = member.points_lifetime + pointsEarned;
     const newVisitsTotal = member.visits_total + 1;
 
-    // Calculate new tier
+    // Calculate new tier using tenant-configured thresholds
+    const silverThreshold = tenant?.tier_silver_threshold ?? 1000;
+    const goldThreshold = tenant?.tier_gold_threshold ?? 5000;
+    const platinumThreshold = tenant?.tier_platinum_threshold ?? 10000;
+
     let newTier = 'bronze';
-    if (newLifetime >= 10000) newTier = 'platinum';
-    else if (newLifetime >= 5000) newTier = 'gold';
-    else if (newLifetime >= 1000) newTier = 'silver';
+    if (newLifetime >= platinumThreshold) newTier = 'platinum';
+    else if (newLifetime >= goldThreshold) newTier = 'gold';
+    else if (newLifetime >= silverThreshold) newTier = 'silver';
 
     const tierChanged = newTier !== member.tier;
 

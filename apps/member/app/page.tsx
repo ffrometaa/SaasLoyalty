@@ -119,7 +119,12 @@ export default async function HomePage() {
     getTopDynamicChallenge(member.tenant_id, member.id),
   ]);
 
-  const { nextTier } = getTierProgress(member.points_lifetime, member.tier);
+  const tierThresholds = {
+    silver: member.tenant.tier_silver_threshold ?? 1000,
+    gold: member.tenant.tier_gold_threshold ?? 5000,
+    platinum: member.tenant.tier_platinum_threshold ?? 10000,
+  };
+  const { nextTier } = getTierProgress(member.points_lifetime, member.tier, tierThresholds);
 
   const nextTierLabel = nextTier ? TIER_LABELS[nextTier] : null;
   const nextInfo = nextTier

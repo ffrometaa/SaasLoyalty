@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   QrCode,
+  LifeBuoy,
 } from 'lucide-react';
 
 // Inline SVG megaphone — no external icon library per spec
@@ -153,6 +154,17 @@ export function Sidebar() {
             );
           })}
         </nav>
+
+        {/* Support link */}
+        <div className="px-4 pb-2">
+          <a
+            href="mailto:support@loyalbase.dev"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:translate-x-0.5 transition-all duration-150"
+          >
+            <LifeBuoy className="h-5 w-5" />
+            {t('support')}
+          </a>
+        </div>
 
         {/* User section */}
         <div className="p-4 border-t">

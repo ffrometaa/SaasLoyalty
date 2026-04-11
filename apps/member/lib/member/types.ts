@@ -21,6 +21,9 @@ export interface TenantBrand {
   brand_color_secondary: string;
   slug: string;
   points_expiry_days?: number;
+  tier_silver_threshold?: number;
+  tier_gold_threshold?: number;
+  tier_platinum_threshold?: number;
 }
 
 export interface MemberProfile {
@@ -85,12 +88,24 @@ export const TIER_NEXT: Record<MemberTier, MemberTier | null> = {
   platinum: null,
 };
 
-export function getTierProgress(lifetimePoints: number, currentTier: MemberTier) {
+export function getTierProgress(
+  lifetimePoints: number,
+  currentTier: MemberTier,
+  thresholds?: { silver: number; gold: number; platinum: number }
+) {
+  const t = thresholds ?? { silver: 1000, gold: 5000, platinum: 10000 };
+  const thresholdMap: Record<MemberTier, number> = {
+    bronze: 0,
+    silver: t.silver,
+    gold: t.gold,
+    platinum: t.platinum,
+  };
+
   const next = TIER_NEXT[currentTier];
   if (!next) return { percent: 100, pointsToNext: 0, nextTier: null };
 
-  const currentThreshold = TIER_THRESHOLDS[currentTier];
-  const nextThreshold = TIER_THRESHOLDS[next];
+  const currentThreshold = thresholdMap[currentTier];
+  const nextThreshold = thresholdMap[next];
   const range = nextThreshold - currentThreshold;
   const progress = lifetimePoints - currentThreshold;
   const percent = Math.min(Math.round((progress / range) * 100), 100);
