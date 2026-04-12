@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     const { error } = await supabase
       .from('tenant_consents')
-      .upsert(inserts, { onConflict: 'tenant_id,document_id' });
+      .upsert(inserts, { onConflict: 'tenant_id,document_id', ignoreDuplicates: true });
 
     if (error) throw error;
 
