@@ -21,9 +21,6 @@ export async function DELETE() {
       .eq('auth_user_id', user.id)
       .eq('tenant_id', tenantId);
 
-    // Sign out
-    await supabase.auth.signOut();
-
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

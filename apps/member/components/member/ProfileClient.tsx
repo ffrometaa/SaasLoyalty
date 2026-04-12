@@ -76,6 +76,8 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
     if (deleteConfirm !== 'DELETE') return;
     setDeleting(true);
     await fetch('/api/member/account', { method: 'DELETE' });
+    const supabase = getSupabaseClient();
+    await supabase.auth.signOut();
     router.push('/join');
   }
 
