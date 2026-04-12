@@ -68,7 +68,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 flex safe-bottom z-50"
+      className="fixed bottom-0 left-0 right-0 flex z-50"
       style={{
         background: 'white',
         borderTop: '1px solid var(--border)',

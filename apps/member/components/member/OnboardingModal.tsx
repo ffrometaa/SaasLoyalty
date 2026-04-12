@@ -81,7 +81,7 @@ export function OnboardingModal(props: OnboardingModalProps) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-end justify-center sm:items-center transition-opacity duration-280 ${exiting ? 'opacity-0' : 'opacity-100'}`}
+      className={`fixed inset-0 z-[100] flex items-end justify-center sm:items-center transition-opacity duration-280 ${exiting ? 'opacity-0' : 'opacity-100'}`}
       style={{ background: 'rgba(0,0,0,0.55)' }}
       onClick={(e) => e.currentTarget === e.target && dismiss()}
     >
