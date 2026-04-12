@@ -35,6 +35,7 @@ function TrophyIcon({ className }: { className?: string }) {
 import { useState, useEffect } from 'react';
 import { getSupabaseClient } from '@loyalty-os/lib';
 import { useTranslations } from 'next-intl';
+import { CrispChat } from './CrispChat';
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -155,7 +156,7 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* Support link */}
+        {/* Support link — mailto for Starter, Crisp chat widget for Pro/Scale/Enterprise */}
         <div className="px-4 pb-2">
           <a
             href="mailto:support@loyalbase.dev"
@@ -165,6 +166,9 @@ export function Sidebar() {
             {t('support')}
           </a>
         </div>
+
+        {/* Crisp live chat — injected for Pro/Scale/Enterprise */}
+        {userInfo && <CrispChat plan={userInfo.plan} />}
 
         {/* User section */}
         <div className="p-4 border-t">

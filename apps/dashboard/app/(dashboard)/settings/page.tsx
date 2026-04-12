@@ -397,23 +397,27 @@ export default function SettingsPage() {
     }
   };
 
-  const handleExportData = () => {
-    const exportData = {
-      business: profile,
-      branding,
-      exportDate: new Date().toISOString(),
-      // In real implementation, include all members, rewards, transactions
-      members: [],
-      rewards: [],
-      transactions: [],
-    };
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `loyaltyos-export-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const [exportLoading, setExportLoading] = useState(false);
+
+  const handleExportData = async () => {
+    setExportLoading(true);
+    try {
+      const res = await fetch('/api/tenant/export');
+      if (!res.ok) throw new Error('Export failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const disposition = res.headers.get('Content-Disposition') ?? '';
+      const match = disposition.match(/filename="([^"]+)"/);
+      a.download = match ? match[1] : `loyaltyos-export-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('Export failed. Please try again or contact support@loyalbase.dev');
+    } finally {
+      setExportLoading(false);
+    }
   };
 
   const PLAN_INFO: Record<string, { price: string; memberLimit: string; features: string[] }> = {
@@ -1353,9 +1357,10 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={handleExportData}
-                    className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                    disabled={exportLoading}
+                    className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Export
+                    {exportLoading ? 'Exporting…' : 'Export CSV'}
                   </button>
                 </div>
 

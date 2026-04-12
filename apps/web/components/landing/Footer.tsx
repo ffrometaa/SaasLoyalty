@@ -60,6 +60,12 @@ export async function Footer() {
               <Link href="/privacy" className="text-sm text-white/45 hover:text-white transition-colors">
                 {t('privacy')}
               </Link>
+              <Link href="/dpa" className="text-sm text-white/45 hover:text-white transition-colors">
+                {t('dpa')}
+              </Link>
+              <Link href="/sla" className="text-sm text-white/45 hover:text-white transition-colors">
+                {t('sla')}
+              </Link>
             </nav>
             <div className="space-y-2">
               <a

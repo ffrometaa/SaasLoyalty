@@ -31,7 +31,7 @@ const ANNUAL_PRICE_IDS = {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { businessName, businessType, slug, email, userId, plan = 'starter', billingPeriod = 'monthly', isFoundingPartner = false } = body;
+    const { businessName, businessType, slug, email, userId, plan = 'starter', billingPeriod = 'monthly', isFoundingPartner = false, acceptedDpa = false } = body;
 
     // Validate input
     if (!businessName || !businessType || !slug || !email || !userId) {
@@ -126,6 +126,24 @@ export async function POST(request: NextRequest) {
         { error: 'Failed to create business profile' },
         { status: 500 }
       );
+    }
+
+    // Record DPA consent if accepted at registration time
+    if (acceptedDpa) {
+      const { data: newTenant } = await supabase
+        .from('tenants')
+        .select('id')
+        .eq('slug', slug)
+        .single();
+
+      if (newTenant) {
+        await supabase.from('tenant_consents').insert({
+          tenant_id: newTenant.id,
+          document_id: '00000000-0000-0000-0000-000000000003',
+          ip_address: request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? null,
+          user_agent: request.headers.get('user-agent') ?? null,
+        });
+      }
     }
 
     // Create Stripe Checkout Session

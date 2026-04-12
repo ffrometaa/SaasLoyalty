@@ -9,7 +9,7 @@
   },
   "hero": {
     "line1": "CONVIERTE CADA VISITA",
-    "description": "LoyaltyOS le da a los negocios locales las mismas herramientas de retención que usan las grandes marcas — completamente personalizadas, automatizadas y listas en días",
+    "description": "LoyalBase le da a los negocios locales las mismas herramientas de retención que usan las grandes marcas — completamente personalizadas, automatizadas y listas en días",
     "ctaPricing": "Precios",
     "ctaDemo": "Reservar Demo",
     "statusLabel": "Estado del Sistema",
@@ -32,11 +32,11 @@
   "features": {
     "label": "La Solución",
     "heading": "Convierte cada visita en una razón para volver",
-    "subheading": "LoyaltyOS automatiza lo que hacen las mejores marcas de forma manual",
+    "subheading": "LoyalBase automatiza lo que hacen las mejores marcas de forma manual",
     "item0_title": "App de Membresía con Tu Marca",
     "item0_body": "Tus clientes usan TU app con TU logo. No la nuestra. Fidelización white-label que parece que tú mismo la construiste.",
     "item1_title": "Reactivación Automática",
-    "item1_body": "Cuando un cliente pasa 25 días sin visitar, LoyaltyOS manda automáticamente campañas personalizadas para traerlo de vuelta.",
+    "item1_body": "Cuando un cliente pasa 25 días sin visitar, LoyalBase manda automáticamente campañas personalizadas para traerlo de vuelta.",
     "item2_title": "Analíticas en Tiempo Real",
     "item2_body": "Mira tus mejores clientes, horarios más concurridos, productos top y miembros en riesgo — todo en un dashboard pensado para dueños de negocios.",
     "item3_title": "Motor de Puntos y Recompensas",
@@ -56,7 +56,7 @@
     "step1_title": "Tus clientes empiezan a acumular",
     "step1_body": "Comparte un código QR. Los clientes escanean, se registran y empiezan a acumular puntos en cada visita. Sin app store — es una PWA.",
     "step2_timeframe": "En Curso",
-    "step2_title": "LoyaltyOS los trae de vuelta automáticamente",
+    "step2_title": "LoyalBase los trae de vuelta automáticamente",
     "step2_body": "Nuestro motor rastrea la frecuencia de visitas, detecta clientes en riesgo y lanza campañas personalizadas — sin que tengas que hacer nada."
   },
   "testimonials": {
@@ -65,7 +65,7 @@
     "item0_quote": "Recuperamos 40 clientes en el primer mes que no habían visitado en más de 30 días. Las campañas literalmente pagaron la suscripción en la primera semana.",
     "item0_name": "Sarah M.",
     "item0_business": "Dueña, Serenity Spa & Wellness",
-    "item1_quote": "Mis clientes realmente lo usan. Probé otras apps de fidelización y nadie se registraba. Con LoyaltyOS el código QR se escanea todos los días.",
+    "item1_quote": "Mis clientes realmente lo usan. Probé otras apps de fidelización y nadie se registraba. Con LoyalBase el código QR se escanea todos los días.",
     "item1_name": "Carlos R.",
     "item1_business": "Dueño, Don Mario's Pizzeria",
     "item2_quote": "El dashboard me mostró que los miércoles a las 7pm es mi horario más concurrido. Nunca lo sabía. Ahora hago puntos dobles los martes para llenar ese hueco.",
@@ -122,11 +122,11 @@
     "label": "FAQ",
     "heading": "Preguntas frecuentes",
     "item0_q": "¿Mis clientes tienen que descargar una app?",
-    "item0_a": "No. LoyaltyOS es una Progressive Web App (PWA). Los clientes acceden directamente desde su navegador y pueden agregarla a su pantalla de inicio con un toque — sin App Store, sin fricción.",
+    "item0_a": "No. LoyalBase es una Progressive Web App (PWA). Los clientes acceden directamente desde su navegador y pueden agregarla a su pantalla de inicio con un toque — sin App Store, sin fricción.",
     "item1_q": "¿Puedo personalizar las reglas de puntos y las recompensas?",
     "item1_a": "Sí. Puedes definir los puntos por dólar, los umbrales de nivel (Bronze, Silver, Gold, Platinum) y crear tu propio catálogo de premios. Los clientes acumulan a tu ritmo y canjean en tus términos.",
     "item2_q": "¿Qué significa exactamente \"white-label\"?",
-    "item2_a": "Tus clientes ven el nombre de tu negocio, tu logo y tus colores — no LoyaltyOS. Se ve y se siente como una app de fidelización que tú mismo construiste, a una fracción del costo.",
+    "item2_a": "Tus clientes ven el nombre de tu negocio, tu logo y tus colores — no LoyalBase. Se ve y se siente como una app de fidelización que tú mismo construiste, a una fracción del costo.",
     "item3_q": "¿Qué tan rápido puedo empezar?",
     "item3_a": "La mayoría de los negocios están completamente en vivo dentro de 24 a 48 horas. Nosotros nos encargamos de toda la configuración — tú solo compartes un código QR con tu primer cliente.",
     "item4_q": "¿Mis datos de clientes están seguros?",
@@ -145,7 +145,7 @@
   },
   "footer": {
     "tagline": "Convierte cada visita en una razón para volver.",
-    "copyright": "© 2026 LoyaltyOS, LLC. West Palm Beach, FL",
+    "copyright": "© 2026 LoyalBase LLC · St. Petersburg, FL",
     "productLabel": "Producto",
     "legalLabel": "Legal",
     "home": "Inicio",
@@ -155,7 +155,9 @@
     "signIn": "Ingresar",
     "startTrial": "Comenzar Prueba Gratis",
     "terms": "Términos de Servicio",
-    "privacy": "Política de Privacidad"
+    "privacy": "Política de Privacidad",
+    "dpa": "Acuerdo de Procesamiento de Datos",
+    "sla": "Acuerdo de Nivel de Servicio"
   },
   "socialProof": {
     "items": [
@@ -196,7 +198,7 @@
     "submitting": "Enviando...",
     "successHeading": "¡Nos ponemos en contacto pronto!",
     "successBody": "Gracias por contactarnos. Recibimos tu solicitud y nos comunicaremos dentro de 24 horas para coordinar tu demo.",
-    "errorGeneric": "Algo salió mal. Por favor inténtalo de nuevo o escríbenos a support@loyaltyos.com",
+    "errorGeneric": "Algo salió mal. Por favor inténtalo de nuevo o escríbenos a support@loyalbase.dev",
     "businessTypes": [
       "Spa/Salón",
       "Restaurante/Café",
@@ -217,13 +219,13 @@
   "aboutPage": {
     "label": "Nosotros",
     "heroHeading": "Construido para los negocios que construyen comunidades",
-    "heroSubheading": "Los negocios locales son la columna vertebral de cada barrio. Construimos LoyaltyOS porque merecen las mismas herramientas de retención que usan las grandes marcas — sin el precio de $100K.",
+    "heroSubheading": "Los negocios locales son la columna vertebral de cada barrio. Construimos LoyalBase porque merecen las mismas herramientas de retención que usan las grandes marcas — sin el precio de $100K.",
     "missionLabel": "Nuestra Misión",
     "missionHeading": "Nivelar el campo de juego para los negocios locales",
     "missionP1": "Las grandes cadenas invierten millones en equipos de ingeniería de fidelización. Las marcas globales tienen divisiones enteras dedicadas a la ciencia de retención. ¿Tu negocio local? Una tarjeta de sellos y una oración.",
-    "missionP2": "LoyaltyOS cambia eso. Empaquetamos infraestructura de fidelización de nivel enterprise en una plataforma que cualquier dueño de negocio puede configurar en un día — sin conocimiento técnico.",
+    "missionP2": "LoyalBase cambia eso. Empaquetamos infraestructura de fidelización de nivel enterprise en una plataforma que cualquier dueño de negocio puede configurar en un día — sin conocimiento técnico.",
     "stat0_num": "14+",
-    "stat0_label": "Negocios usando LoyaltyOS",
+    "stat0_label": "Negocios usando LoyalBase",
     "stat1_num": "48h",
     "stat1_label": "Tiempo promedio de configuración",
     "stat2_num": "40%",
@@ -233,7 +235,7 @@
     "value0_title": "La simplicidad gana",
     "value0_body": "Los dueños de negocios no deberían necesitar un desarrollador para gestionar un programa de fidelización. Si no es simple, no se va a usar.",
     "value1_title": "Tu marca, no la nuestra",
-    "value1_body": "Tus clientes nunca deberían saber que LoyaltyOS existe. Cada punto de contacto debería sentirse como si viniera de ti.",
+    "value1_body": "Tus clientes nunca deberían saber que LoyalBase existe. Cada punto de contacto debería sentirse como si viniera de ti.",
     "value2_title": "Los datos son tuyos",
     "value2_body": "Cada registro de cliente, cada transacción, cada email — es tuyo. Somos custodios, no propietarios."
   },
@@ -244,7 +246,7 @@
   },
   "auth": {
     "login": {
-      "title": "Inicia sesión en LoyaltyOS",
+      "title": "Inicia sesión en LoyalBase",
       "subtitle": "O",
       "subtitleLink": "crea una cuenta nueva",
       "emailLabel": "Email",
@@ -284,6 +286,8 @@
       "terms": "Términos de Servicio",
       "and": "y la",
       "privacy": "Política de Privacidad",
+      "acceptDpa": "Acepto el",
+      "dpa": "Acuerdo de Procesamiento de Datos",
       "orderSummary": "Resumen del pedido",
       "trialNote": "14 días gratis, luego ${price}/mes",
       "startTrial": "Comenzar prueba gratis",
@@ -297,7 +301,8 @@
       "errEmailInvalid": "Por favor ingresa un email válido",
       "errPasswordTooShort": "La contraseña debe tener al menos 8 caracteres",
       "errPasswordMismatch": "Las contraseñas no coinciden",
-      "errTermsRequired": "Debes aceptar los términos de servicio"
+      "errTermsRequired": "Debes aceptar los términos de servicio",
+      "errDpaRequired": "Debes aceptar el Acuerdo de Procesamiento de Datos"
     },
     "forgotPassword": {
       "title": "Recupera tu contraseña",

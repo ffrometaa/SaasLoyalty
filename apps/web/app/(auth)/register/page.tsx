@@ -38,6 +38,7 @@ function RegisterPageInner() {
     password: '',
     confirmPassword: '',
     acceptTerms: false,
+    acceptDpa: false,
   });
 
   const updateField = (field: string, value: string | boolean) => {
@@ -62,6 +63,7 @@ function RegisterPageInner() {
     if (formData.password.length < 8) { setError(t('errPasswordTooShort')); return false; }
     if (formData.password !== formData.confirmPassword) { setError(t('errPasswordMismatch')); return false; }
     if (!formData.acceptTerms) { setError(t('errTermsRequired')); return false; }
+    if (!formData.acceptDpa) { setError(t('errDpaRequired')); return false; }
     return true;
   };
 
@@ -99,6 +101,7 @@ function RegisterPageInner() {
           plan: selectedPlan,
           billingPeriod,
           isFoundingPartner,
+          acceptedDpa: formData.acceptDpa,
         }),
       });
 
@@ -354,6 +357,16 @@ function RegisterPageInner() {
                 <Link href="/terms" className="auth-link">{t('terms')}</Link>
                 {' '}{t('and')}{' '}
                 <Link href="/privacy" className="auth-link">{t('privacy')}</Link>
+              </label>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <input id="acceptDpa" type="checkbox" required checked={formData.acceptDpa}
+                onChange={(e) => updateField('acceptDpa', e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded accent-brand-purple cursor-pointer" />
+              <label htmlFor="acceptDpa" className="text-sm cursor-pointer" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                {t('acceptDpa')}{' '}
+                <Link href="/dpa" target="_blank" className="auth-link">{t('dpa')}</Link>
               </label>
             </div>
 

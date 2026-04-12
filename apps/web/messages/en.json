@@ -9,7 +9,7 @@
   },
   "hero": {
     "line1": "TURN EVERY VISIT",
-    "description": "LoyaltyOS gives local businesses the same retention tools used by global brands — fully branded, automated, and ready in days",
+    "description": "LoyalBase gives local businesses the same retention tools used by global brands — fully branded, automated, and ready in days",
     "ctaPricing": "Pricing",
     "ctaDemo": "Request a Demo",
     "statusLabel": "System Status",
@@ -32,11 +32,11 @@
   "features": {
     "label": "The Solution",
     "heading": "Turn every visit into a reason to come back",
-    "subheading": "LoyaltyOS automates what the best brands do manually",
+    "subheading": "LoyalBase automates what the best brands do manually",
     "item0_title": "Branded Member App",
     "item0_body": "Your customers use YOUR app with YOUR logo. Not ours. White-label loyalty that looks like you built it from scratch.",
     "item1_title": "Automatic Reactivation",
-    "item1_body": "When a customer goes 25 days without visiting, LoyaltyOS automatically sends personalized campaigns to bring them back.",
+    "item1_body": "When a customer goes 25 days without visiting, LoyalBase automatically sends personalized campaigns to bring them back.",
     "item2_title": "Real-time Analytics",
     "item2_body": "See your best customers, busiest hours, top products, and at-risk members — all in one dashboard built for business owners.",
     "item3_title": "Points & Rewards Engine",
@@ -56,7 +56,7 @@
     "step1_title": "Your customers start earning",
     "step1_body": "Share a QR code. Customers scan, register, and start accumulating points on every visit. No app store needed — it's a PWA.",
     "step2_timeframe": "Ongoing",
-    "step2_title": "LoyaltyOS brings them back automatically",
+    "step2_title": "LoyalBase brings them back automatically",
     "step2_body": "Our engine tracks visit frequency, detects at-risk customers, and fires personalized campaigns — without you lifting a finger."
   },
   "testimonials": {
@@ -65,7 +65,7 @@
     "item0_quote": "We recovered 40 clients in the first month who hadn't visited in over 30 days. The campaigns literally paid for the subscription in week one.",
     "item0_name": "Sarah M.",
     "item0_business": "Owner, Serenity Spa & Wellness",
-    "item1_quote": "My customers actually use this. I've tried loyalty apps before and nobody signed up. With LoyaltyOS the QR code gets scanned every day.",
+    "item1_quote": "My customers actually use this. I've tried loyalty apps before and nobody signed up. With LoyalBase the QR code gets scanned every day.",
     "item1_name": "Carlos R.",
     "item1_business": "Owner, Don Mario's Pizzeria",
     "item2_quote": "The dashboard showed me Wednesday at 7pm is my busiest slot. I never knew that. Now I run double-points on Tuesdays to fill the gap.",
@@ -122,11 +122,11 @@
     "label": "FAQ",
     "heading": "Frequently asked questions",
     "item0_q": "Do my customers need to download an app?",
-    "item0_a": "No. LoyaltyOS is a Progressive Web App (PWA). Customers access it directly from their browser and can add it to their home screen in one tap — no App Store required, no friction for your customers.",
+    "item0_a": "No. LoyalBase is a Progressive Web App (PWA). Customers access it directly from their browser and can add it to their home screen in one tap — no App Store required, no friction for your customers.",
     "item1_q": "Can I customize the points rules and rewards?",
     "item1_a": "Yes. You set the points-per-dollar ratio, define tier thresholds (Bronze, Silver, Gold, Platinum), and create your own reward catalog. Customers earn at your pace, redeem on your terms.",
     "item2_q": "What does \"white-label\" mean exactly?",
-    "item2_a": "Your customers see your business name, your logo, and your colors — not LoyaltyOS. It looks and feels like a loyalty app you built yourself, at a fraction of the cost.",
+    "item2_a": "Your customers see your business name, your logo, and your colors — not LoyalBase. It looks and feels like a loyalty app you built yourself, at a fraction of the cost.",
     "item3_q": "How quickly can I get started?",
     "item3_a": "Most businesses are fully live within 24 to 48 hours. We handle the entire setup — you just share a QR code with your first customer.",
     "item4_q": "Is my customer data secure?",
@@ -145,7 +145,7 @@
   },
   "footer": {
     "tagline": "Turn every visit into a reason to come back.",
-    "copyright": "© 2026 LoyaltyOS, LLC. West Palm Beach, FL",
+    "copyright": "© 2026 LoyalBase LLC · St. Petersburg, FL",
     "productLabel": "Product",
     "legalLabel": "Legal",
     "home": "Home",
@@ -155,7 +155,9 @@
     "signIn": "Sign In",
     "startTrial": "Start Free Trial",
     "terms": "Terms of Service",
-    "privacy": "Privacy Policy"
+    "privacy": "Privacy Policy",
+    "dpa": "Data Processing Agreement",
+    "sla": "Service Level Agreement"
   },
   "socialProof": {
     "items": [
@@ -196,7 +198,7 @@
     "submitting": "Sending...",
     "successHeading": "We'll be in touch soon!",
     "successBody": "Thanks for reaching out. We've received your request and will contact you within 24 hours to schedule your demo.",
-    "errorGeneric": "Something went wrong. Please try again or email us at support@loyaltyos.com",
+    "errorGeneric": "Something went wrong. Please try again or email us at support@loyalbase.dev",
     "businessTypes": [
       "Spa/Salon",
       "Restaurant/Café",
@@ -217,13 +219,13 @@
   "aboutPage": {
     "label": "About",
     "heroHeading": "Built for the businesses that build communities",
-    "heroSubheading": "Local businesses are the backbone of every neighborhood. We built LoyaltyOS because they deserve the same retention tools used by global brands — without the $100K price tag.",
+    "heroSubheading": "Local businesses are the backbone of every neighborhood. We built LoyalBase because they deserve the same retention tools used by global brands — without the $100K price tag.",
     "missionLabel": "Our Mission",
     "missionHeading": "Level the playing field for local businesses",
     "missionP1": "Enterprise chains invest millions in loyalty engineering teams. Global beauty and retail brands have entire divisions dedicated to retention science. Your local business? A punch card and a prayer.",
-    "missionP2": "LoyaltyOS changes that. We pack enterprise-grade loyalty infrastructure into a platform that any business owner can set up in a day — no technical knowledge required.",
+    "missionP2": "LoyalBase changes that. We pack enterprise-grade loyalty infrastructure into a platform that any business owner can set up in a day — no technical knowledge required.",
     "stat0_num": "14+",
-    "stat0_label": "Businesses using LoyaltyOS",
+    "stat0_label": "Businesses using LoyalBase",
     "stat1_num": "48h",
     "stat1_label": "Average setup time",
     "stat2_num": "40%",
@@ -233,7 +235,7 @@
     "value0_title": "Simplicity wins",
     "value0_body": "Business owners shouldn't need a developer to run a loyalty program. If it's not simple, it won't be used.",
     "value1_title": "Your brand, not ours",
-    "value1_body": "Your customers should never know LoyaltyOS exists. Every touchpoint should feel like it came from you.",
+    "value1_body": "Your customers should never know LoyalBase exists. Every touchpoint should feel like it came from you.",
     "value2_title": "Data belongs to you",
     "value2_body": "Every customer record, every transaction, every email — it's yours. We are custodians, not owners."
   },
@@ -244,7 +246,7 @@
   },
   "auth": {
     "login": {
-      "title": "Sign in to LoyaltyOS",
+      "title": "Sign in to LoyalBase",
       "subtitle": "Or",
       "subtitleLink": "create a new account",
       "emailLabel": "Email address",
@@ -284,6 +286,8 @@
       "terms": "Terms of Service",
       "and": "and",
       "privacy": "Privacy Policy",
+      "acceptDpa": "I accept the",
+      "dpa": "Data Processing Agreement",
       "orderSummary": "Order Summary",
       "trialNote": "14-day free trial, then ${price}/month",
       "startTrial": "Start free trial",
@@ -297,7 +301,8 @@
       "errEmailInvalid": "Please enter a valid email",
       "errPasswordTooShort": "Password must be at least 8 characters",
       "errPasswordMismatch": "Passwords do not match",
-      "errTermsRequired": "You must accept the terms of service"
+      "errTermsRequired": "You must accept the terms of service",
+      "errDpaRequired": "You must accept the Data Processing Agreement"
     },
     "forgotPassword": {
       "title": "Reset your password",

@@ -35,7 +35,9 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/auth/') ||
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/invite') ||
-    pathname.startsWith('/admin/preview')
+    pathname.startsWith('/admin/preview') ||
+    pathname.startsWith('/consent') ||
+    pathname.startsWith('/api/tenant/consent')
   ) {
     return supabaseResponse;
   }
@@ -78,6 +80,23 @@ export async function middleware(request: NextRequest) {
       // User is authenticated but is NOT a tenant owner or staff — block access
       const memberAppUrl = process.env.NEXT_PUBLIC_MEMBER_APP_URL ?? 'https://member.loyalbase.dev';
       return NextResponse.redirect(memberAppUrl);
+    }
+  }
+
+  // DPA gate: tenant owners must accept the Data Processing Agreement before accessing the dashboard.
+  // Staff members are not gated — the legal obligation falls on the tenant owner.
+  if (ownerTenant) {
+    const { data: dpaConsent } = await supabase
+      .from('tenant_consents')
+      .select('id')
+      .eq('tenant_id', ownerTenant.id)
+      .eq('document_id', '00000000-0000-0000-0000-000000000003')
+      .maybeSingle();
+
+    if (!dpaConsent) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/consent';
+      return NextResponse.redirect(url);
     }
   }
 
