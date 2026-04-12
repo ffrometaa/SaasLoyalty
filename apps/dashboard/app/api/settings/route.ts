@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
     const { data: tenant } = await supabase
       .from('tenants')
-      .select('business_name, brand_logo_url, brand_color_primary, brand_color_secondary, plan, plan_status, trial_ends_at, business_phone, business_address, owner_first_name, owner_last_name, owner_phone, owner_email, secondary_contact_first_name, secondary_contact_last_name, secondary_contact_phone, secondary_contact_email, referral_enabled, referral_points_referrer, referral_points_referee, points_per_dollar, tier_silver_threshold, tier_gold_threshold, tier_platinum_threshold')
+      .select('business_name, brand_logo_url, brand_color_primary, brand_color_secondary, plan, plan_status, trial_ends_at, business_phone, business_address, owner_first_name, owner_last_name, owner_phone, owner_email, secondary_contact_first_name, secondary_contact_last_name, secondary_contact_phone, secondary_contact_email, referral_enabled, referral_points_referrer, referral_points_referee, points_per_dollar, tier_silver_threshold, tier_gold_threshold, tier_platinum_threshold, points_per_visit_enabled, points_per_visit, welcome_bonus_enabled, welcome_bonus_points, google_review_url, google_review_bonus_enabled, google_review_bonus_points')
       .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
@@ -48,6 +48,13 @@ export async function GET(request: NextRequest) {
       tierSilverThreshold: tenant.tier_silver_threshold ?? 1000,
       tierGoldThreshold: tenant.tier_gold_threshold ?? 5000,
       tierPlatinumThreshold: tenant.tier_platinum_threshold ?? 10000,
+      pointsPerVisitEnabled: tenant.points_per_visit_enabled ?? true,
+      pointsPerVisit: tenant.points_per_visit ?? 15,
+      welcomeBonusEnabled: tenant.welcome_bonus_enabled ?? true,
+      welcomeBonusPoints: tenant.welcome_bonus_points ?? 50,
+      googleReviewUrl: tenant.google_review_url ?? '',
+      googleReviewBonusEnabled: tenant.google_review_bonus_enabled ?? false,
+      googleReviewBonusPoints: tenant.google_review_bonus_points ?? 100,
     });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -92,6 +99,19 @@ export async function POST(request: NextRequest) {
     if (tierSilverThreshold !== undefined) updates.tier_silver_threshold = Math.max(1, Number(tierSilverThreshold));
     if (tierGoldThreshold !== undefined) updates.tier_gold_threshold = Math.max(1, Number(tierGoldThreshold));
     if (tierPlatinumThreshold !== undefined) updates.tier_platinum_threshold = Math.max(1, Number(tierPlatinumThreshold));
+
+    const {
+      pointsPerVisitEnabled, pointsPerVisit,
+      welcomeBonusEnabled, welcomeBonusPoints,
+      googleReviewUrl, googleReviewBonusEnabled, googleReviewBonusPoints,
+    } = body;
+    if (pointsPerVisitEnabled !== undefined) updates.points_per_visit_enabled = Boolean(pointsPerVisitEnabled);
+    if (pointsPerVisit !== undefined) updates.points_per_visit = Math.max(15, Math.min(10000, Number(pointsPerVisit)));
+    if (welcomeBonusEnabled !== undefined) updates.welcome_bonus_enabled = Boolean(welcomeBonusEnabled);
+    if (welcomeBonusPoints !== undefined) updates.welcome_bonus_points = Math.max(0, Math.min(100000, Number(welcomeBonusPoints)));
+    if (googleReviewUrl !== undefined) updates.google_review_url = googleReviewUrl ? String(googleReviewUrl).trim() : null;
+    if (googleReviewBonusEnabled !== undefined) updates.google_review_bonus_enabled = Boolean(googleReviewBonusEnabled);
+    if (googleReviewBonusPoints !== undefined) updates.google_review_bonus_points = Math.max(0, Math.min(100000, Number(googleReviewBonusPoints)));
 
     const { error } = await supabase
       .from('tenants')

@@ -118,6 +118,16 @@ export default function SettingsPage() {
     silverThreshold: 1000,
     goldThreshold: 5000,
     platinumThreshold: 10000,
+    pointsPerVisitEnabled: true,
+    pointsPerVisit: 15,
+    welcomeBonusEnabled: true,
+    welcomeBonusPoints: 50,
+    googleReviewUrl: '',
+    googleReviewBonusEnabled: false,
+    googleReviewBonusPoints: 100,
+    referralEnabled: false,
+    referralPointsReferrer: 50,
+    referralPointsReferee: 50,
   });
 
   useEffect(() => {
@@ -157,6 +167,16 @@ export default function SettingsPage() {
             silverThreshold: data.tierSilverThreshold ?? 1000,
             goldThreshold: data.tierGoldThreshold ?? 5000,
             platinumThreshold: data.tierPlatinumThreshold ?? 10000,
+            pointsPerVisitEnabled: data.pointsPerVisitEnabled ?? true,
+            pointsPerVisit: data.pointsPerVisit ?? 15,
+            welcomeBonusEnabled: data.welcomeBonusEnabled ?? true,
+            welcomeBonusPoints: data.welcomeBonusPoints ?? 50,
+            googleReviewUrl: data.googleReviewUrl ?? '',
+            googleReviewBonusEnabled: data.googleReviewBonusEnabled ?? false,
+            googleReviewBonusPoints: data.googleReviewBonusPoints ?? 100,
+            referralEnabled: data.referralEnabled ?? false,
+            referralPointsReferrer: data.referralPointsReferrer ?? 50,
+            referralPointsReferee: data.referralPointsReferee ?? 50,
           });
         }
       })
@@ -387,6 +407,16 @@ export default function SettingsPage() {
         tierSilverThreshold: loyaltyRules.silverThreshold,
         tierGoldThreshold: loyaltyRules.goldThreshold,
         tierPlatinumThreshold: loyaltyRules.platinumThreshold,
+        pointsPerVisitEnabled: loyaltyRules.pointsPerVisitEnabled,
+        pointsPerVisit: loyaltyRules.pointsPerVisit,
+        welcomeBonusEnabled: loyaltyRules.welcomeBonusEnabled,
+        welcomeBonusPoints: loyaltyRules.welcomeBonusPoints,
+        googleReviewUrl: loyaltyRules.googleReviewUrl,
+        googleReviewBonusEnabled: loyaltyRules.googleReviewBonusEnabled,
+        googleReviewBonusPoints: loyaltyRules.googleReviewBonusPoints,
+        referralEnabled: loyaltyRules.referralEnabled,
+        referralPointsReferrer: loyaltyRules.referralPointsReferrer,
+        referralPointsReferee: loyaltyRules.referralPointsReferee,
       }),
     });
     if (res.ok) {
@@ -1206,6 +1236,153 @@ export default function SettingsPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Points per visit */}
+              <div className="pt-6 border-t">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-700">Points per Visit</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">Fixed points awarded every visit, regardless of purchase amount. Minimum: 15.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setLoyaltyRules(r => ({ ...r, pointsPerVisitEnabled: !r.pointsPerVisitEnabled }))}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${loyaltyRules.pointsPerVisitEnabled ? 'bg-brand-purple' : 'bg-gray-200'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${loyaltyRules.pointsPerVisitEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+                {loyaltyRules.pointsPerVisitEnabled && (
+                  <div className="flex items-center gap-3 max-w-xs">
+                    <input
+                      type="number"
+                      min={15}
+                      max={10000}
+                      value={loyaltyRules.pointsPerVisit}
+                      onChange={(e) => setLoyaltyRules(r => ({ ...r, pointsPerVisit: Math.max(15, Number(e.target.value)) }))}
+                      className="w-28 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple text-center text-lg font-semibold"
+                    />
+                    <span className="text-sm text-gray-500">pts / visit</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Welcome bonus */}
+              <div className="pt-6 border-t">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-700">Welcome Bonus</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">Points credited to new members when they join your program.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setLoyaltyRules(r => ({ ...r, welcomeBonusEnabled: !r.welcomeBonusEnabled }))}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${loyaltyRules.welcomeBonusEnabled ? 'bg-brand-purple' : 'bg-gray-200'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${loyaltyRules.welcomeBonusEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+                {loyaltyRules.welcomeBonusEnabled && (
+                  <div className="flex items-center gap-3 max-w-xs">
+                    <input
+                      type="number"
+                      min={0}
+                      max={100000}
+                      value={loyaltyRules.welcomeBonusPoints}
+                      onChange={(e) => setLoyaltyRules(r => ({ ...r, welcomeBonusPoints: Math.max(0, Number(e.target.value)) }))}
+                      className="w-28 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple text-center text-lg font-semibold"
+                    />
+                    <span className="text-sm text-gray-500">pts on signup</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Google Review */}
+              <div className="pt-6 border-t">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-700">Google Review Reward</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">Award points to members who leave a Google review. Requires your Google review URL.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setLoyaltyRules(r => ({ ...r, googleReviewBonusEnabled: !r.googleReviewBonusEnabled }))}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${loyaltyRules.googleReviewBonusEnabled ? 'bg-brand-purple' : 'bg-gray-200'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${loyaltyRules.googleReviewBonusEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+                <div className="space-y-3 max-w-sm">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Google Review URL</label>
+                    <input
+                      type="url"
+                      value={loyaltyRules.googleReviewUrl}
+                      onChange={(e) => setLoyaltyRules(r => ({ ...r, googleReviewUrl: e.target.value }))}
+                      placeholder="https://g.page/r/..."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple text-sm"
+                    />
+                  </div>
+                  {loyaltyRules.googleReviewBonusEnabled && (
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="number"
+                        min={0}
+                        max={100000}
+                        value={loyaltyRules.googleReviewBonusPoints}
+                        onChange={(e) => setLoyaltyRules(r => ({ ...r, googleReviewBonusPoints: Math.max(0, Number(e.target.value)) }))}
+                        className="w-28 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple text-center text-lg font-semibold"
+                      />
+                      <span className="text-sm text-gray-500">pts per review</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Referral program */}
+              <div className="pt-6 border-t">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-700">Referral Program</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">Members earn points when they refer friends who join and complete their first visit.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setLoyaltyRules(r => ({ ...r, referralEnabled: !r.referralEnabled }))}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${loyaltyRules.referralEnabled ? 'bg-brand-purple' : 'bg-gray-200'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${loyaltyRules.referralEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+                {loyaltyRules.referralEnabled && (
+                  <div className="grid grid-cols-2 gap-4 max-w-xs">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Referrer earns</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number" min={0} max={10000}
+                          value={loyaltyRules.referralPointsReferrer}
+                          onChange={(e) => setLoyaltyRules(r => ({ ...r, referralPointsReferrer: Math.max(0, Number(e.target.value)) }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple text-center font-semibold"
+                        />
+                        <span className="text-xs text-gray-500 shrink-0">pts</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Friend earns</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number" min={0} max={10000}
+                          value={loyaltyRules.referralPointsReferee}
+                          onChange={(e) => setLoyaltyRules(r => ({ ...r, referralPointsReferee: Math.max(0, Number(e.target.value)) }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple text-center font-semibold"
+                        />
+                        <span className="text-xs text-gray-500 shrink-0">pts</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="pt-4 border-t flex items-center gap-3">

@@ -13,14 +13,6 @@ export async function POST(
     const body = await request.json();
     const { amount, description } = body;
 
-    // Validate input
-    if (!amount || amount <= 0) {
-      return NextResponse.json(
-        { error: 'Amount must be a positive number' },
-        { status: 400 }
-      );
-    }
-
     // Get member with tenant info
     const { data: member, error: memberError } = await supabase
       .from('members')
@@ -30,6 +22,8 @@ export async function POST(
           id,
           slug,
           points_per_dollar,
+          points_per_visit_enabled,
+          points_per_visit,
           tier_silver_threshold,
           tier_gold_threshold,
           tier_platinum_threshold
@@ -53,8 +47,11 @@ export async function POST(
     }
 
     const tenant = member.tenants;
+    const parsedAmount = Number(amount) || 0;
     const pointsPerDollar = tenant?.points_per_dollar || 1;
-    const pointsEarned = Math.floor(amount * pointsPerDollar);
+    const dollarPoints = parsedAmount > 0 ? Math.floor(parsedAmount * pointsPerDollar) : 0;
+    const visitPoints = tenant?.points_per_visit_enabled ? (tenant?.points_per_visit ?? 15) : 0;
+    const pointsEarned = dollarPoints + visitPoints;
     const newBalance = member.points_balance + pointsEarned;
     const newLifetime = member.points_lifetime + pointsEarned;
     const newVisitsTotal = member.visits_total + 1;
@@ -81,7 +78,7 @@ export async function POST(
         type: 'earn',
         points: pointsEarned,
         balance_after: newBalance,
-        description: description || `Purchase: $${amount.toFixed(2)}`,
+        description: description || (parsedAmount > 0 ? `Purchase: $${parsedAmount.toFixed(2)}` : 'Visit check-in'),
       })
       .select()
       .single();

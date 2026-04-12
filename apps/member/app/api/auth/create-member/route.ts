@@ -112,7 +112,16 @@ export async function POST(request: NextRequest) {
     referredBy = referrer?.id ?? null;
   }
 
-  // 4. Create new member
+  // 4. Fetch tenant to check welcome bonus
+  const { data: tenantConfig } = await serviceClient
+    .from('tenants')
+    .select('welcome_bonus_enabled, welcome_bonus_points')
+    .eq('id', resolvedTenantId)
+    .single();
+
+  const welcomeBonus = tenantConfig?.welcome_bonus_enabled ? (tenantConfig.welcome_bonus_points ?? 50) : 0;
+
+  // 5. Create new member
   let memberCode = generateMemberCode();
   for (let i = 0; i < 3; i++) {
     const { data: existing } = await serviceClient
@@ -143,6 +152,31 @@ export async function POST(request: NextRequest) {
 
   if (insertError) {
     return NextResponse.json({ error: insertError.message }, { status: 500 });
+  }
+
+  // Apply welcome bonus if configured
+  if (welcomeBonus > 0) {
+    const { data: newMember } = await serviceClient
+      .from('members')
+      .select('id')
+      .eq('auth_user_id', userId)
+      .eq('tenant_id', resolvedTenantId)
+      .single();
+
+    if (newMember) {
+      await serviceClient.from('transactions').insert({
+        tenant_id: resolvedTenantId,
+        member_id: newMember.id,
+        type: 'bonus',
+        points: welcomeBonus,
+        balance_after: welcomeBonus,
+        description: 'Welcome bonus',
+      });
+      await serviceClient.from('members').update({
+        points_balance: welcomeBonus,
+        points_lifetime: welcomeBonus,
+      }).eq('id', newMember.id);
+    }
   }
 
   return NextResponse.json({ ok: true });

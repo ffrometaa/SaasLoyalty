@@ -24,6 +24,11 @@ export interface TenantBrand {
   tier_silver_threshold?: number;
   tier_gold_threshold?: number;
   tier_platinum_threshold?: number;
+  google_review_url?: string | null;
+  google_review_bonus_enabled?: boolean;
+  google_review_bonus_points?: number;
+  referral_enabled?: boolean;
+  referral_points_referee?: number;
 }
 
 export interface MemberProfile {
@@ -37,6 +42,8 @@ export interface MemberProfile {
   member_code: string;
   first_name: string | null;
   last_name: string | null;
+  referral_code: string | null;
+  google_review_claimed_at: string | null;
   tenant: TenantBrand;
 }
 

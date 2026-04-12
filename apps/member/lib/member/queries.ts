@@ -8,7 +8,7 @@ export async function getMemberWithTenant(userId: string, tenantId?: string): Pr
 
   let query = supabase
     .from('members')
-    .select('id, tenant_id, name, email, tier, points_balance, points_lifetime, member_code, first_name, last_name')
+    .select('id, tenant_id, name, email, tier, points_balance, points_lifetime, member_code, first_name, last_name, referral_code, google_review_claimed_at')
     .eq('auth_user_id', userId)
     .eq('status', 'active');
 
@@ -21,7 +21,7 @@ export async function getMemberWithTenant(userId: string, tenantId?: string): Pr
 
   const { data: tenant } = await supabase
     .from('tenants')
-    .select('id, business_name, brand_app_name, brand_logo_url, brand_color_primary, brand_color_secondary, slug, tier_silver_threshold, tier_gold_threshold, tier_platinum_threshold')
+    .select('id, business_name, brand_app_name, brand_logo_url, brand_color_primary, brand_color_secondary, slug, tier_silver_threshold, tier_gold_threshold, tier_platinum_threshold, google_review_url, google_review_bonus_enabled, google_review_bonus_points, referral_enabled, referral_points_referee')
     .eq('id', member.tenant_id)
     .single();
 

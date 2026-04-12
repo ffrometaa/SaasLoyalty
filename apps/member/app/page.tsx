@@ -10,6 +10,8 @@ import { BottomNav } from '@/components/member/BottomNav';
 import { BrandTheme } from '@/components/member/BrandTheme';
 import { OneSignalInit } from '@/components/member/OneSignalInit';
 import { OnboardingModal } from '@/components/member/OnboardingModal';
+import { GoogleReviewCard } from '@/components/member/GoogleReviewCard';
+import { ReferralPromptCard } from '@/components/member/ReferralPromptCard';
 import { getTierProgress } from '@/lib/member/types';
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 import { cookies } from 'next/headers';
@@ -209,6 +211,24 @@ export default async function HomePage() {
               </div>
             </Link>
           </div>
+        )}
+
+        {/* ── GOOGLE REVIEW CTA ── */}
+        {member.tenant.google_review_bonus_enabled &&
+          member.tenant.google_review_url &&
+          !member.google_review_claimed_at && (
+          <GoogleReviewCard
+            googleReviewUrl={member.tenant.google_review_url}
+            bonusPoints={member.tenant.google_review_bonus_points ?? 100}
+          />
+        )}
+
+        {/* ── REFERRAL PROMPT ── */}
+        {member.tenant.referral_enabled && member.referral_code && (
+          <ReferralPromptCard
+            referralCode={member.referral_code}
+            pointsForReferree={member.tenant.referral_points_referee ?? 50}
+          />
         )}
 
         {/* Quick actions */}
