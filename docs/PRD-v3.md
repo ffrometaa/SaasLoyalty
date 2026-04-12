@@ -1,7 +1,7 @@
 # LoyaltyOS — Product Requirements Document v3.0
 
 **Fecha:** Abril 2026
-**Estado:** Semanas 1–4 de deuda técnica completadas · Deploy a producción pendiente (Stripe LIVE + env vars)
+**Estado:** Semanas 1–4 de deuda técnica completadas · Member engagement features implementados · Deploy a producción activo · Pendiente: Stripe LIVE + Crisp env vars
 **Versión anterior:** PRD v2.0 (Abril 2026 — MVP completo + roadmap Phase 3)
 
 ---
@@ -17,7 +17,9 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 - **Founding Partners Program implementado (Abril 2026):** Landing section, registro flow, endpoint de cupos, webhook lifecycle completo. QA en TEST mode pasado. Bloqueado para producción solo por configuración manual de Stripe LIVE.
 - **Decisión de pricing pendiente (MKT-1):** API Access y Custom Domains siguen bloqueados por falta de validación de mercado. Sin respuesta de marketing antes del 2026-06-08, se adopta Opción C (solo Enterprise) por defecto.
 - **Phase 4 en definición:** Los tres gaps críticos de Enterprise (SSO, Multi-location, Secure Compute) pasan formalmente a Phase 4, sujeto a validación de demanda por marketing (MKT-2).
-- **Siguiente bloqueante de Semana 2:** DPA page + aceptación en onboarding (obligatorio antes del primer cliente B2B) y widget de soporte Pro/Scale (Crisp/Tawk.to).
+- **Siguiente bloqueante de Semana 2:** DPA page + aceptación en onboarding (obligatorio antes del primer cliente B2B) y widget de soporte Pro/Scale (Crisp/Tawk.to). ✅ Completado en Abril 2026.
+- **Member Engagement Features implementados (Abril 2026):** Points per visit configurable, welcome bonus al unirse, Google Review reward, referral prompt en home, show/hide password en registro de miembro.
+- **Legal docs completados (Abril 2026):** Página `/sla` publicada, `LoyalBase_SLA_v1.0.docx` y `LoyalBase_DPA_v1.0.docx` generados.
 
 ---
 
@@ -54,6 +56,12 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 - Landing page con hero, features, pricing y CTA
 - Página de pricing con planes Starter / Pro / Scale
 - About, Contact, Terms, Privacy
+- `/dpa` — Data Processing Agreement (GDPR Art. 28, 16 secciones)
+- `/sla` — Service Level Agreement (99.9% uptime target, créditos por plan, soporte por tier)
+
+**Documentos legales (.docx):**
+- `docs/LoyalBase_DPA_v1.0.docx`
+- `docs/LoyalBase_SLA_v1.0.docx`
 
 **Flujo de registro de tenant:**
 1. Usuario completa formulario de registro
@@ -129,6 +137,14 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 - Join code alfanumérico de 6 caracteres
 - Zona de peligro (eliminar cuenta, exportar datos)
 
+**Loyalty Rules — opciones configurables:**
+- `points_per_dollar` (rango 1–1000)
+- Tier thresholds (Silver / Gold / Platinum)
+- `points_per_visit` — puntos fijos por check-in (toggle on/off · mínimo 15 pts · default: activo, 15 pts)
+- Welcome bonus — puntos al registrarse (toggle on/off · default: activo, 50 pts)
+- Google Review reward — URL + puntos por dejar reseña en Google (toggle on/off · default: inactivo)
+- Referral program — puntos para quien refiere y para quien es referido (toggle on/off)
+
 **Super Admin (`/admin`):**
 - Overview de todos los tenants con métricas de revenue
 - Gestión individual: impersonar, modificar plan, ver logs
@@ -149,8 +165,10 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 1. Miembro recibe invitación por email o join code
 2. Entra a `/join` e ingresa email
 3. Sistema valida si ya existe o crea cuenta nueva
-4. Valida join code, completa perfil, acepta T&C y Privacy Policy
-5. Redirigido a home con balance y tier
+4. Valida join code, completa perfil (con confirm password + show/hide toggle), acepta T&C y Privacy Policy
+5. Puede ingresar código de referido si lo tiene
+6. Al crear la cuenta se aplica welcome bonus si el tenant lo tiene habilitado
+7. Redirigido a home con balance y tier
 
 **Login directo (sin join code):**
 - `/login` con email + password
@@ -170,9 +188,11 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 - Historial: timeline de transacciones
 - Leaderboard
 - Challenges con progreso
-- **Referral Program:** link único, tracking de estado, bonus points, panel en perfil
+- **Referral Program:** link único, tracking de estado, bonus points, panel en perfil · prompt card en home con código del miembro
 - **Notificaciones in-app:** historial paginado, badge de no leídas, mark-all-read
 - Perfil: nombre, preferencias, idioma EN/ES sincronizado a DB
+- **Google Review CTA:** banner en home (si tenant lo activa) → abre URL de Google Reviews + acredita puntos (honor system, una sola vez por miembro)
+- **Welcome bonus:** puntos acreditados automáticamente al crear la cuenta (configurable por tenant)
 
 **i18n:**
 - Inglés como idioma principal por defecto
@@ -202,9 +222,9 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 
 | Entidad | Descripción |
 |---------|-------------|
-| `tenants` | Cuentas B2B, plan, Stripe customer/subscription |
+| `tenants` | Cuentas B2B, plan, Stripe customer/subscription · loyalty rules: `points_per_dollar`, `points_per_visit`, `welcome_bonus_*`, `google_review_*`, `referral_*`, tier thresholds |
 | `tenant_plan_history` | Historial de cambios de plan (from_plan, to_plan, changed_at) |
-| `members` | Clientes del programa, puntos, tier, auth_user_id, referral_code |
+| `members` | Clientes del programa, puntos, tier, auth_user_id, referral_code · `google_review_claimed_at` |
 | `tenant_users` | Staff del negocio con roles |
 | `tenant_invites` | Invitaciones pendientes de equipo |
 | `member_invitations` | Invitaciones a miembros |
@@ -231,6 +251,7 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 | `legal_documents` | Documentos legales versionados |
 | `member_consents` | Registro de aceptaciones por miembro |
 | `scheduled_jobs` | Tracking de ejecución de automatizaciones |
+| `dynamic_challenges` | Desafíos personalizados por miembro con progreso, bonus_points, expires_at, is_dismissed |
 
 **Seguridad:**
 - RLS en todas las tablas multi-tenant — funcional via `current_tenant_id()` / `current_member_id()` (SECURITY DEFINER, resuelven por `auth.uid()`)
