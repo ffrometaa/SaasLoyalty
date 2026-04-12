@@ -3,15 +3,15 @@ import { Navbar } from '@/components/landing/Navbar';
 import { Footer } from '@/components/landing/Footer';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — LoyaltyOS',
-  description: 'LoyaltyOS Data Protection & Privacy Policy. Learn how we collect, use, and protect your information.',
+  title: 'Privacy Policy — LoyalBase',
+  description: 'LoyalBase Data Protection & Privacy Policy. Learn how we collect, use, and protect your information.',
 };
 
 const SECTIONS = [
   {
     heading: 'Introduction',
     content: [
-      'LoyaltyOS, LLC ("LoyaltyOS," "we," "us," or "our") is committed to protecting the privacy and security of personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard information when you use our platform, website, and related services (collectively, the "Services").',
+      'LoyalBase LLC ("LoyalBase," "we," "us," or "our") is committed to protecting the privacy and security of personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard information when you use our platform, website, and related services (collectively, the "Services").',
       'This Policy applies to two distinct categories of users: (1) Business Customers ("Tenants") — businesses that subscribe to and operate the LoyaltyOS platform; and (2) End Users ("Members") — individual customers of Tenant businesses who interact with Tenant-branded loyalty applications powered by LoyaltyOS.',
       'This Privacy Policy is designed to comply with applicable federal privacy laws and the privacy laws of the State of Florida, including but not limited to: the Florida Information Protection Act (FIPA), Fla. Stat. § 501.171; the Florida Consumer Protection Law, Fla. Stat. Ch. 501; the CAN-SPAM Act (15 U.S.C. § 7701 et seq.); the Children\'s Online Privacy Protection Act (COPPA), 15 U.S.C. § 6501 et seq.; and applicable Federal Trade Commission (FTC) regulations and guidelines.',
     ],
@@ -19,7 +19,7 @@ const SECTIONS = [
   {
     heading: '1. Data Controller and Processor Roles',
     content: [
-      'The roles of "data controller" and "data processor" under this Privacy Policy are defined as follows: LoyaltyOS acts as the data controller for Tenant account information, and as a data processor for Member Data processed on behalf of Tenants.',
+      'The roles of "data controller" and "data processor" under this Privacy Policy are defined as follows: LoyalBase acts as the data controller for Tenant account information, and as a data processor for Member Data processed on behalf of Tenants.',
       'Tenants are independently responsible for providing their end-user Members with required privacy notices and obtaining all legally required consents before enrolling Members in their loyalty programs.',
     ],
   },
@@ -31,15 +31,15 @@ const SECTIONS = [
         list: [
           'Business contact information: business name, address, phone number, website URL',
           'Account credentials: email address, encrypted password, multi-factor authentication data',
-          'Billing and payment information: processed and stored by Stripe, Inc. — LoyaltyOS does not store complete payment card numbers',
+          'Billing and payment information: processed and stored by Stripe, Inc. — LoyalBase does not store complete payment card numbers',
           'Business configuration data: branding assets, loyalty program settings, campaign content',
           'Usage data: features accessed, actions performed, timestamps, IP addresses, device information',
-          'Communications: emails, support tickets, feedback submitted to LoyaltyOS',
+          'Communications: emails, support tickets, feedback submitted to LoyalBase',
         ],
       },
       {
         title: '2.2 Information Collected from Members (End Users of Tenant Businesses)',
-        content: 'LoyaltyOS collects and processes the following Member information on behalf of Tenants:',
+        content: 'LoyalBase collects and processes the following Member information on behalf of Tenants:',
         list: [
           'Identity information: first and last name, date of birth (optional)',
           'Contact information: email address, phone number (optional)',
@@ -61,7 +61,7 @@ const SECTIONS = [
       },
       {
         title: '2.4 Information We Do Not Collect',
-        content: 'LoyaltyOS does not collect or store: complete payment card numbers (processed entirely by Stripe), Social Security Numbers, government-issued ID numbers, or sensitive health information, unless explicitly required and disclosed for a specific feature.',
+        content: 'LoyalBase does not collect or store: complete payment card numbers (processed entirely by Stripe), Social Security Numbers, government-issued ID numbers, or sensitive health information, unless explicitly required and disclosed for a specific feature.',
       },
     ],
   },
@@ -71,7 +71,7 @@ const SECTIONS = [
       {
         title: '3.1 Tenant Information',
         list: [
-          'To create and manage your LoyaltyOS account',
+          'To create and manage your LoyalBase account',
           'To process subscription payments and send billing communications',
           'To provide technical support and respond to inquiries',
           'To send product updates, feature announcements, and service notifications',
@@ -93,7 +93,7 @@ const SECTIONS = [
       },
       {
         title: '3.3 Legal Bases for Processing',
-        content: 'LoyaltyOS processes personal information based on the following legal bases:',
+        content: 'LoyalBase processes personal information based on the following legal bases:',
         list: [
           'Contract performance: processing necessary to provide the Services you have subscribed to',
           'Legitimate interests: improving the platform, preventing fraud, and ensuring security',
@@ -108,19 +108,19 @@ const SECTIONS = [
     subheadings: [
       {
         title: '4.1 We Do Not Sell Personal Information',
-        content: 'LoyaltyOS does not sell, rent, or trade personal information to third parties for their marketing purposes. This applies to both Tenant and Member information.',
+        content: 'LoyalBase does not sell, rent, or trade personal information to third parties for their marketing purposes. This applies to both Tenant and Member information.',
       },
       {
         title: '4.2 Service Providers (Sub-processors)',
-        content: 'We share information with trusted third-party service providers who assist us in operating the Platform. These providers are contractually required to process data only as directed by LoyaltyOS and to implement appropriate security measures. Key sub-processors include Stripe (payment processing), Supabase (database infrastructure), Vercel (hosting and analytics), and Resend (email delivery).',
+        content: 'We share information with trusted third-party service providers who assist us in operating the Platform. These providers are contractually required to process data only as directed by LoyalBase and to implement appropriate security measures. Key sub-processors include Stripe (payment processing), Supabase (database infrastructure), Vercel (hosting and analytics), and Resend (email delivery).',
       },
       {
         title: '4.3 Legal Requirements',
-        content: 'LoyaltyOS may disclose personal information if required to do so by law or in good faith belief that such action is necessary to: (a) comply with a legal obligation, court order, or subpoena; (b) protect and defend the rights or property of LoyaltyOS; (c) prevent or investigate possible wrongdoing in connection with the Services; (d) protect the personal safety of users or the public; or (e) protect against legal liability.',
+        content: 'LoyalBase may disclose personal information if required to do so by law or in good faith belief that such action is necessary to: (a) comply with a legal obligation, court order, or subpoena; (b) protect and defend the rights or property of LoyalBase; (c) prevent or investigate possible wrongdoing in connection with the Services; (d) protect the personal safety of users or the public; or (e) protect against legal liability.',
       },
       {
         title: '4.4 Business Transfers',
-        content: 'In the event of a merger, acquisition, reorganization, bankruptcy, or sale of all or substantially all of LoyaltyOS\'s assets, personal information may be transferred as part of that transaction. You will be notified of any such change in ownership or control of your personal information via email or prominent notice on our website.',
+        content: 'In the event of a merger, acquisition, reorganization, bankruptcy, or sale of all or substantially all of LoyalBase\'s assets, personal information may be transferred as part of that transaction. You will be notified of any such change in ownership or control of your personal information via email or prominent notice on our website.',
       },
     ],
   },
@@ -135,7 +135,7 @@ const SECTIONS = [
           'Right to Correction: Request correction of inaccurate or incomplete personal information',
           'Right to Deletion: Request deletion of your personal information, subject to certain legal exceptions',
           'Right to Portability: Request your personal information in a structured, machine-readable format',
-          'Right to Opt-Out: Opt out of marketing communications at any time using the unsubscribe link in any email or by contacting privacy@loyaltyos.com',
+          'Right to Opt-Out: Opt out of marketing communications at any time using the unsubscribe link in any email or by contacting privacy@loyalbase.dev',
         ],
       },
       {
@@ -149,21 +149,21 @@ const SECTIONS = [
       },
       {
         title: '5.3 Children\'s Privacy (COPPA Compliance)',
-        content: 'The LoyaltyOS platform is not directed to children under the age of 13, and we do not knowingly collect personal information from children under 13. Tenants are independently responsible for ensuring that their loyalty programs are not directed to children under 13 and for complying with COPPA requirements with respect to their Members. If we become aware that we have collected personal information from a child under 13 without verifiable parental consent, we will delete such information promptly. Contact us at privacy@loyaltyos.com if you believe we have inadvertently collected such information.',
+        content: 'The LoyaltyOS platform is not directed to children under the age of 13, and we do not knowingly collect personal information from children under 13. Tenants are independently responsible for ensuring that their loyalty programs are not directed to children under 13 and for complying with COPPA requirements with respect to their Members. If we become aware that we have collected personal information from a child under 13 without verifiable parental consent, we will delete such information promptly. Contact us at privacy@loyalbase.dev if you believe we have inadvertently collected such information.',
       },
       {
         title: '5.4 How to Exercise Your Rights',
-        content: 'To exercise any of the rights described in this Section, please submit a request to privacy@loyaltyos.com. We will respond to verified requests within thirty (30) days, or within the timeframe required by applicable law. We may require verification of your identity before processing your request.',
+        content: 'To exercise any of the rights described in this Section, please submit a request to privacy@loyalbase.dev. We will respond to verified requests within thirty (30) days, or within the timeframe required by applicable law. We may require verification of your identity before processing your request.',
       },
     ],
   },
   {
     heading: '6. Data Security',
     content: [
-      'LoyaltyOS implements a comprehensive set of technical and organizational security measures to protect personal information:',
+      'LoyalBase implements a comprehensive set of technical and organizational security measures to protect personal information:',
     ],
     list: [
-      'Encryption in transit: All data transmitted between users and LoyaltyOS is encrypted using TLS 1.2 or higher',
+      'Encryption in transit: All data transmitted between users and LoyalBase is encrypted using TLS 1.2 or higher',
       'Encryption at rest: Sensitive data stored in our database is encrypted at rest',
       'Access controls: Role-based access control (RBAC) and multi-factor authentication (MFA) are required for administrative access',
       'Database isolation: Row Level Security (RLS) at the database engine level ensures strict logical separation of Tenant data',
@@ -171,20 +171,20 @@ const SECTIONS = [
       'Vulnerability management: Regular security reviews and prompt patching of identified vulnerabilities',
       'Vendor security: All third-party sub-processors are required to maintain appropriate security standards',
     ],
-    footer: 'Despite these measures, no transmission over the Internet or electronic storage system is 100% secure. LoyaltyOS cannot guarantee absolute security of personal information. In the event of a security breach, LoyaltyOS will notify affected parties as required by applicable law.',
+    footer: 'Despite these measures, no transmission over the Internet or electronic storage system is 100% secure. LoyalBase cannot guarantee absolute security of personal information. In the event of a security breach, LoyalBase will notify affected parties as required by applicable law.',
   },
   {
     heading: '7. Data Retention',
     content: [
-      'LoyaltyOS retains Tenant account data for the duration of the active subscription plus ninety (90) days following termination, after which it is permanently deleted.',
-      'Member Data is retained for the duration of the Tenant\'s active subscription plus ninety (90) days following termination. Upon written request within this window, a full data export is available.',
+      'LoyalBase retains Tenant account data for the duration of the active subscription plus thirty (30) days following termination, after which it is permanently deleted.',
+      'Member Data is retained for the duration of the Tenant\'s active subscription plus thirty (30) days following termination. Upon written request within this window, a full data export is available.',
       'Billing records are retained for seven (7) years as required by applicable tax and financial regulations. Anonymized usage and analytics data may be retained indefinitely.',
     ],
   },
   {
     heading: '8. Cookies and Tracking Technologies',
     content: [
-      'LoyaltyOS uses cookies and similar tracking technologies to operate the Platform and improve user experience. The following categories of cookies are used:',
+      'LoyalBase uses cookies and similar tracking technologies to operate the Platform and improve user experience. The following categories of cookies are used:',
     ],
     list: [
       'Strictly Necessary Cookies: Required for authentication, session management, and core platform functionality. These cannot be disabled.',
@@ -197,12 +197,12 @@ const SECTIONS = [
   {
     heading: '9. Electronic Communications and CAN-SPAM Compliance',
     content: [
-      'LoyaltyOS may send you electronic communications related to your account, the Services, and (with your consent) marketing information. All commercial email communications from LoyaltyOS comply with the CAN-SPAM Act (15 U.S.C. § 7701) and include:',
+      'LoyalBase may send you electronic communications related to your account, the Services, and (with your consent) marketing information. All commercial email communications from LoyalBase comply with the CAN-SPAM Act (15 U.S.C. § 7701) and include:',
     ],
     list: [
       'Accurate "From," "To," and routing information',
       'A clear and conspicuous identification as an advertisement where applicable',
-      "LoyaltyOS's valid physical postal address",
+      "LoyalBase's valid physical postal address",
       'A clear and conspicuous explanation of how to opt out of future emails',
       'A functioning opt-out mechanism honored within ten (10) business days',
     ],
@@ -211,13 +211,13 @@ const SECTIONS = [
   {
     heading: '10. International Data Transfers',
     content: [
-      'LoyaltyOS is based in the United States and processes data on servers located in the United States (primarily in the Eastern United States region). If you are accessing our Services from outside the United States, please be aware that your information will be transferred to, stored, and processed in the United States, where data protection laws may differ from those in your country.',
+      'LoyalBase is based in the United States and processes data on servers located in the United States (primarily in the Eastern United States region). If you are accessing our Services from outside the United States, please be aware that your information will be transferred to, stored, and processed in the United States, where data protection laws may differ from those in your country.',
     ],
   },
   {
     heading: '11. Changes to This Privacy Policy',
     content: [
-      'LoyaltyOS reserves the right to update this Privacy Policy at any time. We will notify you of material changes by: (a) sending an email to the address associated with your account; (b) posting a prominent notice on our website; and/or (c) displaying an in-platform notification. Changes take effect thirty (30) days after notification, or immediately for changes required by law.',
+      'LoyalBase reserves the right to update this Privacy Policy at any time. We will notify you of material changes by: (a) sending an email to the address associated with your account; (b) posting a prominent notice on our website; and/or (c) displaying an in-platform notification. Changes take effect thirty (30) days after notification, or immediately for changes required by law.',
       'Your continued use of the Platform after the effective date of any change constitutes your acceptance of the updated Policy.',
     ],
   },
@@ -314,8 +314,8 @@ export default function PrivacyPage() {
               <h2 className="font-display font-bold text-white text-lg mb-3">Contact Us</h2>
               <p className="text-white/55 text-sm leading-relaxed">
                 Questions, concerns, or privacy requests? Contact our Privacy team at{' '}
-                <a href="mailto:privacy@loyaltyos.com" className="text-purple-400 hover:text-purple-300 transition-colors">
-                  privacy@loyaltyos.com
+                <a href="mailto:privacy@loyalbase.dev" className="text-purple-400 hover:text-purple-300 transition-colors">
+                  privacy@loyalbase.dev
                 </a>
               </p>
             </div>

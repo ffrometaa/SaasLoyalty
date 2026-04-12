@@ -1,7 +1,7 @@
 # LoyaltyOS — Product Requirements Document v3.0
 
 **Fecha:** Abril 2026
-**Estado:** Phase 3 en progreso — 5 de 9 módulos completados adelantados
+**Estado:** Semanas 1–4 de deuda técnica completadas · Deploy a producción pendiente (Stripe LIVE + env vars)
 **Versión anterior:** PRD v2.0 (Abril 2026 — MVP completo + roadmap Phase 3)
 
 ---
@@ -13,10 +13,11 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 ### Cambios clave desde PRD v2
 
 - **Phase 3 adelantada:** 5 de los 9 módulos de Phase 3 completados en Abril 2026, meses antes de las fechas planificadas.
-- **Deuda técnica liquidada:** Todo el backlog técnico de las semanas pre-Phase 3 está cerrado (tests, types, rate limiting, cache, edge functions, i18n completo).
+- **Deuda técnica Semanas 1–4 completada (Abril 2026):** Tier thresholds configurables, `points_per_dollar` editable, Starter pricing actualizado ($99/mo, 800 members), suspension modal con email, AM email trigger, perfil de miembro editable, self-service account closure, hard-delete cron, trial expiry reminder, i18n neutro.
+- **Founding Partners Program implementado (Abril 2026):** Landing section, registro flow, endpoint de cupos, webhook lifecycle completo. QA en TEST mode pasado. Bloqueado para producción solo por configuración manual de Stripe LIVE.
 - **Decisión de pricing pendiente (MKT-1):** API Access y Custom Domains siguen bloqueados por falta de validación de mercado. Sin respuesta de marketing antes del 2026-06-08, se adopta Opción C (solo Enterprise) por defecto.
 - **Phase 4 en definición:** Los tres gaps críticos de Enterprise (SSO, Multi-location, Secure Compute) pasan formalmente a Phase 4, sujeto a validación de demanda por marketing (MKT-2).
-- **Founding Partners Program activo (Abril 2026):** Programa de adquisición de primeros 15 clientes con trial extendido de 60 días y 20% de descuento de por vida. Ver `Founding Partner Program.md`.
+- **Siguiente bloqueante de Semana 2:** DPA page + aceptación en onboarding (obligatorio antes del primer cliente B2B) y widget de soporte Pro/Scale (Crisp/Tawk.to).
 
 ---
 
@@ -32,17 +33,17 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 
 **Stack tecnológico:**
 - **Frontend:** Next.js 14.2 + TypeScript + Tailwind CSS + shadcn/ui
-- **Base de datos:** Supabase PostgreSQL con RLS multi-tenant (27+ migraciones aplicadas)
+- **Base de datos:** Supabase PostgreSQL con RLS multi-tenant (30+ migraciones aplicadas)
 - **Auth:** Supabase Auth — email/password + OTP de dispositivo + tokens de invitación
-- **Pagos:** Stripe Billing (Starter $199 / Pro $399 / Scale $599 por mes)
-- **Email:** Resend — 18 templates bilingüe (EN/ES)
+- **Pagos:** Stripe Billing (Starter $99 / Pro $399 / Scale $599 por mes)
+- **Email:** Resend — 20+ templates bilingüe (EN/ES)
 - **Push:** OneSignal — integrado en Member app
 - **Monorepo:** Turborepo + pnpm workspaces (5 packages compartidos)
 - **Hosting:** Vercel (3 proyectos independientes)
 - **i18n:** next-intl — inglés (principal) y español neutro en las 3 apps
 - **Rate Limiting:** @upstash/ratelimit en middleware de Member App
 - **Cache:** unstable_cache en 5 rutas API del Dashboard
-- **Edge Functions:** 9 funciones Supabase desplegadas (expiración, cumpleaños, riesgo, alertas, resumen semanal)
+- **Edge Functions:** 10 funciones Supabase desplegadas (expiración, cumpleaños, riesgo, alertas, resumen semanal, trial-expiry-reminder)
 - **Tests:** Vitest — 58 tests de integración + componentes en CI
 
 ---
@@ -245,10 +246,10 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 
 ### 2.7 Planes y Límites
 
-| Feature | Starter ($199/mo) | Pro ($399/mo) | Scale ($599/mo) | Enterprise |
+| Feature | Starter ($99/mo) | Pro ($399/mo) | Scale ($599/mo) | Enterprise |
 |---------|-----------------|---------------|-----------------|------------|
-| Miembros | 500 | 2.000 | Ilimitado | Ilimitado |
-| Campañas/mes | 2 | 10 | Ilimitado | Ilimitado |
+| Miembros | 800 | 2.000 | Ilimitado | Ilimitado |
+| Campañas/mes | 3 | 10 | Ilimitado | Ilimitado |
 | Gamificación | — | Básica | Completa | Enterprise |
 | Analytics | Básico | Completo | Completo | Custom |
 | White-label | — | — | Full | Full |
@@ -261,7 +262,7 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 
 > **(†) Pendiente decisión MKT-1** — API Access y Custom Domains están fuera del plan Scale hasta que marketing valide el modelo de pricing. Ver §3.
 
-> **Precio Starter bloqueado en $199/mo** — El plan Starter no se modifica como precio de entrada al mercado, independientemente del Founding Partners Program u otras iniciativas de marketing.
+> **Starter actualizado a $99/mo** — 800 miembros, 3 campañas/mes, sin logo white-label. Actualizado en Abril 2026.
 
 ### 2.8 Founding Partners Program
 
@@ -282,7 +283,7 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 - Endpoint `/api/founding-spots` para conteo en tiempo real
 - Registro de Stripe: Scale ya soportado en el route (`STRIPE_SCALE_PRICE_ID`)
 
-**Estado:** Pendiente de implementación — bloqueado hasta configuración de Stripe Price IDs en producción.
+**Estado implementación:** ✅ Código completo + QA en TEST mode pasado. Bloqueante actual: configuración manual de Stripe LIVE (6 Price IDs + coupon `FOUNDING20` + webhook endpoint) y env vars en Vercel.
 
 ---
 

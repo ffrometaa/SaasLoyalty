@@ -3,7 +3,7 @@ import { Navbar } from '@/components/landing/Navbar';
 import { Footer } from '@/components/landing/Footer';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service — LoyaltyOS',
+  title: 'Terms of Service — LoyalBase',
   description: 'LoyaltyOS Platform B2B SaaS Agreement. Read our terms of service before using the platform.',
 };
 
@@ -11,7 +11,7 @@ const SECTIONS = [
   {
     heading: '1. Acceptance of Terms',
     content: [
-      'These Terms of Service ("Terms," "Agreement") constitute a legally binding agreement between LoyaltyOS, LLC, a company organized under the laws of the State of Florida ("LoyaltyOS," "Company," "we," "us," or "our") and the entity or individual ("Customer," "Tenant," "you," or "your") accessing or using the LoyaltyOS platform and related services.',
+      'These Terms of Service ("Terms," "Agreement") constitute a legally binding agreement between LoyalBase LLC, a company organized under the laws of the State of Florida ("LoyalBase," "Company," "we," "us," or "our") and the entity or individual ("Customer," "Tenant," "you," or "your") accessing or using the LoyaltyOS platform and related services.',
       'BY CLICKING "I AGREE," COMPLETING THE REGISTRATION PROCESS, OR ACCESSING THE PLATFORM, YOU ACKNOWLEDGE THAT YOU HAVE READ, UNDERSTOOD, AND AGREE TO BE BOUND BY THESE TERMS. IF YOU DO NOT AGREE, DO NOT ACCESS OR USE THE PLATFORM.',
       'If you are accepting these Terms on behalf of a business or other legal entity, you represent and warrant that you have the authority to bind that entity to these Terms, in which case "you" and "your" will refer to that entity.',
     ],
@@ -19,7 +19,7 @@ const SECTIONS = [
   {
     heading: '2. Description of Services',
     content: [
-      'LoyaltyOS provides a multi-tenant, white-label Software-as-a-Service ("SaaS") platform that enables businesses ("Tenants") to create, manage, and operate customer loyalty and membership programs. Services include, but are not limited to:',
+      'LoyalBase provides a multi-tenant, white-label Software-as-a-Service ("SaaS") platform that enables businesses ("Tenants") to create, manage, and operate customer loyalty and membership programs. Services include, but are not limited to:',
     ],
     list: [
       'A branded web application ("Member App") for end-user members of Tenant businesses',
@@ -30,14 +30,14 @@ const SECTIONS = [
       'Push notification and email marketing tools',
       'White-label branding capabilities',
     ],
-    footer: 'LoyaltyOS reserves the right to modify, enhance, or discontinue any feature or service with reasonable prior notice, except where required by law to provide additional notice.',
+    footer: 'LoyalBase reserves the right to modify, enhance, or discontinue any feature or service with reasonable prior notice, except where required by law to provide additional notice.',
   },
   {
     heading: '3. Eligibility and Account Registration',
     subheadings: [
       {
         title: '3.1 Eligibility Requirements',
-        content: 'To access and use LoyaltyOS, you must:',
+        content: 'To access and use LoyalBase, you must:',
         list: [
           'Be at least 18 years of age',
           'Be a legally formed business entity or self-employed individual operating lawfully in your jurisdiction',
@@ -48,7 +48,7 @@ const SECTIONS = [
       },
       {
         title: '3.2 Account Security',
-        content: 'You are responsible for maintaining the confidentiality of your account credentials. You agree to: (a) provide accurate, current, and complete registration information; (b) maintain and promptly update your account information; (c) notify LoyaltyOS immediately at security@loyaltyos.com of any unauthorized access or use of your account; and (d) be responsible for all activities that occur under your account. LoyaltyOS will not be liable for any loss or damage arising from your failure to maintain the security of your account credentials.',
+        content: 'You are responsible for maintaining the confidentiality of your account credentials. You agree to: (a) provide accurate, current, and complete registration information; (b) maintain and promptly update your account information; (c) notify LoyalBase immediately at security@loyalbase.dev of any unauthorized access or use of your account; and (d) be responsible for all activities that occur under your account. LoyalBase will not be liable for any loss or damage arising from your failure to maintain the security of your account credentials.',
       },
     ],
   },
@@ -57,27 +57,27 @@ const SECTIONS = [
     subheadings: [
       {
         title: '4.1 Subscription Plans',
-        content: 'LoyaltyOS offers the following subscription tiers, subject to change with thirty (30) days notice. Please refer to our pricing page for current plan details and pricing.',
+        content: 'LoyalBase offers the following subscription tiers, subject to change with thirty (30) days notice. Please refer to our pricing page for current plan details and pricing.',
       },
       {
         title: '4.2 Free Trial',
-        content: 'LoyaltyOS may offer a fourteen (14) day free trial period at its sole discretion. No credit card is required during the trial period. Upon expiration of the trial, access to the Platform will be suspended unless a paid subscription is activated. Trial periods are limited to one per business entity.',
+        content: 'LoyalBase may offer a free trial period at its sole discretion. A valid payment method is required to start your trial. Your card will not be charged until the trial period ends. Upon expiration of the trial, access to the Platform will be suspended unless a paid subscription is activated. Trial periods are limited to one per business entity.',
       },
       {
         title: '4.3 Billing and Payment',
-        content: 'All fees are due in advance and are payable in United States Dollars (USD). Payment is processed through Stripe, Inc., a third-party payment processor. By providing payment information, you authorize LoyaltyOS to charge your designated payment method on a recurring basis for the applicable subscription fees. All sales are final. LoyaltyOS does not offer refunds for partial subscription periods, except as required by applicable law.',
+        content: 'All fees are due in advance and are payable in United States Dollars (USD). Payment is processed through Stripe, Inc., a third-party payment processor. By providing payment information, you authorize LoyalBase to charge your designated payment method on a recurring basis for the applicable subscription fees. All sales are final. LoyalBase does not offer refunds for partial subscription periods, except as required by applicable law.',
       },
       {
         title: '4.4 Automatic Renewal',
-        content: 'Subscriptions automatically renew at the end of each billing period (monthly or annual) unless canceled by the Customer at least twenty-four (24) hours before the renewal date. You may cancel your subscription through your account dashboard or by contacting billing@loyaltyos.com.',
+        content: 'Subscriptions automatically renew at the end of each billing period (monthly or annual) unless canceled by the Customer at least twenty-four (24) hours before the renewal date. You may cancel your subscription through your account dashboard or by contacting billing@loyalbase.dev.',
       },
       {
         title: '4.5 Late Payment and Suspension',
-        content: 'If payment fails, LoyaltyOS will attempt to charge the payment method on file for up to seven (7) days. If payment remains outstanding after this period, LoyaltyOS reserves the right to suspend or terminate your access to the Platform without further notice. You remain liable for all outstanding amounts.',
+        content: 'If payment fails, LoyalBase will attempt to charge the payment method on file for up to seven (7) days. If payment remains outstanding after this period, LoyalBase reserves the right to suspend or terminate your access to the Platform without further notice. You remain liable for all outstanding amounts.',
       },
       {
         title: '4.6 Taxes',
-        content: 'All fees are exclusive of applicable taxes. LoyaltyOS uses Stripe Tax to automatically calculate and collect applicable sales tax based on your location and the nature of the services provided. You are responsible for all applicable taxes, levies, or duties imposed by taxing authorities.',
+        content: 'All fees are exclusive of applicable taxes. LoyalBase uses Stripe Tax to automatically calculate and collect applicable sales tax based on your location and the nature of the services provided. You are responsible for all applicable taxes, levies, or duties imposed by taxing authorities.',
       },
     ],
   },
@@ -97,7 +97,7 @@ const SECTIONS = [
           'Collect or process personal data without proper legal basis or required consents',
           'Transmit malware, viruses, or any code designed to disrupt, damage, or gain unauthorized access to systems',
           'Reverse engineer, decompile, disassemble, or attempt to derive the source code of the Platform',
-          'Resell, sublicense, or otherwise transfer access to the Platform to third parties without written authorization from LoyaltyOS',
+          'Resell, sublicense, or otherwise transfer access to the Platform to third parties without written authorization from LoyalBase',
           'Use the Platform to collect or process payment card data in a manner that violates PCI DSS standards',
           'Engage in discriminatory practices based on race, color, national origin, religion, sex, disability, age, or any other characteristic protected by applicable law',
           'Use the Platform in any manner that could damage, overburden, or impair the servers or networks connected to the Platform',
@@ -110,23 +110,23 @@ const SECTIONS = [
     subheadings: [
       {
         title: '6.1 Customer Data',
-        content: '"Customer Data" means all data, content, and information that you or your end users submit, upload, or generate through the Platform, including personal information about your customers ("Member Data"). You retain full ownership of all Customer Data. LoyaltyOS processes Customer Data solely to provide and improve the Services in accordance with these Terms and our Privacy Policy.',
+        content: '"Customer Data" means all data, content, and information that you or your end users submit, upload, or generate through the Platform, including personal information about your customers ("Member Data"). You retain full ownership of all Customer Data. LoyalBase processes Customer Data solely to provide and improve the Services in accordance with these Terms and our Privacy Policy.',
       },
       {
         title: '6.2 Data Processing',
-        content: 'You are the data controller of Member Data. LoyaltyOS acts as a data processor on your behalf. You are solely responsible for ensuring that you have obtained all necessary consents and legal bases required to collect, process, and transfer Member Data to LoyaltyOS.',
+        content: 'You are the data controller of Member Data. LoyalBase acts as a data processor on your behalf. You are solely responsible for ensuring that you have obtained all necessary consents and legal bases required to collect, process, and transfer Member Data to LoyalBase.',
       },
       {
         title: '6.3 Data Security',
-        content: 'LoyaltyOS implements commercially reasonable administrative, technical, and physical safeguards designed to protect Customer Data against unauthorized access, alteration, disclosure, or destruction. These measures include: (a) encryption of data in transit using TLS 1.2 or higher; (b) encryption of sensitive data at rest; (c) role-based access controls and multi-factor authentication; (d) regular security assessments; and (e) logical data isolation between tenants using database-level Row Level Security (RLS).',
+        content: 'LoyalBase implements commercially reasonable administrative, technical, and physical safeguards designed to protect Customer Data against unauthorized access, alteration, disclosure, or destruction. These measures include: (a) encryption of data in transit using TLS 1.2 or higher; (b) encryption of sensitive data at rest; (c) role-based access controls and multi-factor authentication; (d) regular security assessments; and (e) logical data isolation between tenants using database-level Row Level Security (RLS).',
       },
       {
         title: '6.4 Data Breach Notification',
-        content: 'In the event of a security breach affecting your Customer Data, LoyaltyOS will notify you without undue delay and in no event later than seventy-two (72) hours after becoming aware of the breach, as required by the Florida Information Protection Act (Fla. Stat. § 501.171) and applicable federal law.',
+        content: 'In the event of a security breach affecting your Customer Data, LoyalBase will notify you without undue delay and in no event later than seventy-two (72) hours after becoming aware of the breach, as required by the Florida Information Protection Act (Fla. Stat. § 501.171) and applicable federal law.',
       },
       {
         title: '6.5 Data Retention and Deletion',
-        content: 'LoyaltyOS retains Customer Data for the duration of your active subscription plus ninety (90) days following termination. Upon written request submitted within this period, LoyaltyOS will provide an export of your Customer Data in a machine-readable format. After the retention period, Customer Data is permanently deleted from LoyaltyOS systems, except where retention is required by applicable law.',
+        content: 'LoyalBase retains Customer Data for the duration of your active subscription plus thirty (30) days following termination. Upon written request submitted within this period, LoyalBase will provide an export of your Customer Data in a machine-readable format. After the retention period, Customer Data is permanently deleted from LoyalBase systems, except where retention is required by applicable law.',
       },
     ],
   },
@@ -134,16 +134,16 @@ const SECTIONS = [
     heading: '7. Intellectual Property Rights',
     subheadings: [
       {
-        title: '7.1 LoyaltyOS IP',
-        content: 'LoyaltyOS and its licensors retain all right, title, and interest in and to the Platform, including all software, algorithms, interfaces, documentation, trademarks, service marks, trade names, and other intellectual property ("LoyaltyOS IP"). These Terms grant you a limited, non-exclusive, non-transferable, revocable license to access and use the Platform solely for your internal business purposes during the term of your subscription. No other rights are granted.',
+        title: '7.1 LoyalBase IP',
+        content: 'LoyalBase and its licensors retain all right, title, and interest in and to the Platform, including all software, algorithms, interfaces, documentation, trademarks, service marks, trade names, and other intellectual property ("LoyalBase IP"). These Terms grant you a limited, non-exclusive, non-transferable, revocable license to access and use the Platform solely for your internal business purposes during the term of your subscription. No other rights are granted.',
       },
       {
         title: '7.2 Customer IP',
-        content: 'You retain all right, title, and interest in and to your Customer Data, branding assets, and any content you upload to the Platform. You grant LoyaltyOS a limited, non-exclusive, worldwide license to use, store, reproduce, and display your Customer Data and branding assets solely to the extent necessary to provide the Services.',
+        content: 'You retain all right, title, and interest in and to your Customer Data, branding assets, and any content you upload to the Platform. You grant LoyalBase a limited, non-exclusive, worldwide license to use, store, reproduce, and display your Customer Data and branding assets solely to the extent necessary to provide the Services.',
       },
       {
         title: '7.3 Feedback',
-        content: 'If you provide LoyaltyOS with any suggestions, ideas, enhancement requests, or other feedback regarding the Platform ("Feedback"), you grant LoyaltyOS a perpetual, irrevocable, royalty-free, worldwide license to use, incorporate, and commercialize such Feedback without restriction and without any obligation to you.',
+        content: 'If you provide LoyalBase with any suggestions, ideas, enhancement requests, or other feedback regarding the Platform ("Feedback"), you grant LoyalBase a perpetual, irrevocable, royalty-free, worldwide license to use, incorporate, and commercialize such Feedback without restriction and without any obligation to you.',
       },
     ],
   },
@@ -157,27 +157,27 @@ const SECTIONS = [
     heading: '9. Warranties and Disclaimers',
     subheadings: [
       {
-        title: '9.1 LoyaltyOS Warranties',
-        content: 'LoyaltyOS warrants that: (a) it has the authority to enter into these Terms; (b) the Platform will perform materially in accordance with its documentation under normal use; and (c) it will implement commercially reasonable security measures to protect Customer Data.',
+        title: '9.1 LoyalBase Warranties',
+        content: 'LoyalBase warrants that: (a) it has the authority to enter into these Terms; (b) the Platform will perform materially in accordance with its documentation under normal use; and (c) it will implement commercially reasonable security measures to protect Customer Data.',
       },
       {
         title: '9.2 Disclaimer of Warranties',
-        content: 'EXCEPT AS EXPRESSLY SET FORTH IN SECTION 9.1, THE PLATFORM IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, LOYALTYOS DISCLAIMS ALL WARRANTIES, INCLUDING IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. LOYALTYOS DOES NOT WARRANT THAT THE PLATFORM WILL BE UNINTERRUPTED, ERROR-FREE, OR SECURE, OR THAT ANY DEFECTS WILL BE CORRECTED.',
+        content: 'EXCEPT AS EXPRESSLY SET FORTH IN SECTION 9.1, THE PLATFORM IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, LOYALBASE DISCLAIMS ALL WARRANTIES, INCLUDING IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. LOYALBASE DOES NOT WARRANT THAT THE PLATFORM WILL BE UNINTERRUPTED, ERROR-FREE, OR SECURE, OR THAT ANY DEFECTS WILL BE CORRECTED.',
       },
     ],
   },
   {
     heading: '10. Limitation of Liability',
     content: [
-      'TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT WILL LOYALTYOS, ITS OFFICERS, DIRECTORS, EMPLOYEES, AGENTS, OR LICENSORS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS OF PROFITS, DATA, GOODWILL, OR BUSINESS INTERRUPTION, ARISING OUT OF OR RELATED TO YOUR USE OF OR INABILITY TO USE THE PLATFORM, EVEN IF LOYALTYOS HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.',
-      "LOYALTYOS'S TOTAL CUMULATIVE LIABILITY TO YOU ARISING OUT OF OR RELATED TO THESE TERMS OR YOUR USE OF THE PLATFORM SHALL NOT EXCEED THE GREATER OF: (A) THE TOTAL FEES PAID BY YOU TO LOYALTYOS IN THE TWELVE (12) MONTHS PRECEDING THE CLAIM; OR (B) ONE HUNDRED DOLLARS ($100.00).",
+      'TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT WILL LOYALBASE, ITS OFFICERS, DIRECTORS, EMPLOYEES, AGENTS, OR LICENSORS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS OF PROFITS, DATA, GOODWILL, OR BUSINESS INTERRUPTION, ARISING OUT OF OR RELATED TO YOUR USE OF OR INABILITY TO USE THE PLATFORM, EVEN IF LOYALBASE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.',
+      "LOYALBASE'S TOTAL CUMULATIVE LIABILITY TO YOU ARISING OUT OF OR RELATED TO THESE TERMS OR YOUR USE OF THE PLATFORM SHALL NOT EXCEED THE GREATER OF: (A) THE TOTAL FEES PAID BY YOU TO LOYALBASE IN THE TWELVE (12) MONTHS PRECEDING THE CLAIM; OR (B) ONE HUNDRED DOLLARS ($100.00).",
       'SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OR LIMITATION OF CERTAIN WARRANTIES OR LIABILITY FOR INCIDENTAL OR CONSEQUENTIAL DAMAGES, SO THE ABOVE LIMITATIONS MAY NOT APPLY TO YOU.',
     ],
   },
   {
     heading: '11. Indemnification',
     content: [
-      'You agree to indemnify, defend, and hold harmless LoyaltyOS, its affiliates, officers, directors, employees, agents, and licensors from and against any and all claims, damages, losses, liabilities, costs, and expenses (including reasonable attorneys\' fees) arising out of or related to: (a) your use of the Platform in violation of these Terms; (b) your violation of any applicable law or third-party rights; (c) your Customer Data, including any claim that such data infringes any third-party intellectual property rights or violates any privacy law; (d) your collection or processing of Member Data without required consents; or (e) any products or services offered by you to your customers.',
+      'You agree to indemnify, defend, and hold harmless LoyalBase, its affiliates, officers, directors, employees, agents, and licensors from and against any and all claims, damages, losses, liabilities, costs, and expenses (including reasonable attorneys\' fees) arising out of or related to: (a) your use of the Platform in violation of these Terms; (b) your violation of any applicable law or third-party rights; (c) your Customer Data, including any claim that such data infringes any third-party intellectual property rights or violates any privacy law; (d) your collection or processing of Member Data without required consents; or (e) any products or services offered by you to your customers.',
     ],
   },
   {
@@ -192,12 +192,12 @@ const SECTIONS = [
         content: 'You may cancel your subscription at any time through your account dashboard. Cancellation takes effect at the end of the current billing period. No refunds are issued for the remaining portion of any prepaid subscription period.',
       },
       {
-        title: '12.3 Termination by LoyaltyOS',
-        content: 'LoyaltyOS may suspend or terminate your access to the Platform immediately upon written notice if: (a) you materially breach these Terms and fail to cure such breach within fifteen (15) days of notice; (b) you fail to pay fees when due; (c) you become insolvent, make an assignment for the benefit of creditors, or become subject to bankruptcy proceedings; or (d) continued provision of the Platform would violate applicable law.',
+        title: '12.3 Termination by LoyalBase',
+        content: 'LoyalBase may suspend or terminate your access to the Platform immediately upon written notice if: (a) you materially breach these Terms and fail to cure such breach within fifteen (15) days of notice; (b) you fail to pay fees when due; (c) you become insolvent, make an assignment for the benefit of creditors, or become subject to bankruptcy proceedings; or (d) continued provision of the Platform would violate applicable law.',
       },
       {
         title: '12.4 Effect of Termination',
-        content: 'Upon termination: (a) all rights and licenses granted to you under these Terms immediately cease; (b) you must cease all use of the Platform; (c) LoyaltyOS will retain your Customer Data for ninety (90) days during which you may request an export; and (d) all provisions of these Terms that by their nature should survive will survive termination, including Sections 7, 8, 9, 10, 11, and 14.',
+        content: 'Upon termination: (a) all rights and licenses granted to you under these Terms immediately cease; (b) you must cease all use of the Platform; (c) LoyalBase will retain your Customer Data for thirty (30) days during which you may request an export; and (d) all provisions of these Terms that by their nature should survive will survive termination, including Sections 7, 8, 9, 10, 11, and 14.',
       },
     ],
   },
@@ -214,7 +214,7 @@ const SECTIONS = [
       },
       {
         title: '13.3 Class Action Waiver',
-        content: 'YOU AND LOYALTYOS AGREE THAT EACH MAY BRING CLAIMS AGAINST THE OTHER ONLY IN YOUR OR ITS INDIVIDUAL CAPACITY AND NOT AS A PLAINTIFF OR CLASS MEMBER IN ANY PURPORTED CLASS OR REPRESENTATIVE PROCEEDING.',
+        content: 'YOU AND LOYALBASE AGREE THAT EACH MAY BRING CLAIMS AGAINST THE OTHER ONLY IN YOUR OR ITS INDIVIDUAL CAPACITY AND NOT AS A PLAINTIFF OR CLASS MEMBER IN ANY PURPORTED CLASS OR REPRESENTATIVE PROCEEDING.',
       },
       {
         title: '13.4 Venue',
@@ -226,12 +226,12 @@ const SECTIONS = [
     heading: '14. General Provisions',
     list: [
       'Entire Agreement: These Terms, together with the Privacy Policy and any executed Order Forms, constitute the entire agreement between the parties with respect to the Platform and supersede all prior agreements.',
-      'Amendments: LoyaltyOS reserves the right to modify these Terms at any time. We will provide at least thirty (30) days notice of material changes via email or in-platform notification. Continued use of the Platform after the effective date of changes constitutes acceptance.',
+      'Amendments: LoyalBase reserves the right to modify these Terms at any time. We will provide at least thirty (30) days notice of material changes via email or in-platform notification. Continued use of the Platform after the effective date of changes constitutes acceptance.',
       'Severability: If any provision of these Terms is found invalid or unenforceable, the remaining provisions shall remain in full force and effect.',
       'Waiver: Failure by either party to enforce any provision of these Terms shall not constitute a waiver of that party\'s right to enforce such provision in the future.',
       'Force Majeure: Neither party shall be liable for delays or failures in performance resulting from causes beyond that party\'s reasonable control, including acts of God, natural disasters, war, terrorism, labor disputes, or internet service disruptions.',
-      'Assignment: You may not assign these Terms or any rights or obligations hereunder without the prior written consent of LoyaltyOS. LoyaltyOS may freely assign these Terms in connection with a merger, acquisition, or sale of assets.',
-      'Notices: Legal notices to LoyaltyOS must be sent in writing to legal@loyalbase.dev or to the registered business address of LoyaltyOS, LLC in Florida.',
+      'Assignment: You may not assign these Terms or any rights or obligations hereunder without the prior written consent of LoyalBase. LoyalBase may freely assign these Terms in connection with a merger, acquisition, or sale of assets.',
+      'Notices: Legal notices to LoyalBase must be sent in writing to legal@loyalbase.dev or to the registered business address of LoyalBase LLC, 7901 4th St N, Ste 300, St. Petersburg, Florida 33702, USA.',
     ],
   },
 ];

@@ -296,7 +296,7 @@ function buildBirthdayEmail(
               &nbsp;·&nbsp;
               <a href="#" style="color:#94a3b8; text-decoration:underline;">Cancelar suscripción</a>
             </p>
-            <p style="margin:0; font-size:12px; color:#94a3b8;">LoyaltyOS LLC · West Palm Beach, FL, USA</p>
+            <p style="margin:0; font-size:12px; color:#94a3b8;">LoyalBase LLC · St. Petersburg, FL 33702, USA</p>
           </td>
         </tr>
       </table>

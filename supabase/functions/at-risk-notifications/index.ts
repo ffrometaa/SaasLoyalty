@@ -219,7 +219,7 @@ function buildAtRiskEmail(
         </tr>
         <tr>
           <td style="background-color:#f1f5f9; border-radius:0 0 12px 12px; padding:20px 40px; border-top:1px solid #e2e8f0; text-align:center;">
-            <p style="margin:0; font-size:12px; color:#94a3b8;">LoyaltyOS LLC · West Palm Beach, FL, USA</p>
+            <p style="margin:0; font-size:12px; color:#94a3b8;">LoyalBase LLC · St. Petersburg, FL 33702, USA</p>
           </td>
         </tr>
       </table>

@@ -222,7 +222,7 @@ function buildWeeklySummaryEmail(
                 <a href="${dashboardUrl}/analytics" style="display:inline-block; padding:12px 24px; color:#ffffff; font-weight:700; font-size:14px; text-decoration:none; border-radius:8px;">View Full Analytics →</a>
               </td></tr>
             </table>
-            <p style="margin:0; font-size:12px; color:#94a3b8;">LoyaltyOS LLC · West Palm Beach, FL, USA</p>
+            <p style="margin:0; font-size:12px; color:#94a3b8;">LoyalBase LLC · St. Petersburg, FL 33702, USA</p>
           </td>
         </tr>
       </table>

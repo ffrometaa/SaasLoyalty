@@ -99,7 +99,7 @@ export function buildBilingualEmail({
                       <a href="{{unsubscribe_url}}" style="color:#94a3b8; text-decoration:underline;">Cancelar suscripción</a>
                     </p>
                     <p style="margin:0; font-size:12px; color:#94a3b8;">
-                      LoyalBase LLC · West Palm Beach, FL, USA
+                      LoyalBase LLC · St. Petersburg, FL 33702, USA
                     </p>
                     <p style="margin:4px 0 0; font-size:11px; color:#cbd5e1;">
                       Powered by <strong style="color:#5C50E8;">Loyal</strong><strong style="color:#5C50E8;">Base</strong>

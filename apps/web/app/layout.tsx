@@ -20,7 +20,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: 'LoyaltyOS — Turn Every Visit Into a Reason to Come Back',
+  title: 'LoyalBase — Turn Every Visit Into a Reason to Come Back',
   description:
     'White-label loyalty and membership platform for local businesses. Branded member app, automated retention campaigns, real-time analytics. Ready in days, not months.',
   keywords:
@@ -30,23 +30,23 @@ export const metadata: Metadata = {
     canonical: 'https://loyalbase.dev',
   },
   openGraph: {
-    title: 'LoyaltyOS — Loyalty Platform for Local Businesses',
+    title: 'LoyalBase — Loyalty Platform for Local Businesses',
     description: 'Turn every visit into a reason to come back.',
     url: 'https://loyalbase.dev',
-    siteName: 'LoyaltyOS',
+    siteName: 'LoyalBase',
     type: 'website',
     images: [
       {
         url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'LoyaltyOS - Loyalty Platform for Local Businesses',
+        alt: 'LoyalBase - Loyalty Platform for Local Businesses',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'LoyaltyOS',
+    title: 'LoyalBase',
     description: 'Turn every visit into a reason to come back.',
     images: ['/opengraph-image'],
   },
@@ -55,28 +55,28 @@ export const metadata: Metadata = {
 const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'LoyaltyOS',
+  name: 'LoyalBase',
   url: 'https://loyalbase.dev',
   logo: 'https://loyalbase.dev/logo.png',
   description:
     'White-label loyalty and membership platform for local businesses. Branded member app, automated retention campaigns, and real-time analytics.',
   address: {
     '@type': 'PostalAddress',
-    addressLocality: 'West Palm Beach',
+    addressLocality: 'St. Petersburg',
     addressRegion: 'FL',
     addressCountry: 'US',
   },
   contactPoint: {
     '@type': 'ContactPoint',
     contactType: 'customer support',
-    email: 'support@loyaltyos.com',
+    email: 'support@loyalbase.dev',
   },
 };
 
 const softwareApplicationSchema = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
-  name: 'LoyaltyOS',
+  name: 'LoyalBase',
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web, iOS, Android (PWA)',
   url: 'https://loyalbase.dev',
@@ -85,9 +85,9 @@ const softwareApplicationSchema = {
   offers: {
     '@type': 'AggregateOffer',
     priceCurrency: 'USD',
-    lowPrice: '49',
-    highPrice: '299',
-    offerCount: '4',
+    lowPrice: '99',
+    highPrice: '599',
+    offerCount: '3',
   },
   featureList: [
     'Branded Member App (PWA)',
