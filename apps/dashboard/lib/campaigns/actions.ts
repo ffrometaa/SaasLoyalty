@@ -61,6 +61,14 @@ function validateCampaignInput(input: {
     if (!input.body || input.body.trim() === '') return 'Message body is required.';
   }
   if (!input.segment || (!isValidSegment(input.segment) && !isCustomSegmentId(input.segment))) return 'Please select a valid audience segment.';
+  if (input.cta_url) {
+    try {
+      const { protocol } = new URL(input.cta_url as string);
+      if (protocol !== 'https:' && protocol !== 'http:') return 'CTA URL must use http or https.';
+    } catch {
+      return 'CTA URL is not a valid URL.';
+    }
+  }
   if (input.type === 'push' && (!input.subject || input.subject.trim() === '')) {
     return 'Push notification subject is required.';
   }

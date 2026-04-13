@@ -1,6 +1,7 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { getServerUser } from '@/lib/supabase';
 import { getMemberWithTenant, getRewardsForTenant } from '@/lib/member/queries';
@@ -118,10 +119,12 @@ export default async function RewardsPage() {
                   >
                     <span className="text-3xl w-12 text-center flex-shrink-0">
                       {reward.image_url ? (
-                        <img
+                        <Image
                           src={reward.image_url}
                           alt={reward.name}
-                          className="w-12 h-12 rounded-xl object-cover"
+                          width={48}
+                          height={48}
+                          className="rounded-xl object-cover"
                         />
                       ) : (
                         CATEGORY_EMOJI[reward.category] ?? '🎁'

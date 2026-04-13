@@ -4,6 +4,17 @@ import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getSupabaseClient } from '@loyalty-os/lib';
 
+const ALLOWED_REDIRECT_ORIGINS = ['https://dashboard.loyalbase.dev', 'https://loyalbase.dev'];
+
+function isSafeRedirect(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return ALLOWED_REDIRECT_ORIGINS.some((o) => new URL(o).origin === parsed.origin);
+  } catch {
+    return false;
+  }
+}
+
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -13,10 +24,11 @@ function AuthCallbackContent() {
   useEffect(() => {
     const handleCallback = async () => {
       const supabase = getSupabaseClient();
-      
+
       // Get the code from URL
       const code = searchParams.get('code');
-      const next = searchParams.get('next') ?? 'https://dashboard.loyalbase.dev';
+      const rawNext = searchParams.get('next');
+      const next = rawNext && isSafeRedirect(rawNext) ? rawNext : 'https://dashboard.loyalbase.dev';
 
       if (code) {
         const { error } = await (supabase.auth as any).exchangeCodeForSession(code);

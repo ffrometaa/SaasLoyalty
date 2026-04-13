@@ -10,8 +10,18 @@ interface Props {
 export function GoogleReviewCard({ googleReviewUrl, bonusPoints }: Props) {
   const [state, setState] = useState<'idle' | 'loading' | 'done'>('idle');
 
+  function isSafeUrl(url: string): boolean {
+    try {
+      const { protocol } = new URL(url);
+      return protocol === 'https:' || protocol === 'http:';
+    } catch {
+      return false;
+    }
+  }
+
   async function handleClaim() {
     if (state !== 'idle') return;
+    if (!isSafeUrl(googleReviewUrl)) return;
     setState('loading');
     window.open(googleReviewUrl, '_blank', 'noopener,noreferrer');
     const res = await fetch('/api/member/google-review-claim', { method: 'POST' });
