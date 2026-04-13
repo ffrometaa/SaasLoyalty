@@ -1030,3 +1030,69 @@ Auditoría completa de vulnerabilidades Cross-Site Scripting en las tres apps: `
 1. **CSP enforcement** — cambiar `Content-Security-Policy-Report-Only` → `Content-Security-Policy` en las tres apps. Requiere testing de Next.js runtime scripts, Google Analytics (web) y OneSignal (member). Planificar sesión dedicada.
 2. **Actualizar Next.js 15** — migración mayor; planificar sprint dedicado. Fix mínimo: `>=15.5.15`.
 
+---
+
+## §10 — Auditoría de Rate Limiting (2026-04-13)
+
+Auditoría completa de protección contra abuso en los 75+ endpoints del monorepo: brute force, email flooding, farming de puntos, enumeración de tokens, exfiltración masiva de datos y abuso de API key.
+
+### Estado previo a la auditoría
+
+Solo `apps/member` tenía rate limiting activo (Upstash Sliding Window 10 req/60s en paths de auth). `apps/dashboard` y `apps/web` no tenían dependencias ni lógica de rate limiting. Un solo vector 🔴 ya operativo: el endpoint `demo-requests` de web con rate limit manual via Supabase (3/email/24h, bypasseable por IP).
+
+### Hallazgos
+
+| # | Hallazgo | Severidad | Ubicación | Estado |
+|---|----------|-----------|-----------|--------|
+| 1 | **OTP brute force** — `verify-otp` no tiene lockout; OTP 6 dígitos → 1.000.000 combinaciones, rompible en minutos | 🔴 Crítico | `dashboard/api/auth/verify-otp` | ✅ Resuelto |
+| 2 | **Email flooding / OTP bombing** — `send-otp` y `forgot-password` (dashboard) sin rate limit; flood a Resend ($) | 🔴 Crítico | `dashboard/api/auth/send-otp`, `dashboard/api/auth/forgot-password` | ✅ Resuelto |
+| 3 | **Registro masivo de tenants** — `web/api/register` sin rate limit; genera sesiones Stripe y registros en DB ilimitadamente | 🔴 Crítico | `web/api/register` | ✅ Resuelto |
+| 4 | **Points injection spam** — `adjustment` sin rate limit; staff puede ajustar puntos en loop | 🔴 Crítico | `dashboard/api/members/[id]/adjustment` | ✅ Resuelto |
+| 5 | **Visit farming** — `visit` sin rate limit; registrar visitas ilimitadas acumula puntos fraudulentamente | 🔴 Crítico | `dashboard/api/members/[id]/visit` | ✅ Resuelto |
+| 6 | **Redeem spam / race condition** — `redeem` sin rate limit; intentar redimir en loop puede explotar timing | 🔴 Crítico | `member/api/rewards/[id]/redeem` | ✅ Resuelto |
+| 7 | **Google Review farming multi-cuenta** — DB flag por member pero sin rate limit a nivel IP/user | 🔴 Crítico | `member/api/member/google-review-claim` | ✅ Resuelto |
+| 8 | **API key abuse (POS)** — `public/members` con CORS `*` sin rate limit; API key expuesta crea members masivamente | 🔴 Crítico | `dashboard/api/public/members` | ✅ Resuelto |
+| 9 | **Data exfiltration — analytics export** — sin rate limit; token robado descarga toda la DB repetidamente | 🔴 Crítico | `dashboard/api/analytics/export` | ✅ Resuelto |
+| 10 | **CSV import flood** — sin límite de frecuencia ni tamaño; CSVs gigantes en loop | 🔴 Crítico | `dashboard/api/members/import` | ✅ Resuelto |
+| 11 | **Email/push blast masivo** — 500 members/req en loop sin rate limit → costo Resend/OneSignal | 🔴 Crítico | `dashboard/api/members/bulk` | ✅ Resuelto |
+| 12 | **Full tenant data dump** — export completo (members + transactions + redemptions + rewards + campaigns) sin rate limit | 🔴 Crítico | `dashboard/api/tenant/export` | ✅ Resuelto |
+| 13 | **Invitation token enumeration** — endpoints públicos sin auth ni rate limit; enumerar tokens válidos | 🟡 Media | `web/api/invite/[token]`, `member/api/invitations/[token]` | ✅ Resuelto |
+
+### Fixes aplicados
+
+**Dependencias instaladas en dashboard y web:**
+- `@upstash/ratelimit` ^2.0.8 + `@upstash/redis` ^1.37.0 (member ya las tenía)
+- Mismo Redis de Upstash compartido entre las tres apps (zero costo adicional en Free tier)
+
+**Nuevos archivos:**
+- `apps/dashboard/lib/ratelimit.ts` — 8 funciones de limiter con `makeRedis()` como helper interno
+- `apps/web/lib/ratelimit.ts` — 2 funciones de limiter
+
+**Rate limiters implementados:**
+
+| Endpoint | Límite | Identificador | Algoritmo |
+|----------|--------|---------------|-----------|
+| `dashboard` send-otp + verify-otp | 5 / 15 min | IP | Fixed Window |
+| `dashboard` forgot-password | 3 / hora | IP | Sliding Window |
+| `dashboard` members/adjustment | 30 / min | member ID | Sliding Window |
+| `dashboard` members/visit | 60 / min | member ID | Sliding Window |
+| `dashboard` members/bulk | 5 / hora | tenant ID | Fixed Window |
+| `dashboard` members/import | 10 / hora | tenant ID | Fixed Window |
+| `dashboard` analytics/export | 20 / hora | tenant ID | Fixed Window |
+| `dashboard` tenant/export | 5 / hora | tenant ID | Fixed Window |
+| `dashboard` public/members (API key) | 100 / min | API key | Sliding Window |
+| `web` register | 3 / hora | IP | Fixed Window |
+| `web` invite/[token] | 30 / min | IP | Sliding Window |
+| `member` rewards/redeem | 10 / min | member ID | Sliding Window |
+| `member` google-review-claim | 5 / min | user ID | Sliding Window |
+| `member` invitations/[token] | 30 / min | IP | Sliding Window |
+
+Todos los limiters fallan silenciosamente (`return null`) si las env vars `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` no están configuradas — desarrollo local sin Redis no se ve afectado.
+
+Todos los 429 responses incluyen headers estándar: `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`.
+
+### Pendientes priorizados
+
+1. **Rate limit global en middleware de dashboard** — un límite general por IP (ej: 200 req/min) como capa adicional para proteger endpoints no cubiertos individualmente. Bajo riesgo residual dado que todos los endpoints críticos ya tienen rate limit propio.
+2. **Supabase Auth rate limits nativos** — revisar configuración de GoTrue en Supabase dashboard para magic links y password reset (límites por defecto pueden ser permisivos).
+
