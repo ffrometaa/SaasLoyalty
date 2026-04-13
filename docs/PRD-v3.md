@@ -1096,3 +1096,81 @@ Todos los 429 responses incluyen headers estándar: `Retry-After`, `X-RateLimit-
 1. **Rate limit global en middleware de dashboard** — un límite general por IP (ej: 200 req/min) como capa adicional para proteger endpoints no cubiertos individualmente. Bajo riesgo residual dado que todos los endpoints críticos ya tienen rate limit propio.
 2. **Supabase Auth rate limits nativos** — revisar configuración de GoTrue en Supabase dashboard para magic links y password reset (límites por defecto pueden ser permisivos).
 
+---
+
+## §11 — Auditoría de Autenticación, Autorización y Session Management (2026-04-13)
+
+Auditoría completa de auth flows, session management, middleware de rutas, RLS, escalación de privilegios, IDOR y exposición de secrets en las tres apps del monorepo.
+
+### Flujos de autenticación — hallazgos
+
+| # | Flujo | App | Vulnerabilidad | Riesgo | Estado |
+|---|-------|-----|----------------|--------|--------|
+| 1 | Registro de tenant | web | `userId` en el body aceptado sin verificación — cualquier usuario podía registrar un tenant con el `userId` de otra persona | 🔴 | ✅ Resuelto |
+| 2 | Super admin auth en APIs | dashboard | `NEXT_PUBLIC_SUPER_ADMIN_EMAIL` embebido en el bundle JS del cliente — email del super admin visible a cualquiera que inspeccione el código | 🔴 | ✅ Resuelto |
+| 3 | `invite/accept` | web | Usa `getSession()` en lugar de `getUser()` en server context — lee cookies sin validación server-side | 🟡 | ⏳ Pendiente |
+| 4 | Cross-domain login | web | Magic link generado con service role sin tiempo de vida reducido — token interceptable | 🟡 | ⏳ Pendiente |
+| 5 | `device_id` en OTP | dashboard | Viene 100% del cliente sin validación — un atacante autenticado puede auto-registrar cualquier `device_id` | 🟡 | ⏳ Pendiente |
+| 6 | Auth callback member | member | `fetch(...create-member...).catch(()=>{})` — fallo silencioso; usuario queda con sesión pero sin perfil | 🟡 | ⏳ Pendiente |
+
+### Session management — hallazgos
+
+| # | Aspecto | Problema | Riesgo | Estado |
+|---|---------|----------|--------|--------|
+| 1 | Cookie `loyalty_tenant_id` | `httpOnly: false` — escrita desde JS cliente, accesible via XSS, controla qué datos ve el usuario | 🔴 | ⏳ Pendiente |
+| 2 | Web middleware | `getSession()` en lugar de `getUser()` — lee cookies sin validar con servidor | 🟡 | ⏳ Pendiente |
+| 3 | `getUser()` en dashboard/member middleware | Correcto — valida contra GoTrue server-side | 🟢 | — |
+| 4 | Logout forzoso por cambio de rol | JWT sigue válido hasta expirar si se remueve un `tenant_user` del equipo | 🟡 | ⏳ Pendiente |
+| 5 | CSP Report-Only | No bloqueante — sin efecto protector real en dashboard y web | 🟡 | ⏳ Pendiente (sesión dedicada) |
+
+### Escalación de privilegios e IDOR — hallazgos
+
+| # | Vector | Endpoint | Explotable antes del fix | Riesgo | Estado |
+|---|--------|----------|--------------------------|--------|--------|
+| 1 | IDOR rewards PATCH/DELETE | `dashboard/api/rewards/[id]` | Sí — `serviceClient` sin `tenant_id` filter | 🔴 | ✅ Resuelto |
+| 2 | IDOR members PATCH | `dashboard/api/members/[id]` | Sí — `serviceClient` sin `tenant_id` filter | 🔴 | ✅ Resuelto |
+| 3 | IDOR members/invite | `dashboard/api/members/[id]/invite` | Sí — sin verificar `member.tenant_id === callerTenantId` | 🔴 | ✅ Resuelto |
+| 4 | userId injection en register | `web/api/register` | Sí — registrar tenant con userId ajeno | 🔴 | ✅ Resuelto |
+| 5 | Cookie tampering `loyalty_tenant_id` | APIs de member | Solo si el usuario es miembro del otro tenant también | 🟡 | ⏳ Pendiente |
+
+### RLS — hallazgos
+
+| # | Tabla/Función | Problema | Riesgo | Estado |
+|---|--------------|----------|--------|--------|
+| 1 | `tenant_users`, `invitations`, `super_admins` | Policies permisivas `WITH CHECK (true)` / `USING (true)` — ya eliminadas en migraciones previas | 🟢 | ✅ Fixed en sesiones previas |
+| 2 | `members_update_self` | Sin restricción de campos — miembro podría intentar UPDATE a `tier` / `points_balance` via REST | 🟡 | ⏳ Pendiente |
+| 3 | `current_tenant_id()` / `current_member_id()` | `LIMIT 1` sin `ORDER BY` — no-determinístico si un user tiene múltiples memberships | 🟡 | ⏳ Pendiente |
+
+### Keys y secrets — hallazgos
+
+| # | Key | Exposición | Riesgo | Estado |
+|---|-----|------------|--------|--------|
+| 1 | `NEXT_PUBLIC_SUPER_ADMIN_EMAIL` | Bundle JS del cliente | 🔴 | ✅ Renombrada a `SUPER_ADMIN_EMAIL` en código y Vercel |
+| 2 | `SUPABASE_SERVICE_ROLE_KEY` | Solo server-side | 🟢 | — |
+| 3 | `SUPABASE_JWT_SECRET` | Solo server-side | 🟢 | — |
+| 4 | `RESEND_API_KEY`, `STRIPE_SECRET_KEY` | Solo server-side | 🟢 | — |
+| 5 | Cron secrets hardcodeados en SQL | Ya eliminados en migración `20260405000002` | 🟢 | ✅ Fixed en sesiones previas |
+
+### Fixes aplicados (commit `db3fd45`)
+
+1. **IDOR rewards** — `apps/dashboard/app/api/rewards/[id]/route.ts`: PATCH y DELETE ahora resuelven `tenantId` del caller (owner → staff fallback) y filtran con `.eq('tenant_id', tenantId)`.
+2. **IDOR members** — `apps/dashboard/app/api/members/[id]/route.ts`: PATCH agrega resolución de `tenantId` y filtro en el update con `serviceClient`.
+3. **IDOR invite** — `apps/dashboard/app/api/members/[id]/invite/route.ts`: resuelve `callerTenantId` y filtra el fetch del member para impedir invitar miembros de otros tenants.
+4. **userId injection** — `apps/web/app/api/register/route.ts`: `userId` y `email` se derivan exclusivamente del JWT verificado (`getUser()`), ignorados del body.
+5. **Email expuesto** — `apps/dashboard/app/api/admin/stats/route.ts`, `tenants/route.ts`, `tenants/[id]/trials/route.ts`: `NEXT_PUBLIC_SUPER_ADMIN_EMAIL` → `SUPER_ADMIN_EMAIL`. Variable renombrada también en Vercel.
+
+### Positivos notables
+
+- `getUser()` correcto (no `getSession()`) en todos los middleware de dashboard y member
+- RLS extensivamente corregido en múltiples migraciones sucesivas
+- Sistema de impersonación con audit log, JWT de 15 min y hash en DB
+- `verifyAdminAccess()` en AdminLayout protege correctamente la UI de super admin
+- Todos los secrets sensibles exclusivamente server-side
+
+### Pendientes priorizados
+
+1. **Cookie `loyalty_tenant_id` sin `HttpOnly`** — cambiar a `httpOnly: true, sameSite: 'strict'` en `set-tenant/route.ts` y eliminar escritura via `document.cookie` en `join/page.tsx` y `login/page.tsx`.
+2. **`getSession()` → `getUser()`** — web middleware (`apps/web/middleware.ts`) e `invite/accept` (`apps/web/app/api/invite/accept/route.ts`).
+3. **`members_update_self` — restricción de campos** — limitar vía policy de columna o check en la API route para impedir que un miembro actualice `tier` o `points_balance`.
+4. **`current_tenant_id()` / `current_member_id()` con ORDER BY** — agregar `ORDER BY created_at ASC` al `LIMIT 1` en las funciones RLS para comportamiento determinístico.
+
