@@ -2,12 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@loyalty-os/lib/server';
 import { requireMemberSlot } from '../../../../lib/plans/guardFeature';
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, x-api-key',
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
 // POST /api/public/members - Create member via API key (POS / external integrations)
 export async function POST(request: NextRequest) {
   try {
     const apiKey = request.headers.get('x-api-key');
     if (!apiKey) {
-      return NextResponse.json({ error: 'Missing x-api-key header' }, { status: 401 });
+      return NextResponse.json({ error: 'Missing x-api-key header' }, { status: 401, headers: CORS_HEADERS });
     }
 
     const supabase = createServiceRoleClient();
@@ -21,14 +31,14 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (tenantError || !tenant) {
-      return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid API key' }, { status: 401, headers: CORS_HEADERS });
     }
 
     const body = await request.json();
     const { name, email, phone } = body;
 
     if (!name || !email) {
-      return NextResponse.json({ error: 'name and email are required' }, { status: 400 });
+      return NextResponse.json({ error: 'name and email are required' }, { status: 400, headers: CORS_HEADERS });
     }
 
     // Enforce plan member limit
@@ -36,7 +46,7 @@ export async function POST(request: NextRequest) {
       await requireMemberSlot(tenant.id);
     } catch (limitError: unknown) {
       const message = limitError instanceof Error ? limitError.message : 'Member limit reached';
-      return NextResponse.json({ error: message }, { status: 403 });
+      return NextResponse.json({ error: message }, { status: 403, headers: CORS_HEADERS });
     }
 
     const memberCode = `${tenant.slug.toUpperCase()}-${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`;
@@ -60,12 +70,12 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       console.error('Error creating member via public API:', insertError);
-      return NextResponse.json({ error: 'Failed to create member' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to create member' }, { status: 500, headers: CORS_HEADERS });
     }
 
-    return NextResponse.json({ member }, { status: 201 });
+    return NextResponse.json({ member }, { status: 201, headers: CORS_HEADERS });
   } catch (error) {
     console.error('Public members API error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500, headers: CORS_HEADERS });
   }
 }
