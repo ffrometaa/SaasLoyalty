@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, getAuthedUser } from '@loyalty-os/lib/server';
 import { requireMemberSlot } from '../../../../lib/plans/guardFeature';
+import { getImportRatelimit } from '@/lib/ratelimit';
 
 function unquote(value: string): string {
   const trimmed = value.trim();
@@ -46,6 +47,23 @@ export async function POST(request: NextRequest) {
 
     if (!tenantId || !slug) {
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
+    }
+
+    const importLimiter = getImportRatelimit();
+    if (importLimiter) {
+      const { success, limit, reset } = await importLimiter.limit(tenantId);
+      if (!success) {
+        const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+        return NextResponse.json({ error: 'Too many requests' }, {
+          status: 429,
+          headers: {
+            'Retry-After': String(retryAfter),
+            'X-RateLimit-Limit': String(limit),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(reset),
+          },
+        });
+      }
     }
 
     const csvText = await request.text();

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 import { planHasFeature, type Plan } from '../../../../lib/plans/features';
+import { getExportRatelimit } from '@/lib/ratelimit';
 
 async function resolveTenantId(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>, userId: string): Promise<string | null> {
   const { data: owner } = await supabase
@@ -52,6 +53,23 @@ export async function GET(request: NextRequest) {
     const supabase = await createServerSupabaseClient();
     const tenantId = await resolveTenantId(supabase, user.id);
     if (!tenantId) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
+
+    const exportLimiter = getExportRatelimit();
+    if (exportLimiter) {
+      const { success, limit, reset } = await exportLimiter.limit(tenantId);
+      if (!success) {
+        const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+        return NextResponse.json({ error: 'Too many requests' }, {
+          status: 429,
+          headers: {
+            'Retry-After': String(retryAfter),
+            'X-RateLimit-Limit': String(limit),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(reset),
+          },
+        });
+      }
+    }
 
     const plan = await resolvePlan(supabase, tenantId);
     if (!planHasFeature(plan as Plan, 'analytics_export')) {

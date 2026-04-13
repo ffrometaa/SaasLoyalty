@@ -55,3 +55,51 @@ export function getVisitRatelimit(): Ratelimit | null {
     analytics: false,
   });
 }
+
+/** 5 requests per hour — bulk email/push blasts per tenant */
+export function getBulkRatelimit(): Ratelimit | null {
+  const redis = makeRedis();
+  if (!redis) return null;
+  return new Ratelimit({
+    redis,
+    limiter: Ratelimit.fixedWindow(5, '60 m'),
+    prefix: 'loyalty:rl:dashboard:bulk',
+    analytics: false,
+  });
+}
+
+/** 10 requests per hour — CSV member imports per tenant */
+export function getImportRatelimit(): Ratelimit | null {
+  const redis = makeRedis();
+  if (!redis) return null;
+  return new Ratelimit({
+    redis,
+    limiter: Ratelimit.fixedWindow(10, '60 m'),
+    prefix: 'loyalty:rl:dashboard:import',
+    analytics: false,
+  });
+}
+
+/** 20 requests per hour — analytics exports per tenant */
+export function getExportRatelimit(): Ratelimit | null {
+  const redis = makeRedis();
+  if (!redis) return null;
+  return new Ratelimit({
+    redis,
+    limiter: Ratelimit.fixedWindow(20, '60 m'),
+    prefix: 'loyalty:rl:dashboard:export',
+    analytics: false,
+  });
+}
+
+/** 100 requests per minute — public API (POS) per API key */
+export function getPublicMembersRatelimit(): Ratelimit | null {
+  const redis = makeRedis();
+  if (!redis) return null;
+  return new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(100, '60 s'),
+    prefix: 'loyalty:rl:dashboard:public-members',
+    analytics: false,
+  });
+}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@loyalty-os/lib/server';
 import { requireMemberSlot } from '../../../../lib/plans/guardFeature';
+import { getPublicMembersRatelimit } from '@/lib/ratelimit';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -18,6 +19,24 @@ export async function POST(request: NextRequest) {
     const apiKey = request.headers.get('x-api-key');
     if (!apiKey) {
       return NextResponse.json({ error: 'Missing x-api-key header' }, { status: 401, headers: CORS_HEADERS });
+    }
+
+    const publicMembersLimiter = getPublicMembersRatelimit();
+    if (publicMembersLimiter) {
+      const { success, limit, reset } = await publicMembersLimiter.limit(apiKey);
+      if (!success) {
+        const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+        return NextResponse.json({ error: 'Too many requests' }, {
+          status: 429,
+          headers: {
+            ...CORS_HEADERS,
+            'Retry-After': String(retryAfter),
+            'X-RateLimit-Limit': String(limit),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(reset),
+          },
+        });
+      }
     }
 
     const supabase = createServiceRoleClient();

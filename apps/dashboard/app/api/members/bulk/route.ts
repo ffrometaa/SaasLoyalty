@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 import { revalidateTag } from 'next/cache';
+import { getBulkRatelimit } from '@/lib/ratelimit';
 
 // POST /api/members/bulk
 // Supported actions:
@@ -36,6 +37,23 @@ export async function POST(request: NextRequest) {
 
     if (!tenantId) {
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
+    }
+
+    const bulkLimiter = getBulkRatelimit();
+    if (bulkLimiter) {
+      const { success, limit, reset } = await bulkLimiter.limit(tenantId);
+      if (!success) {
+        const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+        return NextResponse.json({ error: 'Too many requests' }, {
+          status: 429,
+          headers: {
+            'Retry-After': String(retryAfter),
+            'X-RateLimit-Limit': String(limit),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(reset),
+          },
+        });
+      }
     }
 
     const body = await request.json();
