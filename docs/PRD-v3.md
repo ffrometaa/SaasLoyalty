@@ -1174,3 +1174,33 @@ Auditoría completa de auth flows, session management, middleware de rutas, RLS,
 3. **`members_update_self` — restricción de campos** — limitar vía policy de columna o check en la API route para impedir que un miembro actualice `tier` o `points_balance`.
 4. **`current_tenant_id()` / `current_member_id()` con ORDER BY** — agregar `ORDER BY created_at ASC` al `LIMIT 1` en las funciones RLS para comportamiento determinístico.
 
+---
+
+## §12 — Auditoría de Secrets y API Keys (Abril 2026)
+
+Auditoría exhaustiva de secrets hardcodeados, variables de entorno, NEXT_PUBLIC_, historial de git, acceso a SERVICE_ROLE_KEY, logging de datos sensibles y validación de webhooks en las tres apps del monorepo.
+
+### Resultado global
+
+| Categoría | Resultado |
+|-----------|-----------|
+| Secrets hardcodeados en TS/JS | ✅ NINGUNO |
+| `.env` con valores reales en git | ✅ NINGUNO |
+| `NEXT_PUBLIC_` con secrets server-side | ✅ NINGUNO (fix previo en §11) |
+| `SERVICE_ROLE_KEY` en cliente | ✅ NO |
+| Secrets en git history | ✅ NINGUNO real (solo placeholders en `.env.example`) |
+| Stripe webhook sin firma | ✅ `constructEvent()` correctamente implementado |
+| Cron functions sin autenticación | ✅ Bearer token via `CRON_SECRET` en todas |
+
+### Hallazgos y fixes aplicados
+
+| # | Hallazgo | Archivo(s) | Riesgo | Estado |
+|---|----------|------------|--------|--------|
+| 1 | `error.message` de Supabase retornado raw en HTTP 500 — puede filtrar nombres de tablas/columnas/constraints | `apps/dashboard/app/api/admin/tenants/[id]/trials/route.ts:44`, `apps/member/app/api/consent/route.ts:50,117` | 🟡 | ✅ Fixed commit `7d57464` |
+| 2 | `NEXT_PUBLIC_SUPER_ADMIN_EMAIL` en Vercel — email del admin potencialmente embebido en bundles JS de deploys anteriores al commit `db3fd45` | Vercel env vars | 🔴 | ✅ Variable eliminada de Vercel por usuario |
+| 3 | `.env.example` trackeado en git expone estructura completa de variables sensibles | `.env.example` | 🟡 | ✅ Solo placeholders — aceptado como riesgo documentado |
+
+### Pendientes
+
+1. **CSP Report-Only → Enforcement** — las tres apps tienen `Content-Security-Policy-Report-Only`, no bloquea XSS activamente. Requiere sesión dedicada de testing.
+
