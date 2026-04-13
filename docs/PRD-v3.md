@@ -958,5 +958,42 @@ Se realizó una auditoría de seguridad del codebase completo. A continuación e
 ### Pendientes priorizados
 
 1. **Rate limiting** — implementar con Upstash Rate Limit o middleware de Vercel cuando se escale.
-2. **Security headers** — agregar en `next.config.js` (CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy).
+2. **Security headers** — ✅ Resuelto (2026-04-13) — 9 headers en las tres apps + CSP Report-Only activo en producción.
+
+---
+
+## §8 — Auditoría SQL Injection (2026-04-13)
+
+Auditoría completa de riesgo de inyección SQL en todo el monorepo: queries Supabase, funciones PostgreSQL, API routes, exposición de service role key y cobertura RLS.
+
+### Hallazgos y estado
+
+| # | Hallazgo | Severidad | Archivo | Estado |
+|---|----------|-----------|---------|--------|
+| 1 | **`.or()` con `search` sin sanitizar** — `search` de searchParams interpolado directamente en filtro PostgREST; inyección de condiciones adicionales posible. | 🔴 Alta | `api/rewards/route.ts:53`, `api/members/route.ts:29` | ✅ Resuelto |
+| 2 | **`.or()` con `code` sin whitelist** — código de redención del body/searchParams sin validación de formato. | 🟡 Media | `api/redemptions/route.ts:36`, `api/redemptions/verify/route.ts:27` | ✅ Resuelto |
+| 3 | **Path param `id` sin validación UUID** — `id` de segmento pasado directo a `evaluateCustomSegment()` sin verificar formato. | 🟡 Media | `api/campaigns/segments/[id]/preview/route.ts:30` | ✅ Resuelto |
+| 4 | **Funciones PostgreSQL SECURITY DEFINER** | — | `supabase/migrations/` | ✅ OK — todas usan parámetros `$N`, ninguna usa `EXECUTE` ni concatenación |
+| 5 | **Service role key client-side** | 🔴 Alta | — | ✅ OK — `createServiceRoleClient()` solo instanciado en route handlers y server actions |
+| 6 | **Cobertura RLS** | — | — | ✅ OK — 100% de tablas con `ENABLE ROW LEVEL SECURITY` y al menos una policy |
+
+### Helpers de seguridad introducidos
+
+- `sanitizeSearch(value)` — `apps/dashboard/lib/validate.ts` — stripea `,`, `(`, `)` del input antes de usarlo en `.or()`.
+- `isValidRedemptionCode(value)` — `apps/dashboard/lib/validate.ts` — whitelist: UUID (QR) o alfanumérico 4-32 chars.
+- `isValidUUID(value)` — `apps/dashboard/lib/validate.ts` — regex UUID v4 estricto para path params.
+
+### Estado global de validación en API routes (post-auditoría)
+
+| Input | Validación | Helper |
+|-------|-----------|--------|
+| `sortBy` | Whitelist de columnas permitidas | `sanitizeSortBy()` |
+| `search` | Strip de caracteres PostgREST | `sanitizeSearch()` |
+| `email` | Regex de formato | `isValidEmail()` |
+| `code` (redención) | Whitelist UUID / alfanumérico | `isValidRedemptionCode()` |
+| `id` (UUID path param) | Regex UUID v4 | `isValidUUID()` |
+
+### Pendientes
+
+1. **Rate limiting** — sin cambios; sigue pendiente para cuando se escale.
 
