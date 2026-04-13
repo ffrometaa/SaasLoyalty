@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
+import { getVisitRatelimit } from '@/lib/ratelimit';
 
 // POST /api/members/[id]/visit - Register a visit (earn points)
 export async function POST(
@@ -8,6 +9,25 @@ export async function POST(
 ) {
   try {
     const { id: memberId } = await params;
+
+    const limiter = getVisitRatelimit();
+    if (limiter) {
+      const { success, limit, reset } = await limiter.limit(memberId);
+      if (!success) {
+        const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+        return new NextResponse(JSON.stringify({ error: 'Too many requests' }), {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': String(retryAfter),
+            'X-RateLimit-Limit': String(limit),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(reset),
+          },
+        });
+      }
+    }
+
     const supabase = await createServerSupabaseClient();
     const serviceClient = createServiceRoleClient();
     const body = await request.json();

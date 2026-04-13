@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
+import { getRedeemRatelimit } from '@/lib/ratelimit';
 
 // POST /api/member/rewards/[id]/redeem - Create a redemption
 export async function POST(
@@ -18,6 +19,23 @@ export async function POST(
         { error: 'Member ID required' },
         { status: 400 }
       );
+    }
+
+    const limiter = getRedeemRatelimit();
+    if (limiter) {
+      const { success, limit, reset } = await limiter.limit(memberId);
+      if (!success) {
+        const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+        return NextResponse.json({ error: 'Too many requests' }, {
+          status: 429,
+          headers: {
+            'Retry-After': String(retryAfter),
+            'X-RateLimit-Limit': String(limit),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(reset),
+          },
+        });
+      }
     }
 
     // Get member and check balance

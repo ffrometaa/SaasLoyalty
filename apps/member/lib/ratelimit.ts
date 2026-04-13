@@ -21,6 +21,32 @@ export function getAuthRatelimit(): Ratelimit | null {
   });
 }
 
+/** 10 requests per minute — reward redemptions per member */
+export function getRedeemRatelimit(): Ratelimit | null {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  return new Ratelimit({
+    redis: new Redis({ url, token }),
+    limiter: Ratelimit.slidingWindow(10, '60 s'),
+    prefix: 'loyalty:rl:member:redeem',
+    analytics: false,
+  });
+}
+
+/** 5 requests per minute — google review claim per member */
+export function getGoogleReviewRatelimit(): Ratelimit | null {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  return new Ratelimit({
+    redis: new Redis({ url, token }),
+    limiter: Ratelimit.slidingWindow(5, '60 s'),
+    prefix: 'loyalty:rl:member:google-review',
+    analytics: false,
+  });
+}
+
 /** Auth paths subject to rate limiting */
 export const RATE_LIMITED_PATHS = [
   '/login',

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@loyalty-os/lib/server';
 import Stripe from 'stripe';
+import { getRegisterRatelimit } from '@/lib/ratelimit';
 import {
   FOUNDING_PARTNER_MAX_SPOTS,
   FOUNDING_PARTNER_TRIAL_DAYS,
@@ -30,6 +31,25 @@ const ANNUAL_PRICE_IDS = {
 
 export async function POST(request: NextRequest) {
   try {
+    const limiter = getRegisterRatelimit();
+    if (limiter) {
+      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+        request.headers.get('x-real-ip') ?? '127.0.0.1';
+      const { success, limit, reset } = await limiter.limit(ip);
+      if (!success) {
+        const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+        return NextResponse.json({ error: 'Too many requests' }, {
+          status: 429,
+          headers: {
+            'Retry-After': String(retryAfter),
+            'X-RateLimit-Limit': String(limit),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(reset),
+          },
+        });
+      }
+    }
+
     const body = await request.json();
     const { businessName, businessType, slug, email, userId, plan = 'starter', billingPeriod = 'monthly', isFoundingPartner = false, acceptedDpa = false } = body;
 

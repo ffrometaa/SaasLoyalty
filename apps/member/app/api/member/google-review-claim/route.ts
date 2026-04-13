@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient, createServerSupabaseClient } from '@loyalty-os/lib/server';
 import { cookies } from 'next/headers';
+import { getGoogleReviewRatelimit } from '@/lib/ratelimit';
 
 export async function POST() {
   try {
@@ -8,6 +9,23 @@ export async function POST() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const reviewLimiter = getGoogleReviewRatelimit();
+    if (reviewLimiter) {
+      const { success, limit, reset } = await reviewLimiter.limit(user.id);
+      if (!success) {
+        const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+        return NextResponse.json({ error: 'Too many requests' }, {
+          status: 429,
+          headers: {
+            'Retry-After': String(retryAfter),
+            'X-RateLimit-Limit': String(limit),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(reset),
+          },
+        });
+      }
+    }
 
     const tenantId = cookies().get('loyalty_tenant_id')?.value;
     if (!tenantId) return NextResponse.json({ error: 'No tenant' }, { status: 400 });

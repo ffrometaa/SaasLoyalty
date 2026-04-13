@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { getOtpRatelimit, getForgotPasswordRatelimit } from './lib/ratelimit';
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -25,6 +26,51 @@ export async function middleware(request: NextRequest) {
       },
     }
   );
+
+  // Rate limiting for auth endpoints
+  const authPath = request.nextUrl.pathname;
+  if (authPath === '/api/auth/send-otp' || authPath === '/api/auth/verify-otp') {
+    const limiter = getOtpRatelimit();
+    if (limiter) {
+      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+        request.headers.get('x-real-ip') ?? '127.0.0.1';
+      const { success, limit, reset } = await limiter.limit(ip);
+      if (!success) {
+        const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+        return new NextResponse(JSON.stringify({ error: 'Too many requests' }), {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': String(retryAfter),
+            'X-RateLimit-Limit': String(limit),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(reset),
+          },
+        });
+      }
+    }
+  }
+  if (authPath === '/api/auth/forgot-password') {
+    const limiter = getForgotPasswordRatelimit();
+    if (limiter) {
+      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+        request.headers.get('x-real-ip') ?? '127.0.0.1';
+      const { success, limit, reset } = await limiter.limit(ip);
+      if (!success) {
+        const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+        return new NextResponse(JSON.stringify({ error: 'Too many requests' }), {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': String(retryAfter),
+            'X-RateLimit-Limit': String(limit),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(reset),
+          },
+        });
+      }
+    }
+  }
 
   const pathname = request.nextUrl.pathname;
 
