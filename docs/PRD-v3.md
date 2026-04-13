@@ -997,3 +997,36 @@ Auditoría completa de riesgo de inyección SQL en todo el monorepo: queries Sup
 
 1. **Rate limiting** — sin cambios; sigue pendiente para cuando se escale.
 
+---
+
+## §9 — Auditoría XSS (2026-04-13)
+
+Auditoría completa de vulnerabilidades Cross-Site Scripting en las tres apps: `dangerouslySetInnerHTML`, URLs dinámicas, parámetros de URL reflejados, XSS stored via contenido de tenants, dependencias vulnerables y CSP.
+
+### Hallazgos y estado
+
+| # | Hallazgo | Severidad | Archivo | Estado |
+|---|----------|-----------|---------|--------|
+| 1 | **Open Redirect post-auth** — `searchParams.get('next')` usado directamente en `window.location.href` sin validar origen. Permite redirigir a dominios externos arbitrarios. | 🔴 Alta | `apps/web/app/(auth)/callback/page.tsx:19` | ✅ Resuelto |
+| 2 | **`javascript:` URI via `google_review_url`** — `window.open(googleReviewUrl)` sin validar esquema. Un tenant podía guardar `javascript:...` en DB y ejecutar código en la member app. | 🔴 Alta | `apps/member/components/member/GoogleReviewCard.tsx:16` | ✅ Resuelto |
+| 3 | **`<img src>` nativo con `reward.image_url` de DB** — omite `remotePatterns` y no aplica optimización/validación de Next.js Image. | 🟡 Media | `apps/member/app/rewards/page.tsx:121` | ✅ Resuelto |
+| 4 | **`cta_url` de campaña sin validación de esquema** — texto libre del tenant guardado en DB y enviado a members sin verificar protocolo. | 🟡 Media | `apps/dashboard/lib/campaigns/actions.ts:90` | ✅ Resuelto |
+| 5 | **`dangerouslySetInnerHTML` con datos estáticos** — JSON-LD Schema.org hardcoded con `JSON.stringify`. | — | `apps/web/app/layout.tsx`, `page.tsx`, `pricing/page.tsx` | 🟢 OK |
+| 6 | **eval() / new Function()** — ningún uso en las tres apps. | — | — | 🟢 OK |
+| 7 | **CSP en modo Report-Only** — política configurada pero no enforced; no bloquea XSS. Pendiente de activar enforcement. | 🟡 Media | Los tres `next.config.js` | ⏳ Pendiente |
+| 8 | **`next@14.2.35` — 4 CVEs en producción** (DoS RSC, DoS Server Components, HTTP smuggling, Image Optimizer DoS). Fix: `>=15.5.15`. | 🔴 Alta | Las tres apps | ⏳ Pendiente — migración mayor |
+| 9 | **`serialize-javascript@4.0.0` RCE** — solo en devDependencies vía next-pwa → workbox. No afecta producción. | 🔴 Alta (dev only) | `apps/member` devDep | ⏳ Pendiente — baja prioridad |
+
+### Fixes aplicados
+
+- `isSafeRedirect(url)` — `apps/web/app/(auth)/callback/page.tsx` — allowlist de orígenes permitidos (`dashboard.loyalbase.dev`, `loyalbase.dev`) para el parámetro `next` post-autenticación.
+- `isSafeUrl(url)` — `apps/member/components/member/GoogleReviewCard.tsx` — valida `https:` o `http:` antes de `window.open()`.
+- `<Image>` de `next/image` — `apps/member/app/rewards/page.tsx` — reemplaza `<img>` nativo; aplica `remotePatterns`.
+- `remotePatterns` — `apps/member/next.config.js` — agrega hostnames de Supabase (`*.supabase.co`, `*.supabase.in`).
+- Validación de esquema URL en `validateCampaignInput()` — `apps/dashboard/lib/campaigns/actions.ts` — rechaza `cta_url` con protocolo distinto de `http`/`https`.
+
+### Pendientes priorizados
+
+1. **CSP enforcement** — cambiar `Content-Security-Policy-Report-Only` → `Content-Security-Policy` en las tres apps. Requiere testing de Next.js runtime scripts, Google Analytics (web) y OneSignal (member). Planificar sesión dedicada.
+2. **Actualizar Next.js 15** — migración mayor; planificar sprint dedicado. Fix mínimo: `>=15.5.15`.
+
