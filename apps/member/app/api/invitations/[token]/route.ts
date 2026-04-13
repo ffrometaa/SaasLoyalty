@@ -1,11 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@loyalty-os/lib/server';
+import { getInvitationTokenRatelimit } from '@/lib/ratelimit';
 
 // GET /api/invitations/[token] — Returns invitation details for pre-filling registration
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
+  const invitationTokenLimiter = getInvitationTokenRatelimit();
+  if (invitationTokenLimiter) {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+      request.headers.get('x-real-ip') ?? '127.0.0.1';
+    const { success, limit, reset } = await invitationTokenLimiter.limit(ip);
+    if (!success) {
+      const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+      return NextResponse.json({ error: 'Too many requests' }, {
+        status: 429,
+        headers: {
+          'Retry-After': String(retryAfter),
+          'X-RateLimit-Limit': String(limit),
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': String(reset),
+        },
+      });
+    }
+  }
   const { token } = await params;
 
   const serviceClient = createServiceRoleClient();

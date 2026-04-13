@@ -103,3 +103,15 @@ export function getPublicMembersRatelimit(): Ratelimit | null {
     analytics: false,
   });
 }
+
+/** 5 requests per hour — full tenant data export */
+export function getTenantExportRatelimit(): Ratelimit | null {
+  const redis = makeRedis();
+  if (!redis) return null;
+  return new Ratelimit({
+    redis,
+    limiter: Ratelimit.fixedWindow(5, '60 m'),
+    prefix: 'loyalty:rl:dashboard:tenant-export',
+    analytics: false,
+  });
+}

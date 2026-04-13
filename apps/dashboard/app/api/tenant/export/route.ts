@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
+import { getTenantExportRatelimit } from '@/lib/ratelimit';
 
 function toCSV(rows: Record<string, unknown>[]): string {
   if (rows.length === 0) return '';
@@ -37,6 +38,23 @@ export async function GET() {
     if (!tenant) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
 
     const tid = tenant.id;
+
+    const tenantExportLimiter = getTenantExportRatelimit();
+    if (tenantExportLimiter) {
+      const { success, limit, reset } = await tenantExportLimiter.limit(tid);
+      if (!success) {
+        const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+        return NextResponse.json({ error: 'Too many requests' }, {
+          status: 429,
+          headers: {
+            'Retry-After': String(retryAfter),
+            'X-RateLimit-Limit': String(limit),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(reset),
+          },
+        });
+      }
+    }
 
     // Fetch all data in parallel
     const [members, transactions, redemptions, rewards, campaigns] = await Promise.all([
