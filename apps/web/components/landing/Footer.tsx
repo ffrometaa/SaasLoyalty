@@ -25,7 +25,7 @@ export async function Footer() {
 
           {/* Col 2 */}
           <div>
-            <div className="text-[10px] font-bold tracking-[0.2em] text-white/30 uppercase mb-5">
+            <div className="text-xs font-bold tracking-[0.2em] text-white/30 uppercase mb-5">
               {t('productLabel')}
             </div>
             <nav className="flex flex-col gap-3">
@@ -50,7 +50,7 @@ export async function Footer() {
 
           {/* Col 3 */}
           <div>
-            <div className="text-[10px] font-bold tracking-[0.2em] text-white/30 uppercase mb-5">
+            <div className="text-xs font-bold tracking-[0.2em] text-white/30 uppercase mb-5">
               {t('legalLabel')}
             </div>
             <nav className="flex flex-col gap-3 mb-6">

@@ -145,8 +145,8 @@ export function HeroSection() {
             />
           </svg>
           <div>
-            <div className="text-[9px] tracking-widest text-white/30 uppercase">{t('statusLabel')}</div>
-            <div className="text-[10px] font-bold tracking-widest text-white/50 uppercase">
+            <div className="text-xs tracking-widest text-white/30 uppercase">{t('statusLabel')}</div>
+            <div className="text-xs font-bold tracking-widest text-white/50 uppercase">
               {t('statusValue')}
             </div>
           </div>
@@ -166,8 +166,8 @@ export function HeroSection() {
             />
           </svg>
           <div>
-            <div className="text-[9px] tracking-widest text-white/30 uppercase">{t('sectorLabel')}</div>
-            <div className="text-[10px] font-bold tracking-widest text-white/50 uppercase">
+            <div className="text-xs tracking-widest text-white/30 uppercase">{t('sectorLabel')}</div>
+            <div className="text-xs font-bold tracking-widest text-white/50 uppercase">
               {t('sectorValue')}
             </div>
           </div>
@@ -185,7 +185,7 @@ export function HeroSection() {
         >
           14
         </div>
-        <div className="text-[9px] tracking-widest text-white/30 uppercase">{t('trustLabel')}</div>
+        <div className="text-xs tracking-widest text-white/30 uppercase">{t('trustLabel')}</div>
       </div>
 
       <style>{`

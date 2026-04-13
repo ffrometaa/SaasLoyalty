@@ -67,7 +67,7 @@ export function PricingPreview() {
           className="text-center mb-4"
           style={{ opacity: 0, transform: 'translateY(20px)', transition: 'opacity 0.5s, transform 0.5s' }}
         >
-          <span className="text-[11px] font-semibold tracking-[0.2em] text-white/40 uppercase">
+          <span className="text-xs font-semibold tracking-[0.2em] text-white/40 uppercase">
             {t('label')}
           </span>
         </div>

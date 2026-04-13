@@ -14,7 +14,7 @@ export function LanguageSwitcher() {
     <div className="flex items-center gap-0.5">
       <button
         onClick={() => switchLocale('en')}
-        className={`text-[10px] font-bold tracking-widest px-1.5 py-0.5 rounded transition-colors ${
+        className={`text-xs font-bold tracking-widest px-1.5 py-0.5 rounded transition-colors ${
           locale === 'en' ? 'text-white' : 'text-white/30 hover:text-white/60'
         }`}
       >
@@ -23,7 +23,7 @@ export function LanguageSwitcher() {
       <span className="text-white/20 text-xs leading-none">|</span>
       <button
         onClick={() => switchLocale('es')}
-        className={`text-[10px] font-bold tracking-widest px-1.5 py-0.5 rounded transition-colors ${
+        className={`text-xs font-bold tracking-widest px-1.5 py-0.5 rounded transition-colors ${
           locale === 'es' ? 'text-white' : 'text-white/30 hover:text-white/60'
         }`}
       >

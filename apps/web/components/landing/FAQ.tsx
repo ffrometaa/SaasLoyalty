@@ -16,7 +16,7 @@ export function FAQ() {
     <section className="py-24 px-6" style={{ background: '#0a0a0f' }}>
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-4">
-          <span className="text-[11px] font-semibold tracking-[0.2em] text-white/40 uppercase">
+          <span className="text-xs font-semibold tracking-[0.2em] text-white/40 uppercase">
             {t('label')}
           </span>
         </div>

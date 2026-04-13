@@ -57,7 +57,7 @@ export function HowItWorks() {
           className="text-center mb-4"
           style={{ opacity: 0, transform: 'translateY(20px)', transition: 'opacity 0.5s, transform 0.5s' }}
         >
-          <span className="text-[11px] font-semibold tracking-[0.2em] text-white/40 uppercase">
+          <span className="text-xs font-semibold tracking-[0.2em] text-white/40 uppercase">
             {t('label')}
           </span>
         </div>
@@ -109,7 +109,7 @@ export function HowItWorks() {
               </div>
 
               <span
-                className="mb-3 inline-block px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide"
+                className="mb-3 inline-block px-3 py-1 rounded-full text-xs font-semibold tracking-wide"
                 style={{
                   background: 'rgba(124,58,237,0.12)',
                   border: '1px solid rgba(124,58,237,0.25)',
