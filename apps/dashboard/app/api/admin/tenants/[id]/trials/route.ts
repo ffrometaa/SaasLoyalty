@@ -41,7 +41,7 @@ export async function POST(
       return NextResponse.json({ error: 'Trial already used for this feature' }, { status: 409 });
     }
     console.error('[admin/trials] insert error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 
   return NextResponse.json({ trial: data });

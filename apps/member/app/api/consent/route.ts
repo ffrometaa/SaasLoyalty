@@ -47,7 +47,8 @@ export async function GET(request: NextRequest) {
   });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('[consent] get_pending_consents error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 
   return NextResponse.json({ pending: pending ?? [] });
@@ -114,7 +115,8 @@ export async function POST(request: NextRequest) {
   });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('[consent] upsert error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });
