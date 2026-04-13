@@ -14,6 +14,17 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const supabase = await createServerSupabaseClient();
+    const { data: ownerTenant } = await supabase
+      .from('tenants').select('id').eq('auth_user_id', user.id).is('deleted_at', null).single();
+    let callerTenantId: string | null = ownerTenant?.id ?? null;
+    if (!callerTenantId) {
+      const { data: staffRecord } = await supabase
+        .from('tenant_users').select('tenant_id').eq('auth_user_id', user.id).single();
+      callerTenantId = staffRecord?.tenant_id ?? null;
+    }
+    if (!callerTenantId) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
+
     const serviceClient = createServiceRoleClient();
 
     // Fetch member + tenant in one go (include join_code for email)
@@ -21,6 +32,7 @@ export async function POST(
       .from('members')
       .select('id, name, email, auth_user_id, tenant_id, tenants!inner(id, slug, business_name, brand_logo_url, brand_color_primary, join_code)')
       .eq('id', id)
+      .eq('tenant_id', callerTenantId)
       .single();
 
     if (memberError || !member) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
+import { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 
 // GET /api/rewards/[id] - Get reward details
 export async function GET(
@@ -40,7 +40,18 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
+    const user = await getAuthedUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const supabase = await createServerSupabaseClient();
+    const { data: ownerTenant } = await supabase
+      .from('tenants').select('id').eq('auth_user_id', user.id).is('deleted_at', null).single();
+    let tenantId: string | null = ownerTenant?.id ?? null;
+    if (!tenantId) {
+      const { data: staffRecord } = await supabase
+        .from('tenant_users').select('tenant_id').eq('auth_user_id', user.id).single();
+      tenantId = staffRecord?.tenant_id ?? null;
+    }
+    if (!tenantId) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     const body = await request.json();
 
     // Allowed fields to update
@@ -65,15 +76,12 @@ export async function PATCH(
       .from('rewards')
       .update(updates)
       .eq('id', id)
+      .eq('tenant_id', tenantId)
       .select()
       .single();
 
-    if (error) {
-      console.error('Error updating reward:', error);
-      return NextResponse.json(
-        { error: 'Failed to update reward' },
-        { status: 500 }
-      );
+    if (error || !reward) {
+      return NextResponse.json({ error: 'Reward not found' }, { status: 404 });
     }
 
     return NextResponse.json({ reward });
@@ -93,20 +101,30 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const user = await getAuthedUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const supabase = await createServerSupabaseClient();
+    const { data: ownerTenant } = await supabase
+      .from('tenants').select('id').eq('auth_user_id', user.id).is('deleted_at', null).single();
+    let tenantId: string | null = ownerTenant?.id ?? null;
+    if (!tenantId) {
+      const { data: staffRecord } = await supabase
+        .from('tenant_users').select('tenant_id').eq('auth_user_id', user.id).single();
+      tenantId = staffRecord?.tenant_id ?? null;
+    }
+    if (!tenantId) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
 
     const serviceClient = createServiceRoleClient();
-    const { error } = await serviceClient
+    const { data: reward, error } = await serviceClient
       .from('rewards')
       .update({ deleted_at: new Date().toISOString() })
-      .eq('id', id);
+      .eq('id', id)
+      .eq('tenant_id', tenantId)
+      .select()
+      .single();
 
-    if (error) {
-      console.error('Error deleting reward:', error);
-      return NextResponse.json(
-        { error: 'Failed to delete reward' },
-        { status: 500 }
-      );
+    if (error || !reward) {
+      return NextResponse.json({ error: 'Reward not found' }, { status: 404 });
     }
 
     return NextResponse.json({ success: true });

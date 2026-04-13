@@ -12,7 +12,7 @@ export async function POST(
 ) {
   const user = await getAuthedUser();
 
-  if (!user || user.email !== process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL) {
+  if (!user || user.email !== process.env.SUPER_ADMIN_EMAIL) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -55,7 +55,7 @@ export async function GET(
 ) {
   const user = await getAuthedUser();
 
-  if (!user || user.email !== process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL) {
+  if (!user || user.email !== process.env.SUPER_ADMIN_EMAIL) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

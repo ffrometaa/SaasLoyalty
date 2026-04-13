@@ -115,6 +115,16 @@ export async function PATCH(
     }
     const supabase = await createServerSupabaseClient();
 
+    const { data: ownerTenant } = await supabase
+      .from('tenants').select('id').eq('auth_user_id', user.id).is('deleted_at', null).single();
+    let tenantId: string | null = ownerTenant?.id ?? null;
+    if (!tenantId) {
+      const { data: staffRecord } = await supabase
+        .from('tenant_users').select('tenant_id').eq('auth_user_id', user.id).single();
+      tenantId = staffRecord?.tenant_id ?? null;
+    }
+    if (!tenantId) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
+
     const body = await request.json();
 
     // Allowed fields to update
@@ -139,15 +149,12 @@ export async function PATCH(
       .from('members')
       .update(updates)
       .eq('id', id)
+      .eq('tenant_id', tenantId)
       .select()
       .single();
 
-    if (error) {
-      console.error('Error updating member:', error);
-      return NextResponse.json(
-        { error: 'Failed to update member' },
-        { status: 500 }
-      );
+    if (error || !member) {
+      return NextResponse.json({ error: 'Member not found' }, { status: 404 });
     }
 
     return NextResponse.json({ member });

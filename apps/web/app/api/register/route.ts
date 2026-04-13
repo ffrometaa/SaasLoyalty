@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceRoleClient } from '@loyalty-os/lib/server';
+import { createServiceRoleClient, createServerSupabaseClient } from '@loyalty-os/lib/server';
 import Stripe from 'stripe';
 import { getRegisterRatelimit } from '@/lib/ratelimit';
 import {
@@ -50,11 +50,19 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const authSupabase = await createServerSupabaseClient();
+    const { data: { user: authedUser } } = await (authSupabase.auth as any).getUser();
+    if (!authedUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
-    const { businessName, businessType, slug, email, userId, plan = 'starter', billingPeriod = 'monthly', isFoundingPartner = false, acceptedDpa = false } = body;
+    const { businessName, businessType, slug, plan = 'starter', billingPeriod = 'monthly', isFoundingPartner = false, acceptedDpa = false } = body;
+    const userId = authedUser.id;
+    const email = authedUser.email ?? '';
 
     // Validate input
-    if (!businessName || !businessType || !slug || !email || !userId) {
+    if (!businessName || !businessType || !slug) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
