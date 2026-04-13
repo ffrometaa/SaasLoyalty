@@ -4,7 +4,7 @@ import { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } fr
 import { canAddMember } from '../../../lib/plans/features';
 import type { Plan } from '../../../lib/plans/features';
 import { buildBilingualEmail, buildMemberInviteEmail } from '@loyalty-os/email';
-import { sanitizeSortBy, ALLOWED_MEMBER_SORT_COLUMNS, isValidEmail } from '../../../lib/validate';
+import { sanitizeSortBy, sanitizeSearch, ALLOWED_MEMBER_SORT_COLUMNS, isValidEmail } from '../../../lib/validate';
 
 const fetchMembersList = unstable_cache(
   async (
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
-    const search = searchParams.get('search') || '';
+    const search = sanitizeSearch(searchParams.get('search'));
     const tier = searchParams.get('tier') ?? null;
     const status = searchParams.get('status') ?? null;
     const sortBy = sanitizeSortBy(searchParams.get('sortBy'), ALLOWED_MEMBER_SORT_COLUMNS, 'created_at');

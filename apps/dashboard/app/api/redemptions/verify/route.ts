@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, getAuthedUser } from '@loyalty-os/lib/server';
+import { isValidRedemptionCode } from '../../../../lib/validate';
 
 // GET /api/redemptions/verify?code=X
 // Preview a redemption code WITHOUT marking it as used.
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createServerSupabaseClient();
     const code = request.nextUrl.searchParams.get('code');
-    if (!code) {
+    if (!code || !isValidRedemptionCode(code)) {
       return NextResponse.json({ error: 'code is required' }, { status: 400 });
     }
 

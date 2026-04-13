@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 import { NextResponse } from 'next/server';
 import { evaluateCustomSegment } from '../../../../../../lib/campaigns/segments';
+import { isValidUUID } from '../../../../../../lib/validate';
 
 async function resolveAuthedTenantId(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>): Promise<string | null> {
   const { data: { session } } = await (supabase.auth as { getSession: () => Promise<{ data: { session: { user: { id: string } } | null } }> }).getSession();
@@ -22,6 +23,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  if (!isValidUUID(id)) {
+    return NextResponse.json({ error: 'Invalid segment ID' }, { status: 400 });
+  }
+
   const supabase = await createServerSupabaseClient();
   const tenantId = await resolveAuthedTenantId(supabase);
   if (!tenantId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
+import { isValidRedemptionCode } from '../../../lib/validate';
 
 // POST /api/redemptions/process - Process a redemption (staff scans QR)
 export async function POST(request: NextRequest) {
@@ -8,7 +9,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { code } = body;
 
-    if (!code) {
+    if (!code || !isValidRedemptionCode(String(code))) {
       return NextResponse.json(
         { error: 'Redemption code is required' },
         { status: 400 }
