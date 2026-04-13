@@ -80,7 +80,7 @@ export function QuickActions({ memberCode, shareUrl, highlightRedeem }: QuickAct
               <path d="M12 8v13m0-13V6a4 4 0 014-4h1m-5 6H6a4 4 0 01-4-4V6a4 4 0 014-4h1m5 6v13M6 8h12" />
             </svg>
           </div>
-          <span className="text-[11px] text-center" style={{ color: 'var(--text)' }}>{t('redeem')}</span>
+          <span className="text-xs text-center" style={{ color: 'var(--text)' }}>{t('redeem')}</span>
         </Link>
 
         {/* Book */}
@@ -100,7 +100,7 @@ export function QuickActions({ memberCode, shareUrl, highlightRedeem }: QuickAct
               <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
           </div>
-          <span className="text-[11px] text-center" style={{ color: 'var(--text)' }}>{t('book')}</span>
+          <span className="text-xs text-center" style={{ color: 'var(--text)' }}>{t('book')}</span>
         </button>
 
         {/* Refer */}
@@ -121,7 +121,7 @@ export function QuickActions({ memberCode, shareUrl, highlightRedeem }: QuickAct
               <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
             </svg>
           </div>
-          <span className="text-[11px] text-center" style={{ color: 'var(--text)' }}>{t('refer')}</span>
+          <span className="text-xs text-center" style={{ color: 'var(--text)' }}>{t('refer')}</span>
         </button>
       </div>
 

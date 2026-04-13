@@ -186,7 +186,7 @@ export default async function HomePage() {
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-base">{TYPE_ICONS[dynamicChallenge.type] ?? '🎯'}</span>
                 <span
-                  className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-white"
+                  className="text-xs font-semibold px-2 py-0.5 rounded-full text-white"
                   style={{ background: 'var(--brand-primary)' }}
                 >
                   {t('justForYou')}

@@ -61,7 +61,7 @@ export function RedemptionQR({ redemption }: RedemptionQRProps) {
         style={{ background: 'white', border: '1px solid var(--border)', width: 180, height: 180 }}
       >
         <canvas ref={canvasRef} />
-        <p className="text-[11px] mt-2 tracking-widest uppercase" style={{ color: 'var(--muted)' }}>
+        <p className="text-xs mt-2 tracking-widest uppercase" style={{ color: 'var(--muted)' }}>
           {t('scanOnArrival')}
         </p>
       </div>
@@ -71,7 +71,7 @@ export function RedemptionQR({ redemption }: RedemptionQRProps) {
         className="rounded-xl px-6 py-3.5 mb-7 text-center"
         style={{ background: 'var(--clay-light)', border: '1px solid rgba(196,168,130,0.4)' }}
       >
-        <p className="text-[11px] mb-1 tracking-widest uppercase" style={{ color: 'var(--muted)' }}>
+        <p className="text-xs mb-1 tracking-widest uppercase" style={{ color: 'var(--muted)' }}>
           {t('redeemCode')}
         </p>
         <p

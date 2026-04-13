@@ -52,7 +52,7 @@ export default function LoginPage() {
   const [memberships, setMemberships] = useState<Membership[]>([]);
 
   const inputClass = [
-    'w-full px-4 py-3.5 rounded-[14px] text-sm outline-none transition-all',
+    'w-full px-4 py-3.5 rounded-[14px] text-base outline-none transition-all',
     'bg-white/5 border border-white/10 text-white placeholder:text-white/30',
     'focus:border-[#7c3aed]/60 focus:bg-white/8',
   ].join(' ');

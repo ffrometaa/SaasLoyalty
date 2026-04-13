@@ -209,7 +209,7 @@ export default async function ChallengesPage() {
                   {t('justForYou')}
                 </h2>
                 <span
-                  className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-white"
+                  className="text-xs font-semibold px-2 py-0.5 rounded-full text-white"
                   style={{ background: 'var(--brand-primary)' }}
                 >
                   {t('personalized')}

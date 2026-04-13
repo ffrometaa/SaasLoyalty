@@ -191,7 +191,7 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
                   type="text"
                   value={editName}
                   onChange={e => setEditName(e.target.value)}
-                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-purple"
+                  className="flex-1 px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-purple"
                   autoFocus
                 />
                 <button onClick={handleSaveName} disabled={nameSaving}
@@ -227,7 +227,7 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
                 type="password"
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-purple"
+                className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-purple"
                 placeholder="••••••••"
               />
               {pwError && <p className="text-xs text-red-500 mt-1">{pwError}</p>}
@@ -254,7 +254,7 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
                 type="text"
                 value={deleteConfirm}
                 onChange={e => setDeleteConfirm(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 font-mono"
+                className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 font-mono"
                 placeholder="DELETE"
               />
             </div>

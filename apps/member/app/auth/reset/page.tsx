@@ -42,7 +42,7 @@ export default function AuthResetPage() {
     router.refresh();
   }
 
-  const darkInput = 'w-full px-4 py-3.5 rounded-[14px] text-sm outline-none transition-all bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-[#7c3aed]/60';
+  const darkInput = 'w-full px-4 py-3.5 rounded-[14px] text-base outline-none transition-all bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:border-[#7c3aed]/60';
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: '#0a0a0f' }}>

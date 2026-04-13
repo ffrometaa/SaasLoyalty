@@ -85,7 +85,7 @@ export function BottomNav() {
           >
             <div className="relative">{icon(active)}</div>
             <span
-              className="text-[10px] transition-colors"
+              className="text-xs transition-colors"
               style={{ color: active ? 'var(--brand-primary-dark)' : 'var(--muted)' }}
             >
               {label}

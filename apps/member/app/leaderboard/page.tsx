@@ -163,7 +163,7 @@ export default async function LeaderboardPage() {
                     {/* Delta */}
                     {entry.delta !== 0 && (
                       <span
-                        className="text-[10px] font-semibold shrink-0"
+                        className="text-xs font-semibold shrink-0"
                         style={{ color: deltaUp ? '#059669' : '#dc2626' }}
                       >
                         {deltaUp ? '▲' : '▼'}{Math.abs(entry.delta)}

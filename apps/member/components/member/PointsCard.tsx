@@ -67,7 +67,7 @@ export function PointsCard({
       }}
     >
       <div
-        className="text-[11px] font-medium mb-2 tracking-[1.5px] uppercase"
+        className="text-xs font-medium mb-2 tracking-[1.5px] uppercase"
         style={{ color: 'rgba(255,255,255,0.55)' }}
       >
         {i18n.pointsAvailable}
@@ -99,7 +99,7 @@ export function PointsCard({
         />
       </div>
 
-      <div className="flex justify-between text-[11px]" style={{ color: 'rgba(255,255,255,0.45)' }}>
+      <div className="flex justify-between text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
         <span>{i18n.tierLevel.replace('{tier}', tierLabel)}</span>
         {tierNext ? (
           <span>{i18n.ptsToNext.replace('{points}', pointsToNext.toLocaleString(locale)).replace('{tier}', tierNext)}</span>

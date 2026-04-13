@@ -41,7 +41,7 @@ export function NotificationBell() {
     >
       <Bell className="h-5 w-5" style={{ color: 'var(--text-on-brand, #fff)' }} />
       {unread > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold leading-none">
+        <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold leading-none">
           {unread > 99 ? '99+' : unread}
         </span>
       )}

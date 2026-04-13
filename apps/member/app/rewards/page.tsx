@@ -141,7 +141,7 @@ export default async function RewardsPage() {
                       <p className="text-sm font-medium" style={{ color: 'var(--brand-primary-dark)' }}>
                         {reward.points_cost.toLocaleString()}
                       </p>
-                      <p className="text-[11px]" style={{ color: 'var(--muted)' }}>pts</p>
+                      <p className="text-xs" style={{ color: 'var(--muted)' }}>pts</p>
                     </div>
                   </Link>
                 ))}
@@ -185,7 +185,7 @@ export default async function RewardsPage() {
                         <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
                           {reward.points_cost.toLocaleString()}
                         </p>
-                        <p className="text-[11px]" style={{ color: 'var(--muted)' }}>pts</p>
+                        <p className="text-xs" style={{ color: 'var(--muted)' }}>pts</p>
                       </div>
                     </div>
                   );

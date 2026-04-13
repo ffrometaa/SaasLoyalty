@@ -90,7 +90,7 @@ export function TransactionHistory({ transactions }: TransactionHistoryProps) {
               <div className="text-[13px] font-medium truncate" style={{ color: 'var(--text)' }}>
                 {tx.description}
               </div>
-              <div className="text-[11px] mt-0.5" style={{ color: 'var(--muted)' }}>
+              <div className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
                 {formatDate(tx.created_at, t('today'))}
               </div>
             </div>
