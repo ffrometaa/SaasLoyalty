@@ -1,7 +1,7 @@
 # LoyaltyOS — Product Requirements Document v3.0
 
 **Fecha:** Abril 2026
-**Estado:** Semanas 1–4 de deuda técnica completadas · Member engagement features implementados · Deploy a producción activo · Pendiente: Stripe LIVE + Crisp env vars
+**Estado:** Semanas 1–4 de deuda técnica completadas · Member engagement features implementados · Mobile accessibility audit completado · Deploy a producción activo · Pendiente: Stripe LIVE + Crisp env vars
 **Versión anterior:** PRD v2.0 (Abril 2026 — MVP completo + roadmap Phase 3)
 
 ---
@@ -19,6 +19,7 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 - **Phase 4 en definición:** Los tres gaps críticos de Enterprise (SSO, Multi-location, Secure Compute) pasan formalmente a Phase 4, sujeto a validación de demanda por marketing (MKT-2).
 - **Siguiente bloqueante de Semana 2:** DPA page + aceptación en onboarding (obligatorio antes del primer cliente B2B) y widget de soporte Pro/Scale (Crisp/Tawk.to). ✅ Completado en Abril 2026.
 - **Member Engagement Features implementados (Abril 2026):** Points per visit configurable, welcome bonus al unirse, Google Review reward, referral prompt en home, show/hide password en registro de miembro.
+- **Mobile Accessibility Audit completado (Abril 2026):** Landing page y Member app auditadas y corregidas — hamburger touch target 44x44px, iOS Safari auto-zoom eliminado en todos los inputs (text-base 16px), textos sub-12px reemplazados por text-xs, prefers-reduced-motion en globals.css.
 - **Legal docs completados (Abril 2026):** Página `/sla` publicada, `LoyalBase_SLA_v1.0.docx` y `LoyalBase_DPA_v1.0.docx` generados.
 
 ---
@@ -75,6 +76,11 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 - Sistema de invitaciones para team members (`/invite/[token]`)
 - Cross-domain login SSO entre Web y Dashboard
 - Formulario de contacto
+
+**Mobile accessibility (Abril 2026):**
+- Hamburger button: touch target corregido a 44x44px (Apple/Google standard)
+- Textos sub-12px reemplazados por `text-xs` en todos los componentes del landing
+- `prefers-reduced-motion` media query en `globals.css` — detiene animaciones para usuarios con esta preferencia activa en el SO
 
 ---
 
@@ -198,6 +204,11 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 - Inglés como idioma principal por defecto
 - Español neutro (sin voseo/rioplatense) como alternativa
 - Preferencia sincronizada a DB y respetada en emails y push
+
+**Mobile accessibility (Abril 2026):**
+- iOS Safari auto-zoom eliminado: todos los `<input>` usan `text-base` (16px mínimo)
+- Textos sub-12px reemplazados por `text-xs` en todos los componentes
+- PWA fundamentals ya presentes: `viewportFit: cover`, safe area insets, `overscroll-behavior-y: none`, `-webkit-tap-highlight-color: transparent`
 
 ---
 
