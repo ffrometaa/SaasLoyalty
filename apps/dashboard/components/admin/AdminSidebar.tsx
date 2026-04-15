@@ -1,9 +1,23 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { cn } from '@loyalty-os/ui';
 
-function NavItem({ href = '', label = '', icon = <></>, onClose = () => {} }) {
+interface NavItemProps {
+  href: string;
+  label: string;
+  icon: ReactNode;
+  onClose: () => void;
+}
+
+interface AdminSidebarProps {
+  admin: { id: string; full_name: string; email: string };
+  onClose?: () => void;
+}
+
+function NavItem({ href, label, icon, onClose }: NavItemProps): JSX.Element {
   const pathname = usePathname();
   const isActive = pathname === href || (href !== '/admin' && pathname.startsWith(href));
 
@@ -11,11 +25,12 @@ function NavItem({ href = '', label = '', icon = <></>, onClose = () => {} }) {
     <Link
       href={href}
       onClick={onClose}
-      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+      className={cn(
+        'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
         isActive
-          ? 'bg-[#7c3aed]/15 text-[#a78bfa]'
+          ? 'bg-brand-purple/15 text-brand-purple-100'
           : 'text-slate-400 hover:text-white hover:bg-white/5'
-      }`}
+      )}
     >
       <span className="shrink-0">{icon}</span>
       {label}
@@ -60,6 +75,12 @@ const IconSettings = (
   </svg>
 );
 
+const IconFeedback = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+  </svg>
+);
+
 const IconImpersonate = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="8" r="4"/>
@@ -76,7 +97,7 @@ const IconSignOut = (
   </svg>
 );
 
-export function AdminSidebar({ admin = { id: '', full_name: '', email: '' }, onClose = () => {} }) {
+export function AdminSidebar({ admin, onClose = () => {} }: AdminSidebarProps): JSX.Element {
   return (
     <aside className="w-64 h-full min-h-screen bg-[#0f172a] border-r border-white/[0.06] flex flex-col">
       {/* Logo */}
@@ -84,7 +105,7 @@ export function AdminSidebar({ admin = { id: '', full_name: '', email: '' }, onC
         <div className="flex items-center gap-2">
           <span className="text-lg font-bold text-white tracking-tight">LoyaltyOS</span>
         </div>
-        <span className="inline-flex items-center mt-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-[#7c3aed]/20 text-[#a78bfa] border border-[#7c3aed]/30">
+        <span className="inline-flex items-center mt-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-brand-purple/20 text-brand-purple-100 border border-brand-purple/30">
           Admin
         </span>
       </div>
@@ -95,6 +116,7 @@ export function AdminSidebar({ admin = { id: '', full_name: '', email: '' }, onC
         <NavItem href="/admin/tenants" label="Tenants" icon={IconTenants} onClose={onClose} />
         <NavItem href="/admin/revenue" label="Revenue" icon={IconRevenue} onClose={onClose} />
         <NavItem href="/admin/logs" label="System Logs" icon={IconLogs} onClose={onClose} />
+        <NavItem href="/admin/feedback" label="Feedback" icon={IconFeedback} onClose={onClose} />
         <NavItem href="/admin/impersonate" label="Impersonation" icon={IconImpersonate} onClose={onClose} />
         <NavItem href="/admin/settings" label="Settings" icon={IconSettings} onClose={onClose} />
       </nav>
@@ -102,8 +124,8 @@ export function AdminSidebar({ admin = { id: '', full_name: '', email: '' }, onC
       {/* Footer */}
       <div className="px-4 py-4 border-t border-white/[0.06]">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-8 h-8 rounded-full bg-[#7c3aed]/30 border border-[#7c3aed]/40 flex items-center justify-center shrink-0">
-            <span className="text-xs font-bold text-[#a78bfa]">
+          <div className="w-8 h-8 rounded-full bg-brand-purple/30 border border-brand-purple/40 flex items-center justify-center shrink-0">
+            <span className="text-xs font-bold text-brand-purple-100">
               {admin?.full_name?.charAt(0)?.toUpperCase() || admin?.email?.charAt(0)?.toUpperCase() || 'A'}
             </span>
           </div>
