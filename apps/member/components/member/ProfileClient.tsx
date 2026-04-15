@@ -76,20 +76,22 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
     if (!editName.trim() || editName === name) { setEditingName(false); return; }
     setNameSaving(true);
     setNameError('');
-    const res = await fetch('/api/member/profile', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: editName.trim() }),
-    });
-    setNameSaving(false);
-    if (!res.ok) {
+    try {
+      const res = await fetch('/api/member/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editName.trim() }),
+      });
+      if (!res.ok) { setNameError('Failed to save name. Please try again.'); return; }
+      setName(editName.trim());
+      setEditingName(false);
+      setNameSaved(true);
+      setTimeout(() => setNameSaved(false), 2000);
+    } catch {
       setNameError('Failed to save name. Please try again.');
-      return;
+    } finally {
+      setNameSaving(false);
     }
-    setName(editName.trim());
-    setEditingName(false);
-    setNameSaved(true);
-    setTimeout(() => setNameSaved(false), 2000);
   }
 
   async function handleUpdatePassword(): Promise<void> {
@@ -110,15 +112,18 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
   async function handleDeleteAccount(): Promise<void> {
     if (deleteConfirm !== 'DELETE') return;
     setDeleting(true);
-    const res = await fetch('/api/member/account', { method: 'DELETE' });
-    if (!res.ok) {
+    try {
+      const res = await fetch('/api/member/account', { method: 'DELETE' });
+      if (!res.ok) return;
+      const supabase = getSupabaseClient();
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) return;
+      router.push('/join');
+    } catch {
+      // Network error — leave deleting=true to prevent double-submit; user must reload
+    } finally {
       setDeleting(false);
-      return;
     }
-    const supabase = getSupabaseClient();
-    const { error: signOutError } = await supabase.auth.signOut();
-    if (signOutError) { setDeleting(false); return; }
-    router.push('/join');
   }
 
   const initials = name
@@ -320,13 +325,13 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100">
             <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-gray-400" />Send Feedback
+              <MessageSquare className="h-4 w-4 text-gray-400" />{t('sendFeedback')}
             </h3>
           </div>
           {fbSent ? (
             <div className="px-4 py-5 text-center">
-              <p className="text-sm font-medium text-green-600">Thank you! Your feedback was received.</p>
-              <button onClick={() => setFbSent(false)} className="mt-2 text-xs text-gray-400 underline">Send another</button>
+              <p className="text-sm font-medium text-green-600">{t('feedbackSent')}</p>
+              <button onClick={() => setFbSent(false)} className="mt-2 text-xs text-gray-400 underline">{t('feedbackSendAnother')}</button>
             </div>
           ) : (
             <div className="px-4 py-3.5 space-y-3">
@@ -342,7 +347,7 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
                         : 'border-gray-200 text-gray-500'
                     )}
                   >
-                    {v === 'bug' ? 'Bug' : v === 'suggestion' ? 'Idea' : 'General'}
+                    {v === 'bug' ? t('feedbackTypeBug') : v === 'suggestion' ? t('feedbackTypeIdea') : t('feedbackTypeGeneral')}
                   </button>
                 ))}
               </div>
@@ -350,7 +355,7 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
                 value={fbMessage}
                 onChange={e => setFbMessage(e.target.value)}
                 rows={3}
-                placeholder="Tell us what's on your mind…"
+                placeholder={t('feedbackPlaceholder')}
                 className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-purple resize-none"
               />
               {fbError && <p className="text-xs text-red-500">{fbError}</p>}
@@ -359,7 +364,7 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
                 disabled={fbSending || !fbMessage.trim()}
                 className="w-full py-2 text-sm font-semibold text-white rounded-lg disabled:opacity-40 transition-opacity bg-brand-purple"
               >
-                {fbSending ? 'Sending…' : 'Send Feedback'}
+                {fbSending ? t('feedbackSending') : t('sendFeedback')}
               </button>
             </div>
           )}
