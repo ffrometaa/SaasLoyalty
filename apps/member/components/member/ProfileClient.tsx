@@ -120,7 +120,7 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
       if (signOutError) return;
       router.push('/join');
     } catch {
-      // Network error — leave deleting=true to prevent double-submit; user must reload
+      // Network error — deleting resets via finally; user can retry
     } finally {
       setDeleting(false);
     }
