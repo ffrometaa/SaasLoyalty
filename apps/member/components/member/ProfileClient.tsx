@@ -230,11 +230,11 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
                   type="text"
                   value={editName}
                   onChange={e => setEditName(e.target.value)}
-                  className="flex-1 px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-purple"
+                  className="flex-1 px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
                   autoFocus
                 />
                 <button onClick={handleSaveName} disabled={nameSaving}
-                  className="px-3 py-2 bg-brand-purple text-white text-xs font-semibold rounded-lg disabled:opacity-50">
+                  className="px-3 py-2 bg-brand-primary text-white text-xs font-semibold rounded-lg disabled:opacity-50">
                   {nameSaving ? '…' : t('saveChanges')}
                 </button>
                 <button onClick={() => { setEditingName(false); setEditName(name); setNameError(''); }}
@@ -267,7 +267,7 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
                 type="password"
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
-                className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-purple"
+                className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
                 placeholder="••••••••"
               />
             </div>
@@ -277,7 +277,7 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
                 type="password"
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
-                className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-purple"
+                className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
                 placeholder="••••••••"
               />
               {pwError && <p className="text-xs text-red-500 mt-1">{pwError}</p>}
@@ -285,7 +285,7 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
             <button
               onClick={handleUpdatePassword}
               disabled={pwLoading || newPassword.length < 8 || newPassword !== confirmPassword}
-              className="w-full py-2 bg-brand-purple text-white text-sm font-semibold rounded-lg disabled:opacity-40 transition-opacity"
+              className="w-full py-2 bg-brand-primary text-white text-sm font-semibold rounded-lg disabled:opacity-40 transition-opacity"
             >
               {pwLoading ? '…' : t('updatePassword')}
             </button>
@@ -343,7 +343,7 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
                     className={cn(
                       'flex-1 py-1.5 text-xs font-medium rounded-lg border transition-colors capitalize',
                       fbType === v
-                        ? 'border-brand-purple bg-brand-purple-100 text-brand-purple'
+                        ? 'border-brand-primary bg-brand-primary/10 text-brand-primary'
                         : 'border-gray-200 text-gray-500'
                     )}
                   >
@@ -356,13 +356,13 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
                 onChange={e => setFbMessage(e.target.value)}
                 rows={3}
                 placeholder={t('feedbackPlaceholder')}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-purple resize-none"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary resize-none"
               />
               {fbError && <p className="text-xs text-red-500">{fbError}</p>}
               <button
                 onClick={handleSendFeedback}
                 disabled={fbSending || !fbMessage.trim()}
-                className="w-full py-2 text-sm font-semibold text-white rounded-lg disabled:opacity-40 transition-opacity bg-brand-purple"
+                className="w-full py-2 text-sm font-semibold text-white rounded-lg disabled:opacity-40 transition-opacity bg-brand-primary"
               >
                 {fbSending ? t('feedbackSending') : t('sendFeedback')}
               </button>

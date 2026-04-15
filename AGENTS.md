@@ -30,7 +30,7 @@
 
 - Tailwind only — no inline styles, no CSS modules
 - Use `clsx` or `cn` for conditional class merging
-- Follow existing color tokens (`brand-purple`, `brand-purple-100`, etc.)
+- Follow existing color tokens per app: `apps/dashboard` uses `brand-purple`, `brand-purple-100`, `brand-purple-700`; `apps/member` uses `brand-primary`, `brand-primary-dark`, `brand-primary-light` (CSS variable-based, tenant-specific)
 
 ## Commits
 
