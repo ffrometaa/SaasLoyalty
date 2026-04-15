@@ -52,6 +52,40 @@ async function getRevenueData() {
     .or(`plan_status.eq.past_due,and(plan_status.eq.trialing,trial_ends_at.lte.${threeDays})`)
     .is('deleted_at', null);
 
+  // Trial conversion rate
+  const { data: trialTenants } = await service
+    .from('tenants')
+    .select('plan_status')
+    .not('trial_ends_at', 'is', null)
+    .is('deleted_at', null);
+
+  const trialTotal = trialTenants?.length ?? 0;
+  const trialConverted = trialTenants?.filter((t = { plan_status: '' }) => t.plan_status === 'active').length ?? 0;
+  const trialConversionRate = trialTotal > 0
+    ? ((trialConverted / trialTotal) * 100).toFixed(1)
+    : null;
+
+  // NRR from mrr_snapshots (last 2 monthly snapshots)
+  const lastMonth = new Date();
+  lastMonth.setDate(1);
+  lastMonth.setMonth(lastMonth.getMonth() - 1);
+  const twoMonthsAgo = new Date(lastMonth);
+  twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 1);
+
+  const { data: snapshots } = await service
+    .from('mrr_snapshots')
+    .select('snapshot_date, mrr_total')
+    .gte('snapshot_date', twoMonthsAgo.toISOString().split('T')[0])
+    .order('snapshot_date', { ascending: false })
+    .limit(60);
+
+  let nrr: string | null = null;
+  if (snapshots && snapshots.length >= 2) {
+    const latest = snapshots[0].mrr_total;
+    const oldest = snapshots[snapshots.length - 1].mrr_total;
+    if (oldest > 0) nrr = ((latest / oldest) * 100).toFixed(1);
+  }
+
   // MRR growth per month (last 12 months)
   const mrrGrowth = [];
   for (let i = 11; i >= 0; i--) {
@@ -90,6 +124,8 @@ async function getRevenueData() {
     mrrGrowth,
     planDist,
     atRiskTenants: atRiskTenants ?? [],
+    trialConversionRate,
+    nrr,
   };
 }
 
@@ -121,8 +157,9 @@ export default async function AdminRevenuePage() {
         <MetricCard title="Avg Revenue / Tenant" value={`$${data.arpt}`} sub="Per active tenant" />
         <MetricCard title="Churn Rate" value={`${data.churnRate}%`} sub="This month" />
         <MetricCard title="New MRR This Month" value={`$${data.newMRR}`} sub="From new signups" />
-        <MetricCard title="Churned MRR" value="—" sub="Requires Stripe data" />
+        <MetricCard title="Trial Conversion" value={data.trialConversionRate !== null ? `${data.trialConversionRate}%` : '—'} sub="Trialed tenants now active" />
         <MetricCard title="Est. LTV" value={data.churnRate !== '0.0' ? `$${Math.round(data.arpt / (parseFloat(data.churnRate) / 100))}` : '—'} sub="ARPT / churn rate" />
+        <MetricCard title="NRR (30d)" value={data.nrr !== null ? `${data.nrr}%` : 'Collecting…'} sub={data.nrr !== null ? 'Net Revenue Retention' : 'Data accrues daily'} />
         <MetricCard title="At-Risk Tenants" value={data.atRiskTenants.length} sub="Past due or trial ending" />
       </div>
 
