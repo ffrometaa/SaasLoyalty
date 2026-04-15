@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const user = await getServerUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const tenantId = cookies().get('loyalty_tenant_id')?.value;
+    const tenantId = (await cookies()).get('loyalty_tenant_id')?.value;
     const db = createServiceRoleClient();
 
     let memberQuery = db

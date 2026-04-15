@@ -34,11 +34,12 @@ async function resolveAuthedTenant(
   return null;
 }
 
-export default async function EditCampaignPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function EditCampaignPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
   const supabase = await createServerSupabaseClient();
   const tenant = await resolveAuthedTenant(supabase);
   if (!tenant) redirect('/login');

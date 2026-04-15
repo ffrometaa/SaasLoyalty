@@ -9,7 +9,7 @@ export async function DELETE() {
     const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const tenantId = cookies().get('loyalty_tenant_id')?.value;
+    const tenantId = (await cookies()).get('loyalty_tenant_id')?.value;
     if (!tenantId) return NextResponse.json({ error: 'No tenant' }, { status: 400 });
 
     const service = createServiceRoleClient();

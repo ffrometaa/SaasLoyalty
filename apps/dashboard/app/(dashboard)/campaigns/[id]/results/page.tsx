@@ -54,11 +54,12 @@ const TYPE_LABELS: Record<string, string> = {
   sms: 'SMS',
 };
 
-export default async function CampaignResultsPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function CampaignResultsPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
   const t = await getTranslations('campaigns');
   const supabase = await createServerSupabaseClient();
   const tenant = await resolveAuthedTenant(supabase);

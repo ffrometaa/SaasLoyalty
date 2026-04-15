@@ -27,7 +27,7 @@ export async function POST() {
       }
     }
 
-    const tenantId = cookies().get('loyalty_tenant_id')?.value;
+    const tenantId = (await cookies()).get('loyalty_tenant_id')?.value;
     if (!tenantId) return NextResponse.json({ error: 'No tenant' }, { status: 400 });
 
     const service = createServiceRoleClient();

@@ -5,7 +5,7 @@ const VALID_LOCALES = ['en', 'es'] as const;
 type Locale = (typeof VALID_LOCALES)[number];
 
 export default getRequestConfig(async () => {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const raw = cookieStore.get('NEXT_LOCALE')?.value;
   const locale: Locale = VALID_LOCALES.includes(raw as Locale) ? (raw as Locale) : 'en';
 

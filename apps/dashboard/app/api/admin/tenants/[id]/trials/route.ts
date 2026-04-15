@@ -6,10 +6,8 @@ type FeatureName = 'gamification' | 'heatmap';
 // POST /api/admin/tenants/[id]/trials
 // Body: { feature: 'gamification' | 'heatmap' }
 // Activates a 45-day feature trial for a tenant. One per feature per tenant.
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const user = await getAuthedUser();
 
   if (!user || user.email !== process.env.SUPER_ADMIN_EMAIL) {
@@ -49,10 +47,8 @@ export async function POST(
 
 // GET /api/admin/tenants/[id]/trials
 // Returns all trials for a tenant (admin view)
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const user = await getAuthedUser();
 
   if (!user || user.email !== process.env.SUPER_ADMIN_EMAIL) {

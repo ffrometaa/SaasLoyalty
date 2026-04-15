@@ -9,7 +9,7 @@ export async function GET() {
     const user = await getServerUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const tenantId = cookies().get('loyalty_tenant_id')?.value;
+    const tenantId = (await cookies()).get('loyalty_tenant_id')?.value;
     const db = createServiceRoleClient();
 
     // Get current member with referral info

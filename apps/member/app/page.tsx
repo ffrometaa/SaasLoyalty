@@ -95,7 +95,7 @@ export default async function HomePage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: { user } } = await (supabase.auth as any).getUser();
 
-  const tenantId = cookies().get('loyalty_tenant_id')?.value;
+  const tenantId = (await cookies()).get('loyalty_tenant_id')?.value;
 
   if (!user) redirect('/join');
 

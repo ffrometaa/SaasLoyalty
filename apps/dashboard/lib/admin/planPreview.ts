@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { cookies, type UnsafeUnwrappedCookies } from 'next/headers';
 
 const COOKIE_NAME = 'admin_preview_plan';
 const COOKIE_MAX_AGE = 2 * 60 * 60; // 2 hours in seconds
@@ -10,7 +10,7 @@ const VALID_PLANS = ['starter', 'pro', 'scale', 'enterprise'];
 export function setAdminPlanPreview(plan = '') {
   if (!VALID_PLANS.includes(plan)) return;
 
-  cookies().set(COOKIE_NAME, plan, {
+  (cookies() as unknown as UnsafeUnwrappedCookies).set(COOKIE_NAME, plan, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
@@ -21,12 +21,12 @@ export function setAdminPlanPreview(plan = '') {
 
 // Returns the currently previewed plan name or null if no preview is active.
 export function getAdminPlanPreview() {
-  const value = cookies().get(COOKIE_NAME)?.value;
+  const value = (cookies() as unknown as UnsafeUnwrappedCookies).get(COOKIE_NAME)?.value;
   if (!value || !VALID_PLANS.includes(value)) return null;
   return value;
 }
 
 // Clears the plan preview cookie.
 export function clearAdminPlanPreview() {
-  cookies().delete(COOKIE_NAME);
+  (cookies() as unknown as UnsafeUnwrappedCookies).delete(COOKIE_NAME);
 }

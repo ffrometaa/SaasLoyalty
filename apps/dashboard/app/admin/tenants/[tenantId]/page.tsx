@@ -73,7 +73,8 @@ async function getTenantDetail(tenantId = '') {
   };
 }
 
-export default async function TenantDetailPage({ params = { tenantId: '' } }) {
+export default async function TenantDetailPage(props) {
+  const params = await props.params;
   await verifyAdminAccess();
   const data = await getTenantDetail(params.tenantId);
   if (!data) notFound();
