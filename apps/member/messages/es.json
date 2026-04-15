@@ -176,6 +176,7 @@
     "changePassword": "Cambiar Contraseña",
     "currentPassword": "Contraseña actual",
     "newPassword": "Nueva contraseña (mín. 8 caracteres)",
+    "confirmPassword": "Confirmar nueva contraseña",
     "updatePassword": "Actualizar contraseña",
     "passwordUpdated": "Contraseña actualizada",
     "deleteAccount": "Eliminar Cuenta",

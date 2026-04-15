@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Mail, User, LogOut, Shield, Gift, Pencil, Check, KeyRound, Trash2, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
+import { cn } from '@loyalty-os/ui';
 import { LanguageSwitcher } from '@/components/member/LanguageSwitcher';
 import { getSupabaseClient } from '@loyalty-os/lib';
 
@@ -17,7 +18,7 @@ interface ProfileClientProps {
   pointsLifetime: number;
 }
 
-export function ProfileClient({ name: initialName, email, memberCode, tier, pointsBalance, pointsLifetime }: ProfileClientProps) {
+export function ProfileClient({ name: initialName, email, memberCode, tier, pointsBalance, pointsLifetime }: ProfileClientProps): JSX.Element {
   const router = useRouter();
   const t = useTranslations('profile');
 
@@ -26,8 +27,10 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
   const [editingName, setEditingName] = useState(false);
   const [nameSaved, setNameSaved] = useState(false);
   const [nameSaving, setNameSaving] = useState(false);
+  const [nameError, setNameError] = useState('');
 
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [pwUpdated, setPwUpdated] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
   const [pwError, setPwError] = useState('');
@@ -41,7 +44,7 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
   const [fbSent, setFbSent] = useState(false);
   const [fbError, setFbError] = useState('');
 
-  async function handleSendFeedback() {
+  async function handleSendFeedback(): Promise<void> {
     if (!fbMessage.trim()) return;
     setFbSending(true);
     setFbError('');
@@ -61,32 +64,37 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
     }
   }
 
-  async function handleLogout() {
+  async function handleLogout(): Promise<void> {
     const supabase = getSupabaseClient();
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) return;
     router.push('/login');
     router.refresh();
   }
 
-  async function handleSaveName() {
+  async function handleSaveName(): Promise<void> {
     if (!editName.trim() || editName === name) { setEditingName(false); return; }
     setNameSaving(true);
+    setNameError('');
     const res = await fetch('/api/member/profile', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: editName.trim() }),
     });
     setNameSaving(false);
-    if (res.ok) {
-      setName(editName.trim());
-      setEditingName(false);
-      setNameSaved(true);
-      setTimeout(() => setNameSaved(false), 2000);
+    if (!res.ok) {
+      setNameError('Failed to save name. Please try again.');
+      return;
     }
+    setName(editName.trim());
+    setEditingName(false);
+    setNameSaved(true);
+    setTimeout(() => setNameSaved(false), 2000);
   }
 
-  async function handleUpdatePassword() {
+  async function handleUpdatePassword(): Promise<void> {
     if (newPassword.length < 8) { setPwError('Minimum 8 characters'); return; }
+    if (newPassword !== confirmPassword) { setPwError('Passwords do not match'); return; }
     setPwError('');
     setPwLoading(true);
     const supabase = getSupabaseClient();
@@ -94,16 +102,22 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
     setPwLoading(false);
     if (error) { setPwError(error.message); return; }
     setNewPassword('');
+    setConfirmPassword('');
     setPwUpdated(true);
     setTimeout(() => setPwUpdated(false), 3000);
   }
 
-  async function handleDeleteAccount() {
+  async function handleDeleteAccount(): Promise<void> {
     if (deleteConfirm !== 'DELETE') return;
     setDeleting(true);
-    await fetch('/api/member/account', { method: 'DELETE' });
+    const res = await fetch('/api/member/account', { method: 'DELETE' });
+    if (!res.ok) {
+      setDeleting(false);
+      return;
+    }
     const supabase = getSupabaseClient();
-    await supabase.auth.signOut();
+    const { error: signOutError } = await supabase.auth.signOut();
+    if (signOutError) { setDeleting(false); return; }
     router.push('/join');
   }
 
@@ -115,31 +129,25 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
     .slice(0, 2);
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: 'var(--cream, #faf8f4)' }}>
+    <div className="min-h-screen pb-24 bg-[var(--cream,#faf8f4)]">
       {/* Header */}
-      <div
-        className="px-6 pt-10 pb-12"
-        style={{ background: 'var(--brand-primary-dark, #2c3a28)' }}
-      >
+      <div className="px-6 pt-10 pb-12 bg-[var(--brand-primary-dark,#2c3a28)]">
         <div className="flex items-center gap-4">
-          <div
-            className="h-16 w-16 rounded-full flex items-center justify-center text-xl font-bold text-white shrink-0"
-            style={{ background: 'rgba(255,255,255,0.15)' }}
-          >
+          <div className="h-16 w-16 rounded-full flex items-center justify-center text-xl font-bold text-white shrink-0 bg-white/[0.15]">
             {initials}
           </div>
           <div>
             <h1 className="text-xl font-semibold text-white">{name}</h1>
-            <p className="text-sm text-white/60 mt-0.5">{t(`tierLabels.${tier}` as Parameters<typeof t>[0])} · {memberCode}</p>
+            <p className="text-sm text-white/60 mt-0.5">{t(`tierLabels.${tier}` satisfies Parameters<typeof t>[0])} · {memberCode}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3 mt-6">
-          <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.08)' }}>
+          <div className="rounded-xl p-4 bg-white/[0.08]">
             <p className="text-2xl font-bold text-white">{pointsBalance.toLocaleString()}</p>
             <p className="text-xs text-white/60 mt-0.5">{t('pointsAvailable')}</p>
           </div>
-          <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.08)' }}>
+          <div className="rounded-xl p-4 bg-white/[0.08]">
             <p className="text-2xl font-bold text-white">{pointsLifetime.toLocaleString()}</p>
             <p className="text-xs text-white/60 mt-0.5">{t('pointsLifetime')}</p>
           </div>
@@ -224,7 +232,7 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
                   className="px-3 py-2 bg-brand-purple text-white text-xs font-semibold rounded-lg disabled:opacity-50">
                   {nameSaving ? '…' : t('saveChanges')}
                 </button>
-                <button onClick={() => { setEditingName(false); setEditName(name); }}
+                <button onClick={() => { setEditingName(false); setEditName(name); setNameError(''); }}
                   className="px-3 py-2 text-xs text-gray-500 border border-gray-200 rounded-lg">✕</button>
               </div>
             ) : (
@@ -235,6 +243,7 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
                 </button>
               </div>
             )}
+            {nameError && <p className="text-xs text-red-500 mt-1">{nameError}</p>}
           </div>
         </div>
 
@@ -256,10 +265,23 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
                 className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-purple"
                 placeholder="••••••••"
               />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">{t('confirmPassword')}</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-purple"
+                placeholder="••••••••"
+              />
               {pwError && <p className="text-xs text-red-500 mt-1">{pwError}</p>}
             </div>
-            <button onClick={handleUpdatePassword} disabled={pwLoading || newPassword.length < 8}
-              className="w-full py-2 bg-brand-purple text-white text-sm font-semibold rounded-lg disabled:opacity-40 transition-opacity">
+            <button
+              onClick={handleUpdatePassword}
+              disabled={pwLoading || newPassword.length < 8 || newPassword !== confirmPassword}
+              className="w-full py-2 bg-brand-purple text-white text-sm font-semibold rounded-lg disabled:opacity-40 transition-opacity"
+            >
               {pwLoading ? '…' : t('updatePassword')}
             </button>
           </div>
@@ -313,9 +335,12 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
                   <button
                     key={v}
                     onClick={() => setFbType(v)}
-                    className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition-colors capitalize ${
-                      fbType === v ? 'border-[color:var(--primary)] bg-[color:var(--primary)]/10 text-[color:var(--primary)]' : 'border-gray-200 text-gray-500'
-                    }`}
+                    className={cn(
+                      'flex-1 py-1.5 text-xs font-medium rounded-lg border transition-colors capitalize',
+                      fbType === v
+                        ? 'border-brand-purple bg-brand-purple-100 text-brand-purple'
+                        : 'border-gray-200 text-gray-500'
+                    )}
                   >
                     {v === 'bug' ? 'Bug' : v === 'suggestion' ? 'Idea' : 'General'}
                   </button>
@@ -326,14 +351,13 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
                 onChange={e => setFbMessage(e.target.value)}
                 rows={3}
                 placeholder="Tell us what's on your mind…"
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[color:var(--primary)] resize-none"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-purple resize-none"
               />
               {fbError && <p className="text-xs text-red-500">{fbError}</p>}
               <button
                 onClick={handleSendFeedback}
                 disabled={fbSending || !fbMessage.trim()}
-                className="w-full py-2 text-sm font-semibold text-white rounded-lg disabled:opacity-40 transition-opacity"
-                style={{ background: 'var(--primary)' }}
+                className="w-full py-2 text-sm font-semibold text-white rounded-lg disabled:opacity-40 transition-opacity bg-brand-purple"
               >
                 {fbSending ? 'Sending…' : 'Send Feedback'}
               </button>

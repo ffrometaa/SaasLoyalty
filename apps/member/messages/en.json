@@ -176,6 +176,7 @@
     "changePassword": "Change Password",
     "currentPassword": "Current password",
     "newPassword": "New password (min. 8 characters)",
+    "confirmPassword": "Confirm new password",
     "updatePassword": "Update password",
     "passwordUpdated": "Password updated",
     "deleteAccount": "Delete Account",
