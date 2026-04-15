@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getServerUser } from '@/lib/supabase';
 import { getMemberWithTenant } from '@/lib/member/queries';
+import { cookies } from 'next/headers';
 import { ProfileClient } from '@/components/member/ProfileClient';
 import { BottomNav } from '@/components/member/BottomNav';
 import { BrandTheme } from '@/components/member/BrandTheme';
@@ -9,7 +10,8 @@ export default async function ProfilePage() {
   const user = await getServerUser();
   if (!user) redirect('/login');
 
-  const member = await getMemberWithTenant(user.id);
+  const tenantId = (await cookies()).get('loyalty_tenant_id')?.value;
+  const member = await getMemberWithTenant(user.id, tenantId);
   if (!member) redirect('/login');
 
   return (

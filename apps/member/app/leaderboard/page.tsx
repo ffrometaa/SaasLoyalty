@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getServerUser } from '@/lib/supabase';
 import { getMemberWithTenant } from '@/lib/member/queries';
+import { cookies } from 'next/headers';
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 import { BottomNav } from '@/components/member/BottomNav';
 import { BrandTheme } from '@/components/member/BrandTheme';
@@ -52,7 +53,8 @@ export default async function LeaderboardPage() {
   const user = await getServerUser();
   if (!user) redirect('/login');
 
-  const member = await getMemberWithTenant(user.id);
+  const tenantId = (await cookies()).get('loyalty_tenant_id')?.value;
+  const member = await getMemberWithTenant(user.id, tenantId);
   if (!member) redirect('/login');
 
   const t = await getTranslations('leaderboard');

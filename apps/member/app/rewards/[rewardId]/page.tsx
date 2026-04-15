@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { getServerUser } from '@/lib/supabase';
 import { getMemberWithTenant, getRewardById } from '@/lib/member/queries';
+import { cookies } from 'next/headers';
 import { RewardDetail } from '@/components/member/RewardDetail';
 import { BrandTheme } from '@/components/member/BrandTheme';
 
@@ -14,8 +15,9 @@ export default async function RewardPage({ params }: RewardPageProps) {
   const user = await getServerUser();
   if (!user) redirect('/login');
 
+  const tenantId = (await cookies()).get('loyalty_tenant_id')?.value;
   const [member, reward] = await Promise.all([
-    getMemberWithTenant(user.id),
+    getMemberWithTenant(user.id, tenantId),
     getRewardById(rewardId),
   ]);
 

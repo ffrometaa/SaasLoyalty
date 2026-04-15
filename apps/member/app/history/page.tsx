@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { getServerUser } from '@/lib/supabase';
 import { getMemberWithTenant, getMemberTransactions } from '@/lib/member/queries';
+import { cookies } from 'next/headers';
 import { TransactionHistory } from '@/components/member/TransactionHistory';
 import { BottomNav } from '@/components/member/BottomNav';
 import { BrandTheme } from '@/components/member/BrandTheme';
@@ -12,7 +13,8 @@ export default async function HistoryPage() {
   const user = await getServerUser();
   if (!user) redirect('/login');
 
-  const member = await getMemberWithTenant(user.id);
+  const tenantId = (await cookies()).get('loyalty_tenant_id')?.value;
+  const member = await getMemberWithTenant(user.id, tenantId);
   if (!member) redirect('/login');
 
   const transactions = await getMemberTransactions(member.id, 50);
