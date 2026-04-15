@@ -4,6 +4,18 @@ import { FeedbackTable, type FeedbackRow } from '@/components/admin/FeedbackTabl
 
 export const dynamic = 'force-dynamic';
 
+// Raw shape returned by PostgREST for feedback_submissions rows
+interface RawFeedbackRow {
+  id: string;
+  source: string;
+  type: string;
+  message: string;
+  status: string;
+  created_at: string;
+  tenant_id: string | null;
+  auth_user_id: string | null;
+}
+
 // Minimal shape we need from the Supabase auth admin API
 interface AdminUserResult {
   data: { user: { email?: string } | null };
@@ -29,8 +41,10 @@ async function getFeedback(): Promise<FeedbackRow[]> {
   if (rowsError) throw new Error(`feedback_submissions query failed: ${rowsError.message}`);
   if (!rows || rows.length === 0) return [];
 
+  const typedRows = rows as RawFeedbackRow[];
+
   // Resolve tenant names
-  const tenantIds = Array.from(new Set(rows.map(r => r.tenant_id).filter((x): x is string => x != null)));
+  const tenantIds = Array.from(new Set(typedRows.map(r => r.tenant_id).filter((x): x is string => x != null)));
   const tenantMap: Record<string, string> = {};
   if (tenantIds.length > 0) {
     const { data: tenants, error: tenantsError } = await service
@@ -44,7 +58,7 @@ async function getFeedback(): Promise<FeedbackRow[]> {
   }
 
   // Resolve user emails via admin API
-  const userIds = Array.from(new Set(rows.map(r => r.auth_user_id).filter((x): x is string => x != null)));
+  const userIds = Array.from(new Set(typedRows.map(r => r.auth_user_id).filter((x): x is string => x != null)));
   const emailMap: Record<string, string> = {};
   const authAdmin = (service.auth as unknown as ServiceAuthWithAdmin).admin;
   for (const uid of userIds) {
@@ -53,7 +67,7 @@ async function getFeedback(): Promise<FeedbackRow[]> {
     if (data?.user?.email) emailMap[uid] = data.user.email;
   }
 
-  return rows.map(r => ({
+  return typedRows.map(r => ({
     id: r.id,
     source: r.source as 'tenant' | 'member',
     type: r.type as 'bug' | 'feature' | 'suggestion' | 'general',
