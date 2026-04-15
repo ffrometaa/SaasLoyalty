@@ -1,10 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 
+interface RewardRow {
+  id: string;
+  tenant_id: string;
+  name: string;
+  points_cost: number;
+  is_active: boolean;
+  deleted_at: string | null;
+  valid_from: string | null;
+  valid_until: string | null;
+  max_redemptions: number | null;
+  redemption_count: number;
+}
+
 // GET /api/member/rewards - Get rewards for member's tenant
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const supabase = await createServerSupabaseClient();
 
@@ -25,7 +36,8 @@ export async function GET(request: NextRequest) {
       .eq('tenant_id', tenantId)
       .eq('is_active', true)
       .is('deleted_at', null)
-      .order('points_cost', { ascending: true });
+      .order('points_cost', { ascending: true })
+      .returns<RewardRow[]>();
 
     if (error) {
       console.error('Error fetching rewards:', error);
@@ -37,7 +49,7 @@ export async function GET(request: NextRequest) {
 
     // Filter by valid dates if set
     const now = new Date();
-    const activeRewards = (rewards || []).filter((reward: any) => {
+    const activeRewards = (rewards || []).filter((reward) => {
       if (reward.valid_from && new Date(reward.valid_from) > now) return false;
       if (reward.valid_until && new Date(reward.valid_until) < now) return false;
       if (reward.max_redemptions && reward.redemption_count >= reward.max_redemptions) return false;

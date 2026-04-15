@@ -4,13 +4,17 @@ import Stripe from 'stripe';
 import { createServiceRoleClient } from '@loyalty-os/lib/server';
 import { buildBilingualEmail, buildWelcomeTenantEmail, buildPaymentFailedEmail } from '@loyalty-os/email';
 
+// Guaranteed set at server startup — app fails to initialize without these keys
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
 });
 
+// Guaranteed set at server startup — webhook verification is skipped entirely without this
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
 
-export async function POST(request: NextRequest) {
+type SupabaseClient = ReturnType<typeof createServiceRoleClient>;
+
+export async function POST(request: NextRequest): Promise<NextResponse> {
   const body = await request.text();
   const headersList = await headers();
   const signature = headersList.get('stripe-signature');
@@ -26,25 +30,30 @@ export async function POST(request: NextRequest) {
 
   try {
     event = stripe.webhooks.constructEvent(body, signature, WEBHOOK_SECRET);
-  } catch (err: any) {
-    console.error('Webhook signature verification failed:', err.message);
+  } catch (err: unknown) {
+    console.error('Webhook signature verification failed:', err instanceof Error ? err.message : String(err));
     return NextResponse.json(
       { error: 'Invalid signature' },
       { status: 400 }
     );
   }
 
+  // Service role required: webhook updates any tenant by stripe_customer_id, bypassing RLS by design
   const supabase = createServiceRoleClient();
 
   // Check idempotency
-  const { data: existingEvent } = await supabase
+  const { data: existingEvent, error: idempotencyError } = await supabase
     .from('stripe_events')
     .select('id')
     .eq('id', event.id)
     .single();
 
+  if (idempotencyError && idempotencyError.code !== 'PGRST116') {
+    // PGRST116 = no rows found (expected when event is new); any other error is unexpected
+    console.error('Idempotency check failed:', idempotencyError);
+  }
+
   if (existingEvent) {
-    console.log('Event already processed:', event.id);
     return NextResponse.json({ received: true, status: 'already_processed' });
   }
 
@@ -87,14 +96,16 @@ export async function POST(request: NextRequest) {
       }
 
       default:
-        console.log('Unhandled event type:', event.type);
+        // Unhandled event types are intentionally ignored
+        break;
     }
 
     // Mark event as processed
-    await supabase.from('stripe_events').insert({
+    const { error: insertError } = await supabase.from('stripe_events').insert({
       id: event.id,
       type: event.type,
     });
+    if (insertError) console.error('Failed to record stripe event:', insertError);
 
     return NextResponse.json({ received: true });
   } catch (error) {
@@ -106,9 +117,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.Session) {
-  console.log('Checkout completed:', session.id);
-
+async function handleCheckoutCompleted(supabase: SupabaseClient, session: Stripe.Checkout.Session): Promise<void> {
   const tenantSlug = session.metadata?.tenant_slug;
   const businessName = session.metadata?.business_name;
   const businessType = session.metadata?.business_type;
@@ -123,7 +132,7 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
   // Update tenant with Stripe customer info.
   // Do NOT override trial_ends_at — it was set correctly during registration
   // (14 days standard, 60 days for founding partners).
-  await supabase
+  const { error: tenantUpdateError } = await supabase
     .from('tenants')
     .update({
       stripe_customer_id: session.customer as string,
@@ -133,12 +142,14 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
     })
     .eq('slug', tenantSlug);
 
+  if (tenantUpdateError) throw new Error(`Failed to update tenant ${tenantSlug}: ${tenantUpdateError.message}`);
+
   // Check if this customer had a previous demo request (attribution)
   let cameFromDemo = false;
   let demoRequestedAt: string | null = null;
 
   if (customerEmail) {
-    const { data: demoRequest } = await supabase
+    const { data: demoRequest, error: demoError } = await supabase
       .from('demo_requests')
       .select('id, created_at')
       .eq('email', customerEmail.toLowerCase())
@@ -146,11 +157,15 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
       .limit(1)
       .single();
 
+    if (demoError && demoError.code !== 'PGRST116') {
+      console.error('Failed to query demo_requests:', demoError);
+    }
+
     if (demoRequest) {
       cameFromDemo = true;
       demoRequestedAt = demoRequest.created_at;
 
-      await supabase
+      const { error: demoUpdateError } = await supabase
         .from('demo_requests')
         .update({
           status: 'converted',
@@ -158,6 +173,8 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
           converted_tenant_slug: tenantSlug,
         })
         .eq('id', demoRequest.id);
+
+      if (demoUpdateError) console.error('Failed to update demo_request attribution:', demoUpdateError);
     }
   }
 
@@ -180,8 +197,6 @@ async function handleCheckoutCompleted(supabase: any, session: Stripe.Checkout.S
       plan,
     });
   }
-
-  console.log('Tenant updated from checkout:', tenantSlug, { cameFromDemo });
 }
 
 async function notifyNewCustomer({
@@ -200,7 +215,7 @@ async function notifyNewCustomer({
   tenantSlug: string;
   cameFromDemo: boolean;
   demoRequestedAt: string | null;
-}) {
+}): Promise<void> {
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
   if (!RESEND_API_KEY) {
     console.error('RESEND_API_KEY not set — skipping owner notification');
@@ -289,7 +304,7 @@ async function sendWelcomeEmail({
   businessName: string;
   email: string;
   plan: string;
-}) {
+}): Promise<void> {
   // From address should match tenant custom domain when available for better deliverability.
   // Default: LoyaltyOS <hello@loyalbase.dev>
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -323,13 +338,11 @@ async function sendWelcomeEmail({
   });
 }
 
-async function handleSubscriptionCreated(supabase: any, subscription: Stripe.Subscription) {
-  console.log('Subscription created:', subscription.id);
-
+async function handleSubscriptionCreated(supabase: SupabaseClient, subscription: Stripe.Subscription): Promise<void> {
   const customerId = subscription.customer as string;
   const plan = subscription.metadata?.plan || 'starter';
 
-  await supabase
+  const { error } = await supabase
     .from('tenants')
     .update({
       stripe_subscription_id: subscription.id,
@@ -337,11 +350,11 @@ async function handleSubscriptionCreated(supabase: any, subscription: Stripe.Sub
       plan_status: 'active',
     })
     .eq('stripe_customer_id', customerId);
+
+  if (error) throw new Error(`handleSubscriptionCreated: failed to update tenant: ${error.message}`);
 }
 
-async function handleSubscriptionUpdated(supabase: any, subscription: Stripe.Subscription) {
-  console.log('Subscription updated:', subscription.id);
-
+async function handleSubscriptionUpdated(supabase: SupabaseClient, subscription: Stripe.Subscription): Promise<void> {
   const customerId = subscription.customer as string;
   const newPlan = subscription.metadata?.plan || 'starter';
 
@@ -353,16 +366,20 @@ async function handleSubscriptionUpdated(supabase: any, subscription: Stripe.Sub
   }
 
   // Fetch previous plan before updating to detect Scale upgrades
-  const { data: existing } = await supabase
+  const { data: existing, error: fetchError } = await supabase
     .from('tenants')
     .select('plan, business_name, owner_email')
     .eq('stripe_customer_id', customerId)
     .single();
 
-  await supabase
+  if (fetchError) throw new Error(`handleSubscriptionUpdated: failed to fetch tenant: ${fetchError.message}`);
+
+  const { error: updateError } = await supabase
     .from('tenants')
     .update({ plan: newPlan, plan_status: planStatus })
     .eq('stripe_customer_id', customerId);
+
+  if (updateError) throw new Error(`handleSubscriptionUpdated: failed to update tenant: ${updateError.message}`);
 
   // Send Account Manager assignment email when tenant upgrades to Scale
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -392,35 +409,37 @@ async function handleSubscriptionUpdated(supabase: any, subscription: Stripe.Sub
   }
 }
 
-async function handleSubscriptionDeleted(supabase: any, subscription: Stripe.Subscription) {
-  console.log('Subscription deleted:', subscription.id);
-
+async function handleSubscriptionDeleted(supabase: SupabaseClient, subscription: Stripe.Subscription): Promise<void> {
   const customerId = subscription.customer as string;
 
-  await supabase
+  const { error } = await supabase
     .from('tenants')
     .update({
       plan_status: 'canceled',
       stripe_subscription_id: null,
     })
     .eq('stripe_customer_id', customerId);
+
+  if (error) throw new Error(`handleSubscriptionDeleted: failed to update tenant: ${error.message}`);
 }
 
-async function handlePaymentFailed(supabase: any, invoice: Stripe.Invoice) {
-  console.log('Payment failed:', invoice.id);
-
+async function handlePaymentFailed(supabase: SupabaseClient, invoice: Stripe.Invoice): Promise<void> {
   const customerId = invoice.customer as string;
 
-  const { data: tenant } = await supabase
+  const { data: tenant, error: fetchError } = await supabase
     .from('tenants')
     .select('business_name, owner_email, preferred_language')
     .eq('stripe_customer_id', customerId)
     .single();
 
-  await supabase
+  if (fetchError) throw new Error(`handlePaymentFailed: failed to fetch tenant: ${fetchError.message}`);
+
+  const { error: updateError } = await supabase
     .from('tenants')
     .update({ plan_status: 'past_due' })
     .eq('stripe_customer_id', customerId);
+
+  if (updateError) throw new Error(`handlePaymentFailed: failed to update tenant: ${updateError.message}`);
 
   if (!tenant?.owner_email) return;
 
@@ -497,24 +516,26 @@ async function handlePaymentFailed(supabase: any, invoice: Stripe.Invoice) {
   });
 }
 
-async function handlePaymentSucceeded(supabase: any, invoice: Stripe.Invoice) {
-  console.log('Payment succeeded:', invoice.id);
-
+async function handlePaymentSucceeded(supabase: SupabaseClient, invoice: Stripe.Invoice): Promise<void> {
   // Skip zero-amount invoices (e.g. trial activation)
   if (!invoice.amount_paid || invoice.amount_paid === 0) return;
 
   const customerId = invoice.customer as string;
 
-  const { data: tenant } = await supabase
+  const { data: tenant, error: fetchError } = await supabase
     .from('tenants')
     .select('business_name, owner_email')
     .eq('stripe_customer_id', customerId)
     .single();
 
-  await supabase
+  if (fetchError) throw new Error(`handlePaymentSucceeded: failed to fetch tenant: ${fetchError.message}`);
+
+  const { error: updateError } = await supabase
     .from('tenants')
     .update({ plan_status: 'active' })
     .eq('stripe_customer_id', customerId);
+
+  if (updateError) throw new Error(`handlePaymentSucceeded: failed to update tenant: ${updateError.message}`);
 
   if (!tenant?.owner_email) return;
 

@@ -3,18 +3,24 @@
 import { useEffect, useRef, useState } from 'react';
 import { Camera, CameraOff } from 'lucide-react';
 
-type Props = {
+interface Props {
   isActive: boolean;
   onScan: (code: string) => void;
   showFormatsLabel?: boolean;
-};
+}
 
 type ScannerState = 'starting' | 'scanning' | 'error';
 
-export function QrScanner({ isActive, onScan, showFormatsLabel = true }: Props) {
+// Html5Qrcode is dynamically imported — typed minimally to avoid importing the module at top level
+interface Html5QrcodeInstance {
+  isScanning: boolean;
+  stop(): Promise<void>;
+}
+
+export function QrScanner({ isActive, onScan, showFormatsLabel = true }: Props): JSX.Element | null {
   const [state, setState] = useState<ScannerState>('starting');
   const [errorMsg, setErrorMsg] = useState('');
-  const scannerRef = useRef<any>(null);
+  const scannerRef = useRef<Html5QrcodeInstance | null>(null);
   const onScanRef = useRef(onScan);
   const ELEMENT_ID = 'qr-scanner-viewport';
 
@@ -31,7 +37,7 @@ export function QrScanner({ isActive, onScan, showFormatsLabel = true }: Props) 
 
     let cancelled = false;
 
-    async function start() {
+    async function start(): Promise<void> {
       setState('starting');
       setErrorMsg('');
 
@@ -68,12 +74,13 @@ export function QrScanner({ isActive, onScan, showFormatsLabel = true }: Props) 
         );
 
         if (!cancelled) setState('scanning');
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!cancelled) {
+          const errMsg = err instanceof Error ? err.message : '';
           const msg =
-            err?.message?.includes('permission') || err?.message?.includes('Permission')
+            errMsg.includes('permission') || errMsg.includes('Permission')
               ? 'Camera access denied. Please allow camera permissions and try again.'
-              : err?.message?.includes('device') || err?.message?.includes('NotFound')
+              : errMsg.includes('device') || errMsg.includes('NotFound')
               ? 'No camera found on this device.'
               : 'Could not start camera. Please try again.';
           setErrorMsg(msg);
@@ -90,7 +97,7 @@ export function QrScanner({ isActive, onScan, showFormatsLabel = true }: Props) 
     };
   }, [isActive]);
 
-  function stopScanner() {
+  function stopScanner(): void {
     const scanner = scannerRef.current;
     if (scanner) {
       scanner.isScanning && scanner.stop().catch(() => {});

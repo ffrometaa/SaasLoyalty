@@ -4,10 +4,11 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { cn } from '@loyalty-os/ui';
 import { getSupabaseClient } from '@loyalty-os/lib';
 import { BUSINESS_TYPES, PLANS, FOUNDING_PARTNER_DISCOUNT } from '@loyalty-os/config';
 
-function RegisterPageInner() {
+function RegisterPageInner(): JSX.Element {
   const t = useTranslations('auth.register');
   const ft = useTranslations('founding');
   const searchParams = useSearchParams();
@@ -16,7 +17,7 @@ function RegisterPageInner() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<string>('starter');
+  const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro' | 'scale'>('starter');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
   const [foundingAvailable, setFoundingAvailable] = useState(false);
 
@@ -41,15 +42,15 @@ function RegisterPageInner() {
     acceptDpa: false,
   });
 
-  const updateField = (field: string, value: string | boolean) => {
+  const updateField = (field: string, value: string | boolean): void => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    if (field === 'businessName') {
-      const slug = (value as string).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    if (field === 'businessName' && typeof value === 'string') {
+      const slug = value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
       setFormData(prev => ({ ...prev, slug }));
     }
   };
 
-  const validateStep1 = () => {
+  const validateStep1 = (): boolean => {
     if (!formData.businessName.trim()) { setError(t('errBusinessNameRequired')); return false; }
     if (!formData.businessType) { setError(t('errBusinessTypeRequired')); return false; }
     if (!formData.slug.trim()) { setError(t('errSlugRequired')); return false; }
@@ -57,7 +58,7 @@ function RegisterPageInner() {
     return true;
   };
 
-  const validateStep2 = () => {
+  const validateStep2 = (): boolean => {
     if (!formData.email.trim()) { setError(t('errEmailRequired')); return false; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) { setError(t('errEmailInvalid')); return false; }
     if (formData.password.length < 8) { setError(t('errPasswordTooShort')); return false; }
@@ -67,12 +68,12 @@ function RegisterPageInner() {
     return true;
   };
 
-  const handleNext = () => {
+  const handleNext = (): void => {
     setError(null);
     if (step === 1 && validateStep1()) setStep(2);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setError(null);
     if (!validateStep2()) return;
@@ -107,10 +108,11 @@ function RegisterPageInner() {
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Failed to create checkout session');
+      // Intentional: data.url is an external Stripe Checkout URL — router.push() does not handle cross-origin navigation
       if (data.url) window.location.href = data.url;
       else throw new Error('No checkout URL received');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
       setLoading(false);
     }
   };
@@ -123,7 +125,7 @@ function RegisterPageInner() {
 
   return (
     <div className="auth-container py-8">
-      <div className="auth-card" style={{ maxWidth: '42rem', width: '100%' }}>
+      <div className="auth-card max-w-2xl w-full">
         <div className="text-center">
           <h2 className="auth-title">{t('title')}</h2>
           <p className="auth-subtitle">{t('subtitle')}</p>
@@ -133,20 +135,22 @@ function RegisterPageInner() {
         <div className="mt-6">
           <div className="flex items-center">
             {steps.map(({ n, label }, idx) => (
-              <div key={n} className="flex items-center" style={{ flex: idx < steps.length - 1 ? '1' : 'none' }}>
-                <div className={`flex items-center ${step >= n ? 'text-brand-purple' : ''}`} style={{ color: step < n ? 'rgba(255,255,255,0.3)' : undefined }}>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-colors"
-                    style={{
-                      backgroundColor: step >= n ? '#7c3aed' : 'rgba(255,255,255,0.08)',
-                      color: step >= n ? 'white' : 'rgba(255,255,255,0.3)',
-                    }}>
+              <div
+                key={n}
+                className={cn('flex items-center', idx < steps.length - 1 && 'flex-1')}
+              >
+                <div className={cn('flex items-center', step >= n ? 'text-brand-purple' : 'text-white/30')}>
+                  <div className={cn(
+                    'flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-colors',
+                    step >= n ? 'bg-brand-purple text-white' : 'bg-white/[0.08] text-white/30'
+                  )}>
                     {step > n ? '✓' : n}
                   </div>
                   <span className="ml-2 text-sm font-medium whitespace-nowrap">{label}</span>
                 </div>
                 {idx < steps.length - 1 && (
-                  <div className="flex-1 mx-4 h-px" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}>
-                    <div className="h-full bg-brand-purple transition-all" style={{ width: step > n ? '100%' : '0%' }} />
+                  <div className="flex-1 mx-4 h-px bg-white/[0.08]">
+                    <div className={cn('h-full bg-brand-purple transition-all', step > n ? 'w-full' : 'w-0')} />
                   </div>
                 )}
               </div>
@@ -185,23 +189,22 @@ function RegisterPageInner() {
             <div>
               <label htmlFor="slug" className="auth-label">{t('loyaltyUrl')}</label>
               <div className="mt-2">
-                <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <span className="inline-flex items-center px-3 text-sm" style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRight: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}>
+                <div className="flex rounded-lg overflow-hidden border border-white/10">
+                  <span className="inline-flex items-center px-3 text-sm bg-white/5 border-r border-white/10 text-white/40">
                     members.loyalbase.dev/join/
                   </span>
                   <input id="slug" type="text" required value={formData.slug}
                     onChange={(e) => updateField('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                    className="flex-1 py-2.5 px-3 text-white text-sm outline-none"
-                    style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
+                    className="flex-1 py-2.5 px-3 text-white text-sm outline-none bg-white/5"
                     placeholder="serenity-spa" />
                 </div>
-                <p className="mt-1 text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{t('loyaltyUrlHint')}</p>
+                <p className="mt-1 text-xs text-white/30">{t('loyaltyUrlHint')}</p>
               </div>
             </div>
 
             <button type="button" onClick={handleNext} className="auth-button mt-8">{t('continue')}</button>
 
-            <p className="mt-4 text-center text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <p className="mt-4 text-center text-sm text-white/40">
               {t('alreadyAccount')}{' '}
               <Link href="/login" className="auth-link">{t('signIn')}</Link>
             </p>
@@ -215,10 +218,7 @@ function RegisterPageInner() {
 
             {/* Founding Partner banner */}
             {isFoundingPartner && (
-              <div
-                className="mb-5 px-4 py-3 rounded-xl text-sm"
-                style={{ background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.35)' }}
-              >
+              <div className="mb-5 px-4 py-3 rounded-xl text-sm bg-brand-purple/[0.12] border border-brand-purple/[0.35]">
                 <p className="font-semibold text-purple-300 mb-0.5">{ft('registerBannerTitle')}</p>
                 <p className="text-white/50 text-xs">{ft('registerBannerDesc')}</p>
               </div>
@@ -229,26 +229,22 @@ function RegisterPageInner() {
               <button
                 type="button"
                 onClick={() => setBillingPeriod('monthly')}
-                className="px-4 py-2 text-sm font-medium rounded-lg transition-all"
-                style={{
-                  backgroundColor: billingPeriod === 'monthly' ? '#7c3aed' : 'rgba(255,255,255,0.05)',
-                  color: billingPeriod === 'monthly' ? 'white' : 'rgba(255,255,255,0.5)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                }}
+                className={cn(
+                  'px-4 py-2 text-sm font-medium rounded-lg transition-all border border-white/10',
+                  billingPeriod === 'monthly' ? 'bg-brand-purple text-white' : 'bg-white/5 text-white/50'
+                )}
               >
                 Monthly
               </button>
               <button
                 type="button"
                 onClick={() => setBillingPeriod('annual')}
-                className="px-4 py-2 text-sm font-medium rounded-lg transition-all"
-                style={{
-                  backgroundColor: billingPeriod === 'annual' ? '#7c3aed' : 'rgba(255,255,255,0.05)',
-                  color: billingPeriod === 'annual' ? 'white' : 'rgba(255,255,255,0.5)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                }}
+                className={cn(
+                  'px-4 py-2 text-sm font-medium rounded-lg transition-all border border-white/10',
+                  billingPeriod === 'annual' ? 'bg-brand-purple text-white' : 'bg-white/5 text-white/50'
+                )}
               >
-                Annual <span style={{ color: '#22c55e', fontSize: 11, fontWeight: 700 }}>save 17%</span>
+                Annual <span className="text-green-500 text-[11px] font-bold">save 17%</span>
               </button>
             </div>
 
@@ -258,23 +254,22 @@ function RegisterPageInner() {
                 const isSelected = selectedPlan === plan;
                 return (
                   <button key={plan} type="button" onClick={() => setSelectedPlan(plan)}
-                    className="p-4 rounded-xl text-left transition-all"
-                    style={{
-                      border: isSelected ? '1px solid #7c3aed' : '1px solid rgba(255,255,255,0.08)',
-                      backgroundColor: isSelected ? 'rgba(124,58,237,0.1)' : 'rgba(255,255,255,0.03)',
-                    }}>
+                    className={cn(
+                      'p-4 rounded-xl text-left transition-all border',
+                      isSelected ? 'border-brand-purple bg-brand-purple/10' : 'border-white/[0.08] bg-white/[0.03]'
+                    )}>
                     <div className="flex items-start justify-between">
                       <div>
                         <h4 className="font-semibold text-white font-display">{details.name}</h4>
-                        <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                          {(details.maxMembers as number) === -1
+                        <p className="text-sm mt-0.5 text-white/40">
+                          {typeof details.maxMembers === 'number' && details.maxMembers === -1
                             ? t('unlimitedMembers')
                             : t('membersUp', { count: details.maxMembers })}
                         </p>
                       </div>
                       <div className="text-right">
                         {isFoundingPartner && (
-                          <p className="text-xs line-through" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                          <p className="text-xs line-through text-white/30">
                             ${billingPeriod === 'annual' ? Math.round(details.price * 10 / 12) : details.price}
                           </p>
                         )}
@@ -283,11 +278,11 @@ function RegisterPageInner() {
                             ? Math.round(details.price * (1 - FOUNDING_PARTNER_DISCOUNT) * 10 / 12)
                             : Math.round(details.price * (isFoundingPartner ? (1 - FOUNDING_PARTNER_DISCOUNT) : 1))}
                         </p>
-                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                        <p className="text-xs text-white/40">
                           {billingPeriod === 'annual' ? 'per month, billed annually' : t('perMonth')}
                         </p>
                         {billingPeriod === 'annual' && (
-                          <p className="text-xs" style={{ color: '#22c55e' }}>
+                          <p className="text-xs text-green-500">
                             ${Math.round(details.price * (isFoundingPartner ? (1 - FOUNDING_PARTNER_DISCOUNT) : 1) * 10)}/yr
                           </p>
                         )}
@@ -308,8 +303,7 @@ function RegisterPageInner() {
 
             <div className="mt-6 flex gap-3">
               <button type="button" onClick={() => setStep(1)}
-                className="flex-1 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors"
-                style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)', backgroundColor: 'transparent' }}>
+                className="flex-1 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors border border-white/[0.12] text-white/70 bg-transparent">
                 {t('back')}
               </button>
               <button type="button" onClick={() => setStep(3)} className="auth-button flex-1">{t('continue')}</button>
@@ -336,7 +330,7 @@ function RegisterPageInner() {
                   onChange={(e) => updateField('password', e.target.value)}
                   className="auth-input" placeholder="••••••••" />
               </div>
-              <p className="mt-1 text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>{t('passwordHint')}</p>
+              <p className="mt-1 text-xs text-white/30">{t('passwordHint')}</p>
             </div>
 
             <div>
@@ -352,7 +346,7 @@ function RegisterPageInner() {
               <input id="acceptTerms" type="checkbox" required checked={formData.acceptTerms}
                 onChange={(e) => updateField('acceptTerms', e.target.checked)}
                 className="mt-0.5 h-4 w-4 rounded accent-brand-purple cursor-pointer" />
-              <label htmlFor="acceptTerms" className="text-sm cursor-pointer" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              <label htmlFor="acceptTerms" className="text-sm cursor-pointer text-white/50">
                 {t('acceptTerms')}{' '}
                 <Link href="/terms" className="auth-link">{t('terms')}</Link>
                 {' '}{t('and')}{' '}
@@ -364,28 +358,27 @@ function RegisterPageInner() {
               <input id="acceptDpa" type="checkbox" required checked={formData.acceptDpa}
                 onChange={(e) => updateField('acceptDpa', e.target.checked)}
                 className="mt-0.5 h-4 w-4 rounded accent-brand-purple cursor-pointer" />
-              <label htmlFor="acceptDpa" className="text-sm cursor-pointer" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              <label htmlFor="acceptDpa" className="text-sm cursor-pointer text-white/50">
                 {t('acceptDpa')}{' '}
                 <Link href="/dpa" target="_blank" className="auth-link">{t('dpa')}</Link>
               </label>
             </div>
 
             {/* Order summary */}
-            <div className="p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.08]">
               <h4 className="font-semibold text-white text-sm">{t('orderSummary')}</h4>
               <div className="mt-2 flex justify-between text-sm">
-                <span style={{ color: 'rgba(255,255,255,0.5)' }}>{PLANS[selectedPlan as keyof typeof PLANS].name}</span>
-                <span className="font-medium text-white">${PLANS[selectedPlan as keyof typeof PLANS].price}{t('perMonth')}</span>
+                <span className="text-white/50">{PLANS[selectedPlan].name}</span>
+                <span className="font-medium text-white">${PLANS[selectedPlan].price}{t('perMonth')}</span>
               </div>
-              <p className="mt-1 text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                {t('trialNote', { price: PLANS[selectedPlan as keyof typeof PLANS].price })}
+              <p className="mt-1 text-xs text-white/30">
+                {t('trialNote', { price: PLANS[selectedPlan].price })}
               </p>
             </div>
 
             <div className="flex gap-3">
               <button type="button" onClick={() => setStep(2)}
-                className="flex-1 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors"
-                style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)', backgroundColor: 'transparent' }}>
+                className="flex-1 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors border border-white/[0.12] text-white/70 bg-transparent">
                 {t('back')}
               </button>
               <button type="submit" disabled={loading} className="auth-button flex-1">
@@ -393,7 +386,7 @@ function RegisterPageInner() {
               </button>
             </div>
 
-            <p className="text-center text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            <p className="text-center text-xs text-white/30">
               <svg className="inline h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
@@ -406,7 +399,7 @@ function RegisterPageInner() {
   );
 }
 
-export default function RegisterPage() {
+export default function RegisterPage(): JSX.Element {
   return (
     <Suspense>
       <RegisterPageInner />

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerSupabaseClient, getAuthedUser } from '@loyalty-os/lib/server';
 import { getTenantForUser } from '../../../../lib/tenant';
 
-export async function GET() {
+export async function GET(): Promise<NextResponse> {
   try {
     const user = await getAuthedUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -23,17 +23,20 @@ export async function GET() {
     };
 
     // Staff members
-    const { data: staffRows } = await supabase
+    const { data: staffRows, error: staffError } = await supabase
       .from('tenant_users')
       .select('id, auth_user_id, email, role, created_at')
       .eq('tenant_id', result.tenant.id)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: true })
+      .returns<Array<{ id: string; auth_user_id: string; email: string; role: 'staff'; created_at: string }>>();
 
-    const staffEntries = (staffRows ?? []).map((row: any) => ({
+    if (staffError) throw staffError;
+
+    const staffEntries = (staffRows ?? []).map((row) => ({
       id: row.id,
       authUserId: row.auth_user_id,
       email: row.email,
-      role: row.role as 'staff',
+      role: row.role,
       joinedAt: row.created_at,
       isCurrentUser: row.auth_user_id === user.id,
       canRemove: result.role === 'owner' && row.auth_user_id !== user.id,

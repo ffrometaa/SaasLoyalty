@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 
-export async function GET() {
+export async function GET(): Promise<NextResponse> {
   try {
     const user = await getAuthedUser();
 
@@ -9,6 +9,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // Service role required: cross-tenant reads across all tenants and members (bypasses RLS by design)
     const admin = createServiceRoleClient();
 
     // All tenants
@@ -21,23 +22,26 @@ export async function GET() {
     if (tenantsError) throw tenantsError;
 
     const totalTenants = tenants?.length || 0;
-    const activeTenants = tenants?.filter((t: any) => t.plan_status === 'active').length || 0;
-    const trialingTenants = tenants?.filter((t: any) => t.plan_status === 'trialing').length || 0;
-    const canceledTenants = tenants?.filter((t: any) => t.plan_status === 'canceled').length || 0;
+    const activeTenants = tenants?.filter(t => t.plan_status === 'active').length || 0;
+    const trialingTenants = tenants?.filter(t => t.plan_status === 'trialing').length || 0;
+    const canceledTenants = tenants?.filter(t => t.plan_status === 'canceled').length || 0;
 
     // Total members across all tenants
-    const { count: totalMembers } = await admin
+    const { count: totalMembers, error: totalMembersError } = await admin
       .from('members')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'active');
 
+    if (totalMembersError) throw totalMembersError;
+
     // Member count per tenant for recent 5
     const recentTenants = await Promise.all(
-      (tenants?.slice(0, 5) || []).map(async (tenant: any) => {
-        const { count } = await admin
+      (tenants?.slice(0, 5) || []).map(async (tenant) => {
+        const { count, error: countError } = await admin
           .from('members')
           .select('*', { count: 'exact', head: true })
           .eq('tenant_id', tenant.id);
+        if (countError) throw countError;
         return { ...tenant, member_count: count || 0 };
       })
     );
