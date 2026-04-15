@@ -44,15 +44,24 @@ export async function GET(request: NextRequest) {
   }
 
   // Email confirmation flow — create member using tenant_id from user metadata
-  const tenantId = sessionData.user.user_metadata?.tenant_id;
+  const tenantId = sessionData.user.user_metadata?.tenant_id as string | undefined;
   if (tenantId) {
     const origin = new URL(request.url).origin;
-    // Fire-and-forget — don't block the redirect
-    fetch(`${origin}/api/auth/create-member`, {
+    const memberRes = await fetch(`${origin}/api/auth/create-member`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: request.headers.get('cookie') ?? '' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${sessionData.session?.access_token}`,
+      },
       body: JSON.stringify({ tenantId }),
-    }).catch(() => {});
+    });
+
+    if (!memberRes.ok) {
+      return NextResponse.redirect(new URL('/join?error=profile_failed', request.url));
+    }
+
+    // Redirect through set-tenant to write the httpOnly loyalty_tenant_id cookie
+    return NextResponse.redirect(new URL(`/api/auth/set-tenant?tenantId=${tenantId}`, request.url));
   }
 
   return response;
