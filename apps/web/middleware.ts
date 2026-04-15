@@ -117,7 +117,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   }
 
   // Set tenant context for RLS from subdomain
-  const hostname = request.headers.get('hostname') || '';
+  const hostname = request.headers.get('host') || '';
   const parts = hostname.split('.');
 
   // If we have a subdomain (e.g., serenity-spa.loyaltyos.com)
