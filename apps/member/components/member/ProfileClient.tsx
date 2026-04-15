@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Mail, User, LogOut, Shield, Gift, Pencil, Check, KeyRound, Trash2 } from 'lucide-react';
+import { Mail, User, LogOut, Shield, Gift, Pencil, Check, KeyRound, Trash2, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { LanguageSwitcher } from '@/components/member/LanguageSwitcher';
 import { getSupabaseClient } from '@loyalty-os/lib';
@@ -34,6 +34,32 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
 
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [deleting, setDeleting] = useState(false);
+
+  const [fbType, setFbType] = useState<'bug' | 'suggestion' | 'general'>('general');
+  const [fbMessage, setFbMessage] = useState('');
+  const [fbSending, setFbSending] = useState(false);
+  const [fbSent, setFbSent] = useState(false);
+  const [fbError, setFbError] = useState('');
+
+  async function handleSendFeedback() {
+    if (!fbMessage.trim()) return;
+    setFbSending(true);
+    setFbError('');
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: fbType, message: fbMessage }),
+      });
+      if (!res.ok) throw new Error();
+      setFbSent(true);
+      setFbMessage('');
+    } catch {
+      setFbError('Failed to send. Please try again.');
+    } finally {
+      setFbSending(false);
+    }
+  }
 
   async function handleLogout() {
     const supabase = getSupabaseClient();
@@ -266,6 +292,53 @@ export function ProfileClient({ name: initialName, email, memberCode, tier, poin
               {deleting ? '…' : t('deleteAccountButton')}
             </button>
           </div>
+        </div>
+
+        {/* Send Feedback */}
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100">
+            <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-gray-400" />Send Feedback
+            </h3>
+          </div>
+          {fbSent ? (
+            <div className="px-4 py-5 text-center">
+              <p className="text-sm font-medium text-green-600">Thank you! Your feedback was received.</p>
+              <button onClick={() => setFbSent(false)} className="mt-2 text-xs text-gray-400 underline">Send another</button>
+            </div>
+          ) : (
+            <div className="px-4 py-3.5 space-y-3">
+              <div className="flex gap-2">
+                {(['bug', 'suggestion', 'general'] as const).map(v => (
+                  <button
+                    key={v}
+                    onClick={() => setFbType(v)}
+                    className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition-colors capitalize ${
+                      fbType === v ? 'border-[color:var(--primary)] bg-[color:var(--primary)]/10 text-[color:var(--primary)]' : 'border-gray-200 text-gray-500'
+                    }`}
+                  >
+                    {v === 'bug' ? 'Bug' : v === 'suggestion' ? 'Idea' : 'General'}
+                  </button>
+                ))}
+              </div>
+              <textarea
+                value={fbMessage}
+                onChange={e => setFbMessage(e.target.value)}
+                rows={3}
+                placeholder="Tell us what's on your mind…"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[color:var(--primary)] resize-none"
+              />
+              {fbError && <p className="text-xs text-red-500">{fbError}</p>}
+              <button
+                onClick={handleSendFeedback}
+                disabled={fbSending || !fbMessage.trim()}
+                className="w-full py-2 text-sm font-semibold text-white rounded-lg disabled:opacity-40 transition-opacity"
+                style={{ background: 'var(--primary)' }}
+              >
+                {fbSending ? 'Sending…' : 'Send Feedback'}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Logout */}

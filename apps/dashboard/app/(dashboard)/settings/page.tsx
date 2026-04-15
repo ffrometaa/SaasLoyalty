@@ -21,8 +21,10 @@ import {
   Shield,
   Link2,
   Zap,
+  MessageSquare,
 } from 'lucide-react';
 import { MemberAppTab } from '../../../components/MemberAppTab';
+import { FeedbackTab } from '../../../components/FeedbackTab';
 import { planHasFeature } from '../../../lib/plans/features';
 import type { Plan } from '../../../lib/plans/features';
 
@@ -41,7 +43,7 @@ type Invoice = {
 
 export default function SettingsPage() {
   const t = useTranslations('settings');
-  const [activeTab, setActiveTab] = useState<'profile' | 'branding' | 'member-app' | 'billing' | 'language' | 'team' | 'danger' | 'integrations' | 'loyalty'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'branding' | 'member-app' | 'billing' | 'language' | 'team' | 'danger' | 'integrations' | 'loyalty' | 'feedback'>('profile');
   const [saved, setSaved] = useState(false);
   const [settingsLoading, setSettingsLoading] = useState(true);
 
@@ -277,6 +279,7 @@ export default function SettingsPage() {
     { id: 'integrations', label: t('integrations'), icon: Link2 },
     { id: 'language', label: t('language'), icon: Globe },
     { id: 'danger', label: t('danger'), icon: AlertTriangle },
+    { id: 'feedback', label: 'Feedback', icon: MessageSquare },
   ];
 
   const handleManageSubscription = async () => {
@@ -1614,6 +1617,8 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
+          {/* Feedback Tab */}
+          {activeTab === 'feedback' && <FeedbackTab />}
         </div>
       </div>
     </div>

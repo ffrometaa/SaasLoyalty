@@ -17,3 +17,4 @@ export * from './templates/demo-request-confirmation';
 export * from './templates/member-invite';
 export * from './templates/member-activation';
 export * from './templates/password-reset';
+export * from './templates/feedback-notification';
