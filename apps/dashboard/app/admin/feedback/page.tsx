@@ -4,7 +4,8 @@ import { FeedbackTable, type FeedbackRow } from '@/components/admin/FeedbackTabl
 
 export const dynamic = 'force-dynamic';
 
-// Raw shape returned by PostgREST for feedback_submissions rows
+// Raw shape returned by PostgREST — no generated Supabase types in this project,
+// so RawFeedbackRow mirrors the DB schema defined in migration 20260415000004.
 interface RawFeedbackRow {
   id: string;
   source: string;
@@ -28,8 +29,38 @@ interface ServiceAuthWithAdmin {
   admin: AuthAdminApi;
 }
 
+const VALID_SOURCES = ['tenant', 'member'] as const;
+const VALID_TYPES   = ['bug', 'feature', 'suggestion', 'general'] as const;
+const VALID_STATUSES = ['new', 'read', 'resolved'] as const;
+
+type Source  = typeof VALID_SOURCES[number];
+type Type    = typeof VALID_TYPES[number];
+type Status  = typeof VALID_STATUSES[number];
+
+function assertSource(v: string): Source {
+  if (!(VALID_SOURCES as readonly string[]).includes(v)) {
+    throw new Error(`Unexpected feedback source from DB: ${v}`);
+  }
+  return v as Source;
+}
+
+function assertType(v: string): Type {
+  if (!(VALID_TYPES as readonly string[]).includes(v)) {
+    throw new Error(`Unexpected feedback type from DB: ${v}`);
+  }
+  return v as Type;
+}
+
+function assertStatus(v: string): Status {
+  if (!(VALID_STATUSES as readonly string[]).includes(v)) {
+    throw new Error(`Unexpected feedback status from DB: ${v}`);
+  }
+  return v as Status;
+}
+
 async function getFeedback(): Promise<FeedbackRow[]> {
-  // Service role required: reads feedback_submissions cross-tenant and resolves auth.users emails
+  // Service role required: reads feedback_submissions cross-tenant and resolves auth.users emails.
+  // Server Component — safe to use service role here (never exposed to client).
   const service = createServiceRoleClient();
 
   const { data: rows, error: rowsError } = await service
@@ -41,6 +72,7 @@ async function getFeedback(): Promise<FeedbackRow[]> {
   if (rowsError) throw new Error(`feedback_submissions query failed: ${rowsError.message}`);
   if (!rows || rows.length === 0) return [];
 
+  // Cast from Supabase generic result to our known schema shape
   const typedRows = rows as RawFeedbackRow[];
 
   // Resolve tenant names
@@ -57,22 +89,22 @@ async function getFeedback(): Promise<FeedbackRow[]> {
     }
   }
 
-  // Resolve user emails via admin API
+  // Resolve user emails in parallel via admin API
   const userIds = Array.from(new Set(typedRows.map(r => r.auth_user_id).filter((x): x is string => x != null)));
   const emailMap: Record<string, string> = {};
   const authAdmin = (service.auth as unknown as ServiceAuthWithAdmin).admin;
-  for (const uid of userIds) {
+  await Promise.all(userIds.map(async (uid) => {
     const { data, error: userError } = await authAdmin.getUserById(uid);
     if (userError) throw new Error(`getUserById failed for ${uid}: ${userError.message}`);
     if (data?.user?.email) emailMap[uid] = data.user.email;
-  }
+  }));
 
   return typedRows.map(r => ({
     id: r.id,
-    source: r.source as 'tenant' | 'member',
-    type: r.type as 'bug' | 'feature' | 'suggestion' | 'general',
+    source: assertSource(r.source),
+    type: assertType(r.type),
     message: r.message,
-    status: r.status as 'new' | 'read' | 'resolved',
+    status: assertStatus(r.status),
     created_at: r.created_at,
     tenant_name: r.tenant_id ? (tenantMap[r.tenant_id] ?? null) : null,
     user_email: r.auth_user_id ? (emailMap[r.auth_user_id] ?? null) : null,
