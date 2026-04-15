@@ -115,7 +115,7 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 - Canales: email + push notifications
 - Métricas: enviados, entregados, abiertos, clicks
 - Scheduling para envío futuro
-- Límites por plan (Starter: 2/mes, Pro: ilimitado)
+- Límites por plan (Starter: 2/mes, Pro: 10/mes)
 
 **Motor de Gamificación:**
 - Behavior Scoring: churn risk (0-1), engagement score (0-1), motivación (achiever/socializer/explorer/competitor)
@@ -305,7 +305,7 @@ LoyaltyOS es una plataforma SaaS multi-tenant white-label que permite a negocios
 - **Trial extendido:** 60 días (vs. 14 días estándar del registro regular)
 - **Descuento:** 20% de por vida en cualquier plan — bloqueado permanentemente
 - **Precios Founding Partner:** Starter $159/mo · Pro $319/mo · Scale $479/mo
-- **Deadline:** 90 días desde el anuncio de Marketing (fecha TBD por Marketing)
+- **Deadline:** 60 días desde el anuncio de Marketing (fecha TBD por Marketing)
 - **Stripe:** Coupon `FOUNDING20` — 20% forever, max 15 canjes
 
 **Cambios técnicos requeridos en la plataforma:**
@@ -1203,4 +1203,54 @@ Auditoría exhaustiva de secrets hardcodeados, variables de entorno, NEXT_PUBLIC
 ### Pendientes
 
 1. **CSP Report-Only → Enforcement** — las tres apps tienen `Content-Security-Policy-Report-Only`, no bloquea XSS activamente. Requiere sesión dedicada de testing.
+
+---
+
+## §13 — Upgrade Next.js 15 + Migración @serwist/next (Abril 2026)
+
+### Objetivo
+
+Actualizar el monorepo de Next.js 14 → 15.5.15 en las tres apps y reemplazar `next-pwa` (abandonado) por `@serwist/next` v9 en `apps/member`.
+
+### Cambios aplicados
+
+#### Next.js 15 — las tres apps
+
+| Cambio | Detalle |
+|--------|---------|
+| Versión | `next` y `eslint-config-next` → `15.5.15` en `apps/web`, `apps/dashboard`, `apps/member` |
+| Codemod | `@next/codemod@15 next-async-request-api` — convierte `cookies()`, `headers()`, `params`, `searchParams` a APIs async en 12 archivos del dashboard |
+| React | Sin cambios — permanece en `^18.3.0` |
+
+**Archivos afectados por el codemod** (dashboard): `app/api/admin/tenants/[id]/route.ts`, `app/api/admin/tenants/[id]/trials/route.ts`, `app/admin/tenants/[tenantId]/page.tsx`, y otros 9 archivos de rutas.
+
+#### Migración next-pwa → @serwist/next (member)
+
+`next-pwa` estaba abandonado e incompatible con Next.js 15. Reemplazado por `@serwist/next` v9.
+
+| Archivo | Cambio |
+|---------|--------|
+| `apps/member/package.json` | `next-pwa ^5.6.0` → `@serwist/next ^9.0.0` + `serwist ^9.0.0` (dep directa para imports en `sw.ts`) |
+| `apps/member/next.config.js` | `withPWA(options)(config)` → `withSerwist(options)(config)`; config de `runtimeCaching` eliminada |
+| `apps/member/app/sw.ts` | Nuevo — service worker con 4 estrategias de caché: Google Fonts (CacheFirst/1 año), imágenes estáticas (StaleWhileRevalidate/30 días), `/_next/static/` (CacheFirst/30 días), APIs excepto `/api/auth` (NetworkFirst/5 min) |
+
+**Diferencia arquitectural clave**: en `next-pwa` la configuración de runtime caching vivía en `next.config.js`. En `@serwist/next` v9, toda la lógica de caché se mueve al archivo `sw.ts` como código TypeScript.
+
+### Errores de build resueltos
+
+Estos errores solo aparecen en `next build` (no en `tsc --noEmit`) porque el compiler de Next.js aplica reglas de ESLint y tipos de routing más estrictos:
+
+| App | Archivo | Error | Fix |
+|-----|---------|-------|-----|
+| web | `app/(auth)/layout.tsx:20` | `<a href="/">` viola ESLint `@next/next/no-html-link-for-pages` | Reemplazado por `<Link>` de `next/link` |
+| dashboard | `app/admin/layout.tsx:9` | `{ children = null }` infiere tipo `null \| undefined`, incompatible con `LayoutProps<"/admin">` de Next.js 15 | Tipado explícito `{ children: React.ReactNode }` |
+
+### Commits
+
+| Hash | Descripción |
+|------|-------------|
+| `b1a6e21` | `chore: upgrade Next.js to 15.5.15 across all apps` |
+| `05f6ad4` | `feat(member): migrate from next-pwa to @serwist/next` |
+| `90bbdcf` | `fix(dashboard): add explicit props type to TenantDetailPage` |
+| `d2c823a` | `fix(web,dashboard): fix build-time errors after Next.js 15 upgrade` |
 
