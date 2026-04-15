@@ -74,9 +74,7 @@ export async function middleware(request: NextRequest) {
   // API routes that need special handling
   const isApiRoute = pathname.startsWith('/api');
 
-  // Get the current session
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: { session } } = await (supabase.auth as any).getSession();
+  const { data: { user } } = await supabase.auth.getUser();
 
   // Protected routes (these don't exist in apps/web — dashboard is a separate app)
   const protectedRoutes: string[] = [];
@@ -94,13 +92,13 @@ export async function middleware(request: NextRequest) {
     request.headers.get('RSC') === '1' ||
     request.headers.get('Next-Router-Prefetch') === '1' ||
     rawUrl.searchParams.has('_rsc');
-  if (session && isAuthRoute && !isRscRequest) {
+  if (user && isAuthRoute && !isRscRequest) {
     const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://dashboard.loyalbase.dev';
     return NextResponse.redirect(dashboardUrl);
   }
 
   // Redirect unauthenticated users to login
-  if (!session && isProtectedRoute) {
+  if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('redirect', pathname);

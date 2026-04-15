@@ -142,7 +142,6 @@ export default function JoinPage() {
       return;
     }
     localStorage.setItem(BIZ_CODE_KEY, trimmed);
-    document.cookie = `loyalty_tenant_id=${data.tenantId}; path=/; max-age=2592000; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
     setTenant({ id: data.tenantId, name: data.tenantName });
     setStep('email');
   }
@@ -236,7 +235,7 @@ export default function JoinPage() {
     }
 
     await waitForAuthCookies();
-    window.location.href = '/';
+    window.location.href = `/api/auth/set-tenant?tenantId=${tenant!.id}`;
   }
 
   async function handleLogin(e: React.FormEvent) {
@@ -275,7 +274,7 @@ export default function JoinPage() {
     }
 
     await waitForAuthCookies();
-    window.location.href = '/';
+    window.location.href = `/api/auth/set-tenant?tenantId=${tenant!.id}`;
   }
 
   // ─── STYLES ──────────────────────────────────────────────────────────────────

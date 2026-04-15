@@ -21,13 +21,6 @@ interface Membership {
   } | null;
 }
 
-function getCookieTenantId(): string | undefined {
-  return document.cookie
-    .split('; ')
-    .find((row) => row.startsWith('loyalty_tenant_id='))
-    ?.split('=')[1];
-}
-
 /** Poll until @supabase/ssr has written auth cookies to document.cookie */
 function waitForAuthCookies(timeoutMs = 2000): Promise<void> {
   return new Promise((resolve) => {
@@ -88,14 +81,6 @@ export default function LoginPage() {
       return;
     }
 
-    // Fast path: already have a tenant cookie from a previous session
-    const cookieTenantId = getCookieTenantId();
-    if (cookieTenantId) {
-      await waitForAuthCookies();
-      window.location.href = '/';
-      return;
-    }
-
     // Pass Bearer token explicitly to avoid cookie race condition
     // (cookies may not be set yet when fetch fires immediately after signIn)
     const accessToken = signInData.session?.access_token;
@@ -118,9 +103,8 @@ export default function LoginPage() {
     }
 
     if (list.length === 1) {
-      document.cookie = `loyalty_tenant_id=${list[0].tenantId}; path=/; max-age=2592000; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
       await waitForAuthCookies();
-      window.location.href = '/';
+      window.location.href = `/api/auth/set-tenant?tenantId=${list[0].tenantId}`;
       return;
     }
 
@@ -130,9 +114,8 @@ export default function LoginPage() {
   }
 
   async function selectTenant(tenantId: string) {
-    document.cookie = `loyalty_tenant_id=${tenantId}; path=/; max-age=2592000; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
     await waitForAuthCookies();
-    window.location.href = '/';
+    window.location.href = `/api/auth/set-tenant?tenantId=${tenantId}`;
   }
 
   return (

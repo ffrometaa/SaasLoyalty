@@ -8,8 +8,8 @@ export async function POST(request: NextRequest) {
 
     // Get the authenticated user
     const supabase = await createServerSupabaseClient();
-    const { data: { session } } = await (supabase.auth as any).getSession();
-    if (!session?.user) return NextResponse.json({ error: 'You must be logged in to accept an invitation' }, { status: 401 });
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'You must be logged in to accept an invitation' }, { status: 401 });
 
     // Use service role for DB operations (bypasses RLS)
     const admin = createServiceRoleClient();
@@ -33,15 +33,15 @@ export async function POST(request: NextRequest) {
       .from('tenant_users')
       .select('id')
       .eq('tenant_id', invite.tenant_id)
-      .eq('auth_user_id', session.user.id)
+      .eq('auth_user_id', user.id)
       .single();
 
     if (!existing) {
       // Link user to tenant
       const { error: insertError } = await admin.from('tenant_users').insert({
         tenant_id: invite.tenant_id,
-        auth_user_id: session.user.id,
-        email: session.user.email!,
+        auth_user_id: user.id,
+        email: user.email!,
         role: invite.role,
       });
 

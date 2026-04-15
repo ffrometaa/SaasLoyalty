@@ -30,8 +30,9 @@ export async function GET(request: NextRequest) {
   response.cookies.set('loyalty_tenant_id', tenantId, {
     path: '/',
     maxAge: 2592000,
-    httpOnly: false,
-    sameSite: 'lax',
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'production',
   });
   return response;
 }
