@@ -30,7 +30,7 @@ async function getFeedback(): Promise<FeedbackRow[]> {
   if (!rows || rows.length === 0) return [];
 
   // Resolve tenant names
-  const tenantIds = [...new Set(rows.map(r => r.tenant_id).filter((x): x is string => x != null))];
+  const tenantIds = Array.from(new Set(rows.map(r => r.tenant_id).filter((x): x is string => x != null)));
   const tenantMap: Record<string, string> = {};
   if (tenantIds.length > 0) {
     const { data: tenants, error: tenantsError } = await service
@@ -44,7 +44,7 @@ async function getFeedback(): Promise<FeedbackRow[]> {
   }
 
   // Resolve user emails via admin API
-  const userIds = [...new Set(rows.map(r => r.auth_user_id).filter((x): x is string => x != null))];
+  const userIds = Array.from(new Set(rows.map(r => r.auth_user_id).filter((x): x is string => x != null)));
   const emailMap: Record<string, string> = {};
   const authAdmin = (service.auth as unknown as ServiceAuthWithAdmin).admin;
   for (const uid of userIds) {
