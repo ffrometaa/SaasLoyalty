@@ -6,7 +6,7 @@ export const metadata = {
   title: 'Super Admin — LoyaltyOS',
 };
 
-export default async function AdminLayout({ children = null }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Full server-side guard — redirects to /login if not an active super admin
   const admin = await verifyAdminAccess();
 
