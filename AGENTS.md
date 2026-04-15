@@ -24,6 +24,7 @@
 - Use `createServerSupabaseClient()` in Server Components and Route Handlers
 - Use `createBrowserClient()` in Client Components only
 - Never expose service role key on the client
+- `createServiceRoleClient()` is allowed in route handlers that perform admin operations (cross-tenant writes, bypassing RLS intentionally) — document the reason with a comment
 
 ## Styling
 
