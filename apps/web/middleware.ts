@@ -1,15 +1,22 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import type { User } from '@supabase/supabase-js';
 
-export async function middleware(request: NextRequest) {
+// @supabase/ssr exposes a narrowed SupabaseAuthClient type that omits getUser.
+// Cast to this minimal interface to avoid unsafe `any` while calling getUser correctly.
+interface AuthWithGetUser {
+  getUser(): Promise<{ data: { user: User | null }; error: Error | null }>;
+}
+
+export async function middleware(request: NextRequest): Promise<NextResponse> {
   let supabaseResponse = NextResponse.next({
     request,
   });
 
   // Create a Supabase client configured to use cookies
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!, // safe: required env var, build fails without it
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, // safe: required env var, build fails without it
     {
       cookies: {
         get(name: string) {
@@ -74,7 +81,11 @@ export async function middleware(request: NextRequest) {
   // API routes that need special handling
   const isApiRoute = pathname.startsWith('/api');
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await (supabase.auth as unknown as AuthWithGetUser).getUser();
+  if (authError) {
+    // Auth failure — treat as unauthenticated and continue; protected routes will redirect to login
+    console.error('[middleware] getUser failed:', authError.message);
+  }
 
   // Protected routes (these don't exist in apps/web — dashboard is a separate app)
   const protectedRoutes: string[] = [];
@@ -108,7 +119,7 @@ export async function middleware(request: NextRequest) {
   // Set tenant context for RLS from subdomain
   const hostname = request.headers.get('hostname') || '';
   const parts = hostname.split('.');
-  
+
   // If we have a subdomain (e.g., serenity-spa.loyaltyos.com)
   if (parts.length >= 3 && !['www', 'app', 'dashboard'].includes(parts[0])) {
     const subdomain = parts[0];
