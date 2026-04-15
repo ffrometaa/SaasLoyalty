@@ -1,11 +1,16 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-import type { User } from '@supabase/supabase-js';
 
 // @supabase/ssr exposes a narrowed SupabaseAuthClient type that omits getUser.
 // Cast to this minimal interface to avoid unsafe `any` while calling getUser correctly.
+// User shape is inlined to avoid a direct dependency on @supabase/supabase-js in apps/web.
+interface SupabaseUser {
+  id: string;
+  email?: string;
+}
+
 interface AuthWithGetUser {
-  getUser(): Promise<{ data: { user: User | null }; error: Error | null }>;
+  getUser(): Promise<{ data: { user: SupabaseUser | null }; error: Error | null }>;
 }
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
