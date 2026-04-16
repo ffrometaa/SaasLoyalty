@@ -3,7 +3,8 @@ import { createServiceRoleClient } from '@loyalty-os/lib/server';
 import { buildBilingualEmail, buildPasswordResetEmail } from '@loyalty-os/email';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const { email } = await request.json();
+  const body = await request.json() as { email?: unknown };
+  const { email } = body;
 
   if (!email || typeof email !== 'string') {
     return NextResponse.json({ error: 'Email required' }, { status: 400 });

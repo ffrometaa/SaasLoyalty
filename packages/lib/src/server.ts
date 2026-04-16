@@ -1,8 +1,9 @@
-import type { User } from '@supabase/supabase-js';
+import type { User, GoTrueAdminApi } from '@supabase/supabase-js';
 
 declare module '@supabase/supabase-js' {
   interface SupabaseAuthClient {
     getUser(jwt?: string): Promise<{ data: { user: User | null }; error: Error | null }>;
+    admin: GoTrueAdminApi;
   }
 }
 
