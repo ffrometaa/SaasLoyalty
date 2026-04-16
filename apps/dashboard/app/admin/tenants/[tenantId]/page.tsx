@@ -5,30 +5,43 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-async function getTenantDetail(tenantId = '') {
+async function getTenantDetail(tenantId: string = ''): Promise<{
+  tenant: Record<string, unknown> & { owner_email: string };
+  members: Record<string, unknown>[];
+  memberCount: number;
+  campaigns: Record<string, unknown>[];
+  events: Record<string, unknown>[];
+  metrics: {
+    activeMembers: number;
+    visitsThisMonth: number;
+    redemptions: number;
+  };
+} | null> {
+  // Service role required: admin-only tenant detail view — bypasses RLS
   const service = createServiceRoleClient();
 
-  const { data: tenant } = await service
+  const { data: tenant, error: tenantError } = await service
     .from('tenants')
     .select('*')
     .eq('id', tenantId)
     .is('deleted_at', null)
     .single();
 
+  if (tenantError) console.error('[getTenantDetail] tenant query error:', tenantError);
   if (!tenant) return null;
 
   // Owner email
   let ownerEmail = '';
   if (tenant.auth_user_id) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (service.auth as any).admin.getUserById(tenant.auth_user_id);
+    const { data, error: authUserError } = await service.auth.admin.getUserById(tenant.auth_user_id);
+    if (authUserError) console.error('[getTenantDetail] getUserById error:', authUserError);
     ownerEmail = data?.user?.email ?? '';
   }
 
   const [
-    { data: members, count: memberCount },
-    { data: campaigns },
-    { data: events },
+    { data: members, count: memberCount, error: membersError },
+    { data: campaigns, error: campaignsError },
+    { data: events, error: eventsError },
     metricData,
   ] = await Promise.all([
     service
@@ -57,7 +70,18 @@ async function getTenantDetail(tenantId = '') {
     ]),
   ]);
 
-  const [{ count: activeMembers }, { count: visitsThisMonth }, { count: redemptions }] = metricData;
+  if (membersError) console.error('[getTenantDetail] members error:', membersError);
+  if (campaignsError) console.error('[getTenantDetail] campaigns error:', campaignsError);
+  if (eventsError) console.error('[getTenantDetail] events error:', eventsError);
+
+  const [
+    { count: activeMembers, error: activeMembersError },
+    { count: visitsThisMonth, error: visitsError },
+    { count: redemptions, error: redemptionsError },
+  ] = metricData;
+  if (activeMembersError) console.error('[getTenantDetail] activeMembers error:', activeMembersError);
+  if (visitsError) console.error('[getTenantDetail] visits error:', visitsError);
+  if (redemptionsError) console.error('[getTenantDetail] redemptions error:', redemptionsError);
 
   return {
     tenant: { ...tenant, owner_email: ownerEmail },
@@ -73,7 +97,7 @@ async function getTenantDetail(tenantId = '') {
   };
 }
 
-export default async function TenantDetailPage(props: { params: Promise<{ tenantId: string }> }) {
+export default async function TenantDetailPage(props: { params: Promise<{ tenantId: string }> }): Promise<JSX.Element> {
   const params = await props.params;
   await verifyAdminAccess();
   const data = await getTenantDetail(params.tenantId);

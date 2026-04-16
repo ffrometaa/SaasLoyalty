@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient, createServerSupabaseClient } from '@loyalty-os/lib/server';
 
@@ -8,7 +6,8 @@ function generateMemberCode(): string {
   return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  // Service role required: pre-auth member creation — no session exists yet
   const serviceClient = createServiceRoleClient();
 
   // Prefer Bearer token from Authorization header (avoids cookie race condition
@@ -19,19 +18,17 @@ export async function POST(request: NextRequest) {
 
   let userId: string;
   let userEmail: string;
-  // 
   let meta: Record<string, unknown>;
 
   if (accessToken) {
-    const { data: { user } } = await (serviceClient.auth as any).getUser(accessToken);
+    const { data: { user } } = await serviceClient.auth.getUser(accessToken);
     if (!user) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     userId = user.id;
     userEmail = user.email ?? '';
     meta = user.user_metadata ?? {};
   } else {
     const supabase = await createServerSupabaseClient();
-    // 
-    const { data: { user } } = await (supabase.auth as any).getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'No session' }, { status: 401 });
     userId = user.id;
     userEmail = user.email ?? '';
@@ -62,12 +59,15 @@ export async function POST(request: NextRequest) {
     || userEmail.split('@')[0];
 
   // 1. Already linked? (any status — if inactive, reactivate it)
-  const { data: linked } = await serviceClient
+  const { data: linked, error: linkedError } = await serviceClient
     .from('members')
     .select('id, status')
     .eq('auth_user_id', userId)
     .eq('tenant_id', resolvedTenantId)
     .single();
+  if (linkedError && linkedError.code !== 'PGRST116') {
+    console.error('[create-member] linked query error:', linkedError);
+  }
 
   if (linked) {
     if (linked.status !== 'active') {
@@ -77,13 +77,16 @@ export async function POST(request: NextRequest) {
   }
 
   // 2. Link by email (dashboard-created member with auth_user_id = null)
-  const { data: emailMember } = await serviceClient
+  const { data: emailMember, error: emailMemberError } = await serviceClient
     .from('members')
     .select('id')
     .eq('email', userEmail)
     .eq('tenant_id', resolvedTenantId)
     .is('auth_user_id', null)
     .single();
+  if (emailMemberError && emailMemberError.code !== 'PGRST116') {
+    console.error('[create-member] emailMember query error:', emailMemberError);
+  }
 
   if (emailMember) {
     await serviceClient.from('members').update({
@@ -102,22 +105,26 @@ export async function POST(request: NextRequest) {
   // 3. Resolve referrer (optional)
   let referredBy: string | null = null;
   if (referralCode) {
-    const { data: referrer } = await serviceClient
+    const { data: referrer, error: referrerError } = await serviceClient
       .from('members')
       .select('id')
       .eq('referral_code', referralCode.toUpperCase())
       .eq('tenant_id', resolvedTenantId)
       .eq('status', 'active')
       .single();
+    if (referrerError && referrerError.code !== 'PGRST116') {
+      console.error('[create-member] referrer query error:', referrerError);
+    }
     referredBy = referrer?.id ?? null;
   }
 
   // 4. Fetch tenant to check welcome bonus
-  const { data: tenantConfig } = await serviceClient
+  const { data: tenantConfig, error: tenantConfigError } = await serviceClient
     .from('tenants')
     .select('welcome_bonus_enabled, welcome_bonus_points')
     .eq('id', resolvedTenantId)
     .single();
+  if (tenantConfigError) console.error('[create-member] tenantConfig query error:', tenantConfigError);
 
   const welcomeBonus = tenantConfig?.welcome_bonus_enabled ? (tenantConfig.welcome_bonus_points ?? 50) : 0;
 
@@ -156,13 +163,14 @@ export async function POST(request: NextRequest) {
 
   // Apply welcome bonus if configured
   if (welcomeBonus > 0) {
-    const { data: newMember } = await serviceClient
+    const { data: newMember, error: newMemberError } = await serviceClient
       .from('members')
       .select('id')
       .eq('auth_user_id', userId)
       .eq('tenant_id', resolvedTenantId)
       .single();
 
+    if (newMemberError) console.error('[create-member] newMember query error:', newMemberError);
     if (newMember) {
       await serviceClient.from('transactions').insert({
         tenant_id: resolvedTenantId,

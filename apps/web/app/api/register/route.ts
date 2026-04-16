@@ -8,15 +8,16 @@ import {
   FOUNDING_PARTNER_COUPON_ID,
 } from '@loyalty-os/config';
 
+// Required: STRIPE_SECRET_KEY must be defined in all environments — see .env.example
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
 });
 
-// Price IDs from environment
+// Price IDs from environment — required: must be defined in all environments
 const PRICE_IDS = {
-  starter: process.env.STRIPE_STARTER_PRICE_ID!,
-  pro: process.env.STRIPE_PRO_PRICE_ID!,
-  scale: process.env.STRIPE_SCALE_PRICE_ID!,
+  starter: process.env.STRIPE_STARTER_PRICE_ID!, // Required: see .env.example
+  pro: process.env.STRIPE_PRO_PRICE_ID!,          // Required: see .env.example
+  scale: process.env.STRIPE_SCALE_PRICE_ID!,      // Required: see .env.example
 };
 
 // Annual price IDs — create these in the Stripe dashboard as annual recurring prices
@@ -29,7 +30,7 @@ const ANNUAL_PRICE_IDS = {
   scale: process.env.STRIPE_SCALE_ANNUAL_PRICE_ID,
 };
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const limiter = getRegisterRatelimit();
     if (limiter) {
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     const authSupabase = await createServerSupabaseClient();
-    const { data: { user: authedUser } } = await (authSupabase.auth as any).getUser();
+    const { data: { user: authedUser } } = await authSupabase.auth.getUser();
     if (!authedUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -77,14 +78,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Service role required: tenant creation during registration — no session exists yet
     const supabase = createServiceRoleClient();
 
     // Check if slug is already taken
-    const { data: existingTenant } = await supabase
+    const { data: existingTenant, error: slugCheckError } = await supabase
       .from('tenants')
       .select('id')
       .eq('slug', slug)
       .single();
+    if (slugCheckError && slugCheckError.code !== 'PGRST116') console.error('[register] slug check error:', slugCheckError);
 
     if (existingTenant) {
       return NextResponse.json(
@@ -158,11 +161,12 @@ export async function POST(request: NextRequest) {
 
     // Record DPA consent if accepted at registration time
     if (acceptedDpa) {
-      const { data: newTenant } = await supabase
+      const { data: newTenant, error: newTenantError } = await supabase
         .from('tenants')
         .select('id')
         .eq('slug', slug)
         .single();
+      if (newTenantError) console.error('[register] newTenant lookup error:', newTenantError);
 
       if (newTenant) {
         await supabase.from('tenant_consents').insert({

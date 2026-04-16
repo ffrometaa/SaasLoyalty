@@ -35,7 +35,7 @@ const fetchMembersList = unstable_cache(
       query = query.eq('status', status);
     }
 
-    query = query.order(sortBy as any, { ascending: sortOrder === 'asc' });
+    query = query.order(sortBy, { ascending: sortOrder === 'asc' });
 
     const from = (page - 1) * limit;
     const to = from + limit - 1;
@@ -60,7 +60,7 @@ const fetchMembersList = unstable_cache(
 );
 
 // GET /api/members - List members
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await getAuthedUser();
     if (!user) {
@@ -69,21 +69,23 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createServerSupabaseClient();
 
-    const { data: ownerTenant } = await supabase
+    const { data: ownerTenant, error: ownerError } = await supabase
       .from('tenants')
       .select('id')
       .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
+    if (ownerError) console.error('[members GET] tenant lookup error:', ownerError);
 
     let tenantId: string | null = ownerTenant?.id ?? null;
 
     if (!tenantId) {
-      const { data: staffRecord } = await supabase
+      const { data: staffRecord, error: staffError } = await supabase
         .from('tenant_users')
         .select('tenant_id')
         .eq('auth_user_id', user.id)
         .single();
+      if (staffError) console.error('[members GET] staff lookup error:', staffError);
       tenantId = staffRecord?.tenant_id ?? null;
     }
 
@@ -112,10 +114,10 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/members - Create member
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const supabase = await createServerSupabaseClient();
-    const body = await request.json();
+    const body = await request.json() as { name?: string; email?: string; phone?: string; sendInvite?: boolean };
     const { name, email, phone, sendInvite } = body;
 
     // Validate input
@@ -134,30 +136,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: tenant } = await supabase
+    const { data: tenant, error: tenantError } = await supabase
       .from('tenants')
       .select('id, slug, business_name, brand_logo_url, brand_color_primary, plan, plan_status')
       .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
+    if (tenantError) console.error('[members POST] tenant lookup error:', tenantError);
 
     if (!tenant) {
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     }
 
     const tenantId = tenant.id;
-    const tenantPlan = ((tenant.plan as string) || 'starter') as Plan;
+    const tenantPlan = (tenant.plan ?? 'starter') as Plan;
 
     // Enforce plan member limit using service role to avoid RLS issues
     if (tenant.plan_status !== 'active' && tenant.plan_status !== 'trialing') {
       return NextResponse.json({ error: 'Subscription is not active' }, { status: 403 });
     }
 
-    const { count: memberCount } = await createServiceRoleClient()
+    const { count: memberCount, error: memberCountError } = await createServiceRoleClient()
       .from('members')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .is('deleted_at', null);
+    if (memberCountError) console.error('[members POST] memberCount error:', memberCountError);
 
     if (!canAddMember(tenantPlan, memberCount ?? 0)) {
       return NextResponse.json({ error: `Member limit reached for your ${tenantPlan} plan. Please upgrade.` }, { status: 403 });

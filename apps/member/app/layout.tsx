@@ -50,11 +50,11 @@ export const viewport: Viewport = {
 async function getPendingConsentCount(): Promise<number> {
   try {
     const supabase = await createServerSupabaseClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: userData } = await (supabase.auth as any).getUser();
+    const { data: userData } = await supabase.auth.getUser();
     const user = userData?.user ?? null;
     if (!user) return 0;
 
+    // Service role required: server-side consent check — bypasses RLS for layout data
     const service = createServiceRoleClient();
     const { data: member } = await service
       .from('members')
@@ -75,7 +75,7 @@ async function getPendingConsentCount(): Promise<number> {
   }
 }
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }): Promise<JSX.Element> {
   const locale = await getLocale();
   const messages = await getMessages();
   const pendingCount = await getPendingConsentCount();
@@ -88,7 +88,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body
         className="min-h-screen"
-        style={{ fontFamily: "var(--font-jost, 'Jost', sans-serif)" }}
       >
         <NextIntlClientProvider messages={messages}>
           <ImpersonationBanner />

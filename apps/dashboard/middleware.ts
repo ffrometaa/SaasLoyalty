@@ -2,12 +2,12 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { getOtpRatelimit, getForgotPasswordRatelimit } from './lib/ratelimit';
 
-export async function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest): Promise<NextResponse> {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL! /* Required: must be defined in all environments — validated at startup */,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! /* Required: must be defined in all environments — validated at startup */,
     {
       cookies: {
         get(name: string) {
@@ -88,7 +88,7 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
-  const { data: { user } } = await (supabase.auth as any).getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   // Unauthenticated users: redirect to login for all protected routes
   if (!user) {

@@ -2,10 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@loyalty-os/lib/server';
 import { getInviteTokenRatelimit } from '@/lib/ratelimit';
 
+interface RawInviteRow {
+  id: string;
+  email: string;
+  role: string;
+  status: string;
+  expires_at: string;
+  tenant_id: string;
+  invited_by: string;
+  tenants: { business_name: string } | null;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
-) {
+): Promise<NextResponse> {
   try {
     const inviteTokenLimiter = getInviteTokenRatelimit();
     if (inviteTokenLimiter) {
@@ -26,13 +37,16 @@ export async function GET(
       }
     }
     const { token } = await params;
+    // Service role required: invite token lookup without authenticated session — bypasses RLS
     const supabase = createServiceRoleClient();
 
-    const { data: invite } = await supabase
+    const { data: invite, error: inviteError } = await supabase
       .from('invitations')
       .select('id, email, role, status, expires_at, tenant_id, invited_by, tenants(business_name)')
       .eq('token', token)
+      .returns<RawInviteRow>()
       .single();
+    if (inviteError) console.error('[invite GET] invite lookup error:', inviteError);
 
     if (!invite) {
       return NextResponse.json({ error: 'Invitation not found' }, { status: 404 });
@@ -47,13 +61,11 @@ export async function GET(
       return NextResponse.json({ error: 'This invitation has expired' }, { status: 410 });
     }
 
-    const tenant = invite.tenants as any;
-
     return NextResponse.json({
       id: invite.id,
       email: invite.email,
       role: invite.role,
-      businessName: tenant?.business_name ?? '',
+      businessName: invite.tenants?.business_name ?? '',
     });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

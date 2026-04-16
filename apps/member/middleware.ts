@@ -31,7 +31,7 @@ function isPublic(pathname: string): boolean {
   return PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 }
 
-export async function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
 
   // Rate limiting — apply to auth endpoints before any session check
@@ -43,7 +43,7 @@ export async function middleware(request: NextRequest) {
         request.headers.get('x-real-ip') ??
         '127.0.0.1';
 
-      const { success, limit, remaining, reset } = await ratelimit.limit(ip);
+      const { success, limit, reset } = await ratelimit.limit(ip);
 
       if (!success) {
         const retryAfter = Math.ceil((reset - Date.now()) / 1000);
@@ -70,8 +70,8 @@ export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL! /* Required: must be defined in all environments — validated at startup */,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! /* Required: must be defined in all environments — validated at startup */,
     {
       cookies: {
         get(name: string) {
@@ -91,12 +91,10 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: { user } } = await (supabase.auth as any).getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     // No session — redirect to join, preserving tenant context
-    const tenantSlug = request.cookies.get('loyalty_tenant_id')?.value;
     const loginUrl = request.nextUrl.clone();
     // In member app, we use /join, not /login. We don't have [tenantSlug] dynamic route, so we just redirect to /join
     loginUrl.pathname = '/join';

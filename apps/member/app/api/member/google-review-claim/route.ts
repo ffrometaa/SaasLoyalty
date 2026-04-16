@@ -3,11 +3,10 @@ import { createServiceRoleClient, createServerSupabaseClient } from '@loyalty-os
 import { cookies } from 'next/headers';
 import { getGoogleReviewRatelimit } from '@/lib/ratelimit';
 
-export async function POST() {
+export async function POST(): Promise<NextResponse> {
   try {
     const supabase = await createServerSupabaseClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: { user } } = await (supabase.auth as any).getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const reviewLimiter = getGoogleReviewRatelimit();
@@ -30,10 +29,11 @@ export async function POST() {
     const tenantId = (await cookies()).get('loyalty_tenant_id')?.value;
     if (!tenantId) return NextResponse.json({ error: 'No tenant' }, { status: 400 });
 
+    // Service role required: points transaction + member update — bypasses RLS
     const service = createServiceRoleClient();
 
     // Load member and tenant config
-    const [{ data: member }, { data: tenant }] = await Promise.all([
+    const [memberResult, tenantResult] = await Promise.all([
       service.from('members')
         .select('id, points_balance, points_lifetime, google_review_claimed_at')
         .eq('auth_user_id', user.id)
@@ -45,6 +45,10 @@ export async function POST() {
         .eq('id', tenantId)
         .single(),
     ]);
+    if (memberResult.error) console.error('[google-review-claim] member query error:', memberResult.error);
+    if (tenantResult.error) console.error('[google-review-claim] tenant query error:', tenantResult.error);
+    const member = memberResult.data;
+    const tenant = tenantResult.data;
 
     if (!member) return NextResponse.json({ error: 'Member not found' }, { status: 404 });
     if (!tenant?.google_review_bonus_enabled) return NextResponse.json({ error: 'Feature not enabled' }, { status: 403 });
@@ -54,7 +58,7 @@ export async function POST() {
     const newBalance = member.points_balance + bonus;
     const newLifetime = member.points_lifetime + bonus;
 
-    await Promise.all([
+    const [txResult, memberUpdateResult] = await Promise.all([
       service.from('transactions').insert({
         tenant_id: tenantId,
         member_id: member.id,
@@ -69,6 +73,11 @@ export async function POST() {
         google_review_claimed_at: new Date().toISOString(),
       }).eq('id', member.id),
     ]);
+
+    if (txResult.error || memberUpdateResult.error) {
+      console.error('[google-review-claim] write error:', txResult.error ?? memberUpdateResult.error);
+      return NextResponse.json({ error: 'Failed to record reward' }, { status: 500 });
+    }
 
     return NextResponse.json({ ok: true, pointsAwarded: bonus, newBalance });
   } catch {

@@ -4,36 +4,59 @@ import { TenantsTable } from '@/components/admin/TenantsTable';
 
 export const dynamic = 'force-dynamic';
 
-function getPlanMRR(plan = '') {
+function getPlanMRR(plan: string = ''): number {
   if (plan === 'starter') return 79;
   if (plan === 'pro') return 199;
   if (plan === 'scale') return 399;
   return 0;
 }
 
-async function getAllTenants() {
+interface TenantBaseRow {
+  id: string;
+  business_name: string;
+  business_type: string | null;
+  slug: string | null;
+  plan: string | null;
+  plan_status: string | null;
+  stripe_customer_id: string | null;
+  trial_ends_at: string | null;
+  created_at: string;
+  auth_user_id: string | null;
+}
+
+interface TenantEnriched extends TenantBaseRow {
+  member_count: number;
+  owner_email: string;
+  last_activity_at: string | null;
+  mrr: number;
+}
+
+async function getAllTenants(): Promise<TenantEnriched[]> {
+  // Service role required: admin-only tenant list — bypasses RLS
   const service = createServiceRoleClient();
 
-  const { data: tenants } = await service
+  const { data: tenants, error: tenantsError } = await service
     .from('tenants')
     .select('id, business_name, business_type, slug, plan, plan_status, stripe_customer_id, trial_ends_at, created_at, auth_user_id')
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
+  if (tenantsError) console.error('[getAllTenants] error:', tenantsError);
 
   if (!tenants) return [];
 
   const enriched = await Promise.all(
-    tenants.map(async (t = { id: '', auth_user_id: null, plan: '', plan_status: '' }) => {
-      const { count: memberCount } = await service
+    tenants.map(async (t: TenantBaseRow): Promise<TenantEnriched> => {
+      const { count: memberCount, error: memberCountError } = await service
         .from('members')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', t.id);
+      if (memberCountError) console.error('[getAllTenants] memberCount error:', memberCountError);
 
       // Get owner email from auth.users via auth_user_id
       let ownerEmail = '';
       if (t.auth_user_id) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: user } = await (service.auth as any).admin.getUserById(t.auth_user_id);
+        const { data: user, error: userError } = await service.auth.admin.getUserById(t.auth_user_id);
+        if (userError) console.error('[getAllTenants] getUserById error:', userError);
         ownerEmail = user?.user?.email ?? '';
       }
 
@@ -44,6 +67,7 @@ async function getAllTenants() {
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
+      if (lastVisit.error && lastVisit.error.code !== 'PGRST116') console.error('[getAllTenants] lastVisit error:', lastVisit.error);
 
       return {
         ...t,
@@ -58,7 +82,7 @@ async function getAllTenants() {
   return enriched;
 }
 
-export default async function AdminTenantsPage() {
+export default async function AdminTenantsPage(): Promise<JSX.Element> {
   await verifyAdminAccess();
   const tenants = await getAllTenants();
 

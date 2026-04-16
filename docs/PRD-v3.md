@@ -566,7 +566,29 @@ Permite calcular NRR (Net Revenue Retention) histórico.
 
 ---
 
-### 6.6 Super Admin — Expansión de Platform Configuration (Medium, Phase 3)
+### 6.6 Refactor pendiente: SC/CC split en 4 páginas del Dashboard (Medium, Deuda Técnica)
+
+**Contexto:** El Guardian Angel (pre-commit hook) bloquea el patrón `fetch-in-useEffect` para datos de carga inicial — viola la regla de arquitectura Next.js App Router. Las siguientes páginas tienen datos cargados en `useEffect` que deben migrar al Server Component padre:
+
+| Página | Datos que migran al SC |
+|--------|----------------------|
+| `apps/dashboard/app/(dashboard)/members/page.tsx` | Lista de miembros del tenant |
+| `apps/dashboard/app/(dashboard)/members/[id]/page.tsx` | Detalle del miembro + historial de transacciones |
+| `apps/dashboard/app/(dashboard)/settings/page.tsx` | Settings del tenant (branding, invoices) |
+| `apps/dashboard/app/(dashboard)/redemptions/page.tsx` | Historial de redenciones |
+
+**Patrón a aplicar (igual que `invite/[token]`):**
+1. Crear `*Client.tsx` con el estado interactivo y los `useState`/`useEffect` de UI
+2. Reescribir `page.tsx` como `async` Server Component que fetchea datos y los pasa como props
+3. El único `useEffect` permitido en el Client Component es el de estado de sesión/auth o suscripciones en tiempo real
+
+**Bloqueo adicional en `settings/page.tsx`:** Los swatches de color del branding usan `style={{ backgroundColor: color }}` — valor dinámico en runtime que no puede expresarse con clases Tailwind estáticas. Documentar como excepción justificada en comentario inline al hacer el split.
+
+**Prioridad:** Medium — commitear en un sprint dedicado antes de abrir el Dashboard a nuevos tenants. Las 4 páginas funcionan correctamente hoy; el bloqueo es solo del pre-commit hook.
+
+---
+
+### 6.7 Super Admin — Expansión de Platform Configuration (Medium, Phase 3)
 
 **Contexto actual:**
 
@@ -769,6 +791,8 @@ Los siguientes items son candidatos para Phase 4 sin bloqueo de marketing, pero 
 | Notificaciones | Solo push | ✅ In-app + push + historial |
 | Phase 3 completado | 0% | ✅ 5 de 9 módulos |
 | Planes en Landing | 4 planes (Starter/Pro/Scale/Enterprise) | ✅ Solo Starter y Pro — decisión de marketing 2026-04-08 |
+| TypeScript type safety | `any` implícito en Supabase queries y handlers | ✅ Zero `any` — interfaces explícitas + `.returns<>()` en todas las queries + return types en todas las funciones (Abril 2026) |
+| Invite page | Client Component con fetch-in-useEffect | ✅ SC/CC split — Server Component fetchea invite, Client Component maneja auth y accept |
 
 ---
 

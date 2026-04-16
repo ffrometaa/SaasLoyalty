@@ -46,8 +46,22 @@ function makePatchRequest(path: string, body: unknown): NextRequest {
  * - chaining methods (select, eq, is, or, order, limit, update, insert) return `this`
  * - terminal methods resolve with configurable values
  */
-function makeQueryChain() {
-  const chain: any = {};
+interface MockQueryChain {
+  select: ReturnType<typeof vi.fn>;
+  eq: ReturnType<typeof vi.fn>;
+  is: ReturnType<typeof vi.fn>;
+  or: ReturnType<typeof vi.fn>;
+  order: ReturnType<typeof vi.fn>;
+  limit: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  insert: ReturnType<typeof vi.fn>;
+  single: ReturnType<typeof vi.fn>;
+  range: ReturnType<typeof vi.fn>;
+  upsert: ReturnType<typeof vi.fn>;
+}
+
+function makeQueryChain(): MockQueryChain {
+  const chain = {} as MockQueryChain;
   chain.select = vi.fn().mockReturnValue(chain);
   chain.eq = vi.fn().mockReturnValue(chain);
   chain.is = vi.fn().mockReturnValue(chain);
@@ -62,12 +76,19 @@ function makeQueryChain() {
   return chain;
 }
 
+interface MockCountChain {
+  select: ReturnType<typeof vi.fn>;
+  eq: ReturnType<typeof vi.fn>;
+  is: ReturnType<typeof vi.fn>;
+  then: (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) => Promise<unknown>;
+}
+
 /**
  * Creates a thenable chain (no .single()/.range()) for direct `await` queries,
  * e.g. `const { count } = await client.from('members').select('id', { count: 'exact', head: true }).eq(...).is(...)`
  */
-function makeCountChain(count: number) {
-  const chain: any = {};
+function makeCountChain(count: number): MockCountChain {
+  const chain = {} as MockCountChain;
   chain.select = vi.fn().mockReturnValue(chain);
   chain.eq = vi.fn().mockReturnValue(chain);
   chain.is = vi.fn().mockReturnValue(chain);

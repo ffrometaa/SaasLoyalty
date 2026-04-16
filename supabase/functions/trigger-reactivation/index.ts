@@ -3,6 +3,7 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 // Note: Cannot import from @loyalty-os/email in Deno edge functions.
 // Template helpers are inlined below.
@@ -192,8 +193,7 @@ serve(async (req: Request) => {
   }
 });
 
-// deno-lint-ignore no-explicit-any
-async function sendReactivationEmail(supabase: any, member: Record<string, unknown>, step: number) {
+async function sendReactivationEmail(supabase: SupabaseClient, member: Record<string, unknown>, step: number) {
   if (!member.accepts_email) return;
 
   const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
@@ -247,8 +247,7 @@ async function sendReactivationEmail(supabase: any, member: Record<string, unkno
   });
 }
 
-// deno-lint-ignore no-explicit-any
-async function sendReactivationPush(supabase: any, member: Record<string, unknown>, step: number) {
+async function sendReactivationPush(supabase: SupabaseClient, member: Record<string, unknown>, step: number) {
   if (!member.accepts_push) return;
 
   const ONESIGNAL_APP_ID = Deno.env.get('ONESIGNAL_APP_ID');

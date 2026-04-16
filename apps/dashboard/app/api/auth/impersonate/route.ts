@@ -24,7 +24,7 @@ function decodeJWT(token: string): Record<string, unknown> | null {
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return null;
-    return JSON.parse(Buffer.from(parts[1]!, 'base64url').toString());
+    return JSON.parse(Buffer.from(parts[1]! /* Safe: parts.length === 3 guard above ensures index 1 exists */, 'base64url').toString());
   } catch {
     return null;
   }
@@ -32,7 +32,7 @@ function decodeJWT(token: string): Record<string, unknown> | null {
 
 // ─── POST /api/auth/impersonate ───────────────────────────────────────────────
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     // 1. Authenticate caller
     const user = await getAuthedUser();
@@ -40,20 +40,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Service role required: impersonation token + tenant lookup — bypasses RLS
     const service = createServiceRoleClient();
 
     // 2. Verify super admin (must be in super_admins table and active)
-    const { data: superAdmin } = await service
+    const { data: superAdmin, error: superAdminError } = await service
       .from('super_admins')
       .select('id, email, full_name')
       .eq('user_id', user.id)
       .eq('is_active', true)
       .single();
+    if (superAdminError) console.error('[impersonate POST] superAdmin lookup error:', superAdminError);
 
     if (!superAdmin) {
       return NextResponse.json({ error: 'Forbidden: super admin access required' }, { status: 403 });
     }
 
+    // Safe: API boundary cast — request body is validated by the caller (internal dashboard)
     const body = await request.json() as {
       targetType: 'tenant' | 'member';
       targetId: string;
@@ -73,19 +76,20 @@ export async function POST(request: NextRequest) {
     let impersonationLevel: 'super_admin_to_tenant' | 'super_admin_to_member';
 
     if (targetType === 'tenant') {
-      const { data: tenant } = await service
+      const { data: tenant, error: tenantError } = await service
         .from('tenants')
         .select('id, auth_user_id, business_name, plan_status')
         .eq('id', targetId)
         .is('deleted_at', null)
         .single();
+      if (tenantError) console.error('[impersonate POST] tenant lookup error:', tenantError);
 
       if (!tenant?.auth_user_id) {
         return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: authUser } = await (service.auth as any).admin.getUserById(tenant.auth_user_id);
+      const { data: authUser, error: authUserError } = await service.auth.admin.getUserById(tenant.auth_user_id);
+      if (authUserError) console.error('[impersonate POST] getUserById error:', authUserError);
 
       targetAuthUserId = tenant.auth_user_id;
       targetTenantId   = tenant.id;
@@ -94,11 +98,12 @@ export async function POST(request: NextRequest) {
       impersonationLevel = 'super_admin_to_tenant';
 
     } else if (targetType === 'member') {
-      const { data: member } = await service
+      const { data: member, error: memberError } = await service
         .from('members')
         .select('id, auth_user_id, tenant_id, email, name, status')
         .eq('id', targetId)
         .single();
+      if (memberError) console.error('[impersonate POST] member lookup error:', memberError);
 
       if (!member?.auth_user_id) {
         return NextResponse.json({ error: 'Member not found' }, { status: 404 });
@@ -132,7 +137,7 @@ export async function POST(request: NextRequest) {
       exp:                now + expiresIn,
     };
 
-    const jwtSecret  = process.env.SUPABASE_JWT_SECRET!;
+    const jwtSecret  = process.env.SUPABASE_JWT_SECRET! /* Required: must be defined in all environments — see .env.example */;
     const accessToken = signJWT(payload, jwtSecret);
 
     // 5. Hash token for audit (never store raw tokens)
@@ -208,13 +213,14 @@ export async function POST(request: NextRequest) {
 
 // ─── DELETE /api/auth/impersonate ─────────────────────────────────────────────
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await getAuthedUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Safe: API boundary cast — request body is validated by the caller (internal dashboard)
     const { token } = await request.json() as { token: string };
     if (!token) {
       return NextResponse.json({ error: 'Missing token' }, { status: 400 });
@@ -226,6 +232,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    // Service role required: impersonation token + tenant lookup — bypasses RLS
     const service   = createServiceRoleClient();
 
     // Mark ended

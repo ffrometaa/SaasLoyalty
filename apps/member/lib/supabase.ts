@@ -8,14 +8,11 @@ export { createServerSupabaseClient, createServiceRoleClient };
  * Wraps supabase.auth.getUser() with explicit typing to work around
  * @supabase/ssr 0.5.x TypeScript inference issue.
  */
-export async function getServerUser() {
+export async function getServerUser(): Promise<{ id: string; email?: string } | null> {
   const supabase = await createServerSupabaseClient();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const authClient = supabase.auth as any;
-  const {
-    data: { user },
-  } = await authClient.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
+  // Narrow Supabase User type to the fields used by the app
   return user as { id: string; email?: string } | null;
 }

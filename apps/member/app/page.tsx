@@ -45,7 +45,7 @@ async function getActiveMultiplier(tenantId: string): Promise<ActiveMultiplier |
   try {
     const supabase = await createServerSupabaseClient();
     const now = new Date().toISOString();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('point_multipliers')
       .select('id, name, multiplier, ends_at')
       .eq('tenant_id', tenantId)
@@ -54,9 +54,12 @@ async function getActiveMultiplier(tenantId: string): Promise<ActiveMultiplier |
       .gte('ends_at', now)
       .order('multiplier', { ascending: false })
       .limit(1)
+      .returns<ActiveMultiplier>()
       .maybeSingle();
-    return data as ActiveMultiplier | null;
-  } catch {
+    if (error) console.error('[getActiveMultiplier] query error:', error);
+    return data;
+  } catch (err) {
+    console.error('[getActiveMultiplier] error:', err);
     return null;
   }
 }
@@ -64,7 +67,7 @@ async function getActiveMultiplier(tenantId: string): Promise<ActiveMultiplier |
 async function getTopDynamicChallenge(tenantId: string, memberId: string): Promise<DynamicChallenge | null> {
   try {
     const supabase = await createServerSupabaseClient();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('dynamic_challenges')
       .select('id, name, type, goal_value, bonus_points, current_value, expires_at')
       .eq('tenant_id', tenantId)
@@ -74,9 +77,12 @@ async function getTopDynamicChallenge(tenantId: string, memberId: string): Promi
       .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false })
       .limit(1)
+      .returns<DynamicChallenge>()
       .maybeSingle();
-    return data as DynamicChallenge | null;
-  } catch {
+    if (error) console.error('[getTopDynamicChallenge] query error:', error);
+    return data;
+  } catch (err) {
+    console.error('[getTopDynamicChallenge] error:', err);
     return null;
   }
 }
@@ -89,11 +95,23 @@ const TYPE_ICONS: Record<string, string> = {
   streak: '🔥',
 };
 
-export default async function HomePage() {
+function progressWidthClass(current: number, goal: number): string {
+  const pct = goal > 0 ? Math.min(100, Math.round((current / goal) * 100)) : 0;
+  if (pct >= 100) return 'w-full';
+  if (pct >= 88) return 'w-11/12';
+  if (pct >= 75) return 'w-3/4';
+  if (pct >= 63) return 'w-2/3';
+  if (pct >= 50) return 'w-1/2';
+  if (pct >= 38) return 'w-5/12';
+  if (pct >= 25) return 'w-1/4';
+  if (pct >= 13) return 'w-1/6';
+  return 'w-1/12';
+}
+
+export default async function HomePage(): Promise<JSX.Element> {
   const t = await getTranslations('home');
   const supabase = await createServerSupabaseClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: { user } } = await (supabase.auth as any).getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   const tenantId = (await cookies()).get('loyalty_tenant_id')?.value;
 
@@ -150,7 +168,7 @@ export default async function HomePage() {
         isNewMember={isNewMember}
       />
 
-      <main className="pb-safe" style={{ background: 'var(--cream)' }}>
+      <main className="pb-safe bg-[var(--cream)]">
         {/* Hero with points card */}
         <MemberHero member={member} />
 
@@ -162,8 +180,7 @@ export default async function HomePage() {
         {/* ── ACTIVE MULTIPLIER BANNER ── */}
         {activeMultiplier && (
           <div
-            className="mx-5 mt-4 px-4 py-3 rounded-2xl flex items-center gap-3"
-            style={{ background: 'var(--brand-primary)', color: 'white' }}
+            className="mx-5 mt-4 px-4 py-3 rounded-2xl flex items-center gap-3 bg-[var(--brand-primary)] text-white"
           >
             <span className="text-2xl">⚡</span>
             <div className="flex-1 min-w-0">
@@ -180,32 +197,26 @@ export default async function HomePage() {
           <div className="mx-5 mt-4">
             <Link
               href="/challenges"
-              className="block rounded-2xl p-4"
-              style={{ background: 'white', border: '2px solid var(--brand-primary)' }}
+              className="block rounded-2xl p-4 bg-white border-2 border-[var(--brand-primary)]"
             >
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-base">{TYPE_ICONS[dynamicChallenge.type] ?? '🎯'}</span>
                 <span
-                  className="text-xs font-semibold px-2 py-0.5 rounded-full text-white"
-                  style={{ background: 'var(--brand-primary)' }}
+                  className="text-xs font-semibold px-2 py-0.5 rounded-full text-white bg-[var(--brand-primary)]"
                 >
                   {t('justForYou')}
                 </span>
               </div>
-              <p className="text-sm font-semibold truncate mb-1" style={{ color: 'var(--text)' }}>
+              <p className="text-sm font-semibold truncate mb-1 text-[var(--text)]">
                 {dynamicChallenge.name}
               </p>
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
+                <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-[var(--border)]">
                   <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${Math.min(100, Math.round((dynamicChallenge.current_value / dynamicChallenge.goal_value) * 100))}%`,
-                      background: 'var(--brand-primary)',
-                    }}
+                    className={`h-full rounded-full bg-[var(--brand-primary)] ${progressWidthClass(dynamicChallenge.current_value, dynamicChallenge.goal_value)}`}
                   />
                 </div>
-                <span className="text-xs font-semibold shrink-0" style={{ color: 'var(--brand-primary-dark)' }}>
+                <span className="text-xs font-semibold shrink-0 text-[var(--brand-primary-dark)]">
                   +{dynamicChallenge.bonus_points} pts
                 </span>
               </div>
@@ -242,7 +253,7 @@ export default async function HomePage() {
         {/* Transaction history */}
         <div className="mt-6 px-5 pb-8">
           <div className="flex justify-between items-center mb-3.5">
-            <span className="font-display text-xl font-normal" style={{ color: 'var(--text)' }}>
+            <span className="font-display text-xl font-normal text-[var(--text)]">
               {t('recentActivity')}
             </span>
           </div>

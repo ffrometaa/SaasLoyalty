@@ -2,11 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 import { cookies } from 'next/headers';
 
-export async function PATCH(request: NextRequest) {
+export async function PATCH(request: NextRequest): Promise<NextResponse> {
   try {
     const supabase = await createServerSupabaseClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: { user } } = await (supabase.auth as any).getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const tenantId = (await cookies()).get('loyalty_tenant_id')?.value;
@@ -17,6 +16,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
+    // Service role required: profile update — bypasses RLS for member-scoped write
     const service = createServiceRoleClient();
     const { error } = await service
       .from('members')

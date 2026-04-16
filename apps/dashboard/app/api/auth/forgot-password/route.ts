@@ -2,18 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@loyalty-os/lib/server';
 import { buildBilingualEmail, buildPasswordResetEmail } from '@loyalty-os/email';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   const { email } = await request.json();
 
   if (!email || typeof email !== 'string') {
     return NextResponse.json({ error: 'Email required' }, { status: 400 });
   }
 
+  // Service role required: auth admin link generation — bypasses RLS
   const serviceClient = createServiceRoleClient();
   const dashboardUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://dashboard.loyalbase.dev';
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (serviceClient.auth as any).admin.generateLink({
+  const { data, error } = await serviceClient.auth.admin.generateLink({
     type: 'recovery',
     email: email.trim().toLowerCase(),
     options: {

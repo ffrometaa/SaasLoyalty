@@ -2,23 +2,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 
 // GET /api/consent — returns pending documents for the current member
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   // Try cookie-based auth first
   const supabase = await createServerSupabaseClient();
   let user = null;
 
   try {
-    const { data } = await (supabase.auth as any).getUser(); // eslint-disable-line @typescript-eslint/no-explicit-any
+    const { data } = await supabase.auth.getUser();
     user = data?.user ?? null;
-  } catch {}
+  } catch (err) {
+    console.error('[consent] cookie auth error:', err);
+  }
 
   // Fallback: Bearer token (post-signup race condition)
   if (!user) {
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (token) {
+      // Service role required: consent lookup — cookie auth failed, falling back to Bearer token
       const service = createServiceRoleClient();
-      const { data } = await (service.auth as any).getUser(token); // eslint-disable-line @typescript-eslint/no-explicit-any
+      const { data } = await service.auth.getUser(token);
       user = data?.user ?? null;
     }
   }
@@ -27,6 +30,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Service role required: consent data read — bypasses RLS for member-scoped data
   const service = createServiceRoleClient();
 
   // Get member record
@@ -55,21 +59,24 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/consent — record consent for one or more documents
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   const supabase = await createServerSupabaseClient();
   let user = null;
 
   try {
-    const { data } = await (supabase.auth as any).getUser(); // eslint-disable-line @typescript-eslint/no-explicit-any
+    const { data } = await supabase.auth.getUser();
     user = data?.user ?? null;
-  } catch {}
+  } catch (err) {
+    console.error('[consent] cookie auth error:', err);
+  }
 
   if (!user) {
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (token) {
+      // Service role required: consent lookup — cookie auth failed, falling back to Bearer token
       const service = createServiceRoleClient();
-      const { data } = await (service.auth as any).getUser(token); // eslint-disable-line @typescript-eslint/no-explicit-any
+      const { data } = await service.auth.getUser(token);
       user = data?.user ?? null;
     }
   }
@@ -85,6 +92,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'document_ids required' }, { status: 400 });
   }
 
+  // Service role required: consent upsert — bypasses RLS for member-scoped write
   const service = createServiceRoleClient();
 
   // Get member record

@@ -5,22 +5,37 @@ import { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } fr
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+): Promise<NextResponse> {
   try {
     const { id } = await params;
+    const user = await getAuthedUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const supabase = await createServerSupabaseClient();
 
-    const { data: reward, error } = await supabase
+    // Resolve tenantId (owner → staff fallback)
+    const { data: ownerTenant, error: ownerError } = await supabase
+      .from('tenants').select('id').eq('auth_user_id', user.id).is('deleted_at', null).single();
+    if (ownerError) console.error('[rewards GET] tenant lookup error:', ownerError);
+    let tenantId: string | null = ownerTenant?.id ?? null;
+    if (!tenantId) {
+      const { data: staffRecord, error: staffError } = await supabase
+        .from('tenant_users').select('tenant_id').eq('auth_user_id', user.id).single();
+      if (staffError) console.error('[rewards GET] staff lookup error:', staffError);
+      tenantId = staffRecord?.tenant_id ?? null;
+    }
+    if (!tenantId) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
+
+    // Fetch the reward scoped to this tenant
+    const serviceClient = createServiceRoleClient();
+    const { data: reward, error } = await serviceClient
       .from('rewards')
       .select('*')
       .eq('id', id)
+      .eq('tenant_id', tenantId)
       .single();
 
     if (error || !reward) {
-      return NextResponse.json(
-        { error: 'Reward not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Reward not found' }, { status: 404 });
     }
 
     return NextResponse.json({ reward });
@@ -37,26 +52,28 @@ export async function GET(
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+): Promise<NextResponse> {
   try {
     const { id } = await params;
     const user = await getAuthedUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const supabase = await createServerSupabaseClient();
-    const { data: ownerTenant } = await supabase
+    const { data: ownerTenant, error: ownerError } = await supabase
       .from('tenants').select('id').eq('auth_user_id', user.id).is('deleted_at', null).single();
+    if (ownerError) console.error('[rewards PATCH] tenant lookup error:', ownerError);
     let tenantId: string | null = ownerTenant?.id ?? null;
     if (!tenantId) {
-      const { data: staffRecord } = await supabase
+      const { data: staffRecord, error: staffError } = await supabase
         .from('tenant_users').select('tenant_id').eq('auth_user_id', user.id).single();
+      if (staffError) console.error('[rewards PATCH] staff lookup error:', staffError);
       tenantId = staffRecord?.tenant_id ?? null;
     }
     if (!tenantId) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
-    const body = await request.json();
+    const body = await request.json() as Record<string, unknown>;
 
     // Allowed fields to update
     const allowedFields = ['name', 'description', 'points_required', 'max_redemptions', 'valid_from', 'valid_until', 'is_active'];
-    const updates: Record<string, any> = {};
+    const updates: Record<string, unknown> = {};
 
     for (const field of allowedFields) {
       if (body[field] !== undefined) {
@@ -98,18 +115,20 @@ export async function PATCH(
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+): Promise<NextResponse> {
   try {
     const { id } = await params;
     const user = await getAuthedUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const supabase = await createServerSupabaseClient();
-    const { data: ownerTenant } = await supabase
+    const { data: ownerTenant, error: ownerError2 } = await supabase
       .from('tenants').select('id').eq('auth_user_id', user.id).is('deleted_at', null).single();
+    if (ownerError2) console.error('[rewards DELETE] tenant lookup error:', ownerError2);
     let tenantId: string | null = ownerTenant?.id ?? null;
     if (!tenantId) {
-      const { data: staffRecord } = await supabase
+      const { data: staffRecord, error: staffError2 } = await supabase
         .from('tenant_users').select('tenant_id').eq('auth_user_id', user.id).single();
+      if (staffError2) console.error('[rewards DELETE] staff lookup error:', staffError2);
       tenantId = staffRecord?.tenant_id ?? null;
     }
     if (!tenantId) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });

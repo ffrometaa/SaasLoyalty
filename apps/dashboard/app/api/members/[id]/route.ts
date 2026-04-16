@@ -4,7 +4,7 @@ import { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } fr
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+): Promise<NextResponse> {
   try {
     const { id } = await params;
     const user = await getAuthedUser();
@@ -13,21 +13,23 @@ export async function GET(
     }
     const supabase = await createServerSupabaseClient();
 
-    const { data: ownerTenant } = await supabase
+    const { data: ownerTenant, error: ownerError } = await supabase
       .from('tenants')
       .select('id')
       .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
+    if (ownerError) console.error('[members GET] tenant lookup error:', ownerError);
 
     let tenantId: string | null = ownerTenant?.id ?? null;
 
     if (!tenantId) {
-      const { data: staffRecord } = await supabase
+      const { data: staffRecord, error: staffError } = await supabase
         .from('tenant_users')
         .select('tenant_id')
         .eq('auth_user_id', user.id)
         .single();
+      if (staffError) console.error('[members GET] staff lookup error:', staffError);
       tenantId = staffRecord?.tenant_id ?? null;
     }
 
@@ -35,6 +37,7 @@ export async function GET(
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     }
 
+    // Service role required: fetch member detail with nested joins — bypasses RLS for tenant-scoped admin read
     const serviceClient = createServiceRoleClient();
 
     // Fetch member with transactions and redemptions
@@ -72,10 +75,11 @@ export async function GET(
     }
 
     // Calculate top 3 products acquired (from redemptions)
-    const redemptions = member.redemptions || [];
+    interface RedemptionRow { reward_id: string; rewards: { id: string; name: string } | null }
+    const redemptions: RedemptionRow[] = member.redemptions ?? [];
     const rewardCounts: Record<string, { name: string; count: number }> = {};
-    for (const r of redemptions as any[]) {
-      if (r.rewards && r.rewards.name) {
+    for (const r of redemptions) {
+      if (r.rewards?.name) {
         if (!rewardCounts[r.reward_id]) {
           rewardCounts[r.reward_id] = { name: r.rewards.name, count: 0 };
         }
@@ -88,11 +92,9 @@ export async function GET(
       .slice(0, 3)
       .map(r => ({ name: r.name, count: r.count }));
 
-    // Omit raw redemptions to save bandwidth
-    delete member.redemptions;
-    (member as any).top_rewards = topRewards;
-
-    return NextResponse.json({ member });
+    // Omit raw redemptions to save bandwidth; attach computed top_rewards
+    const { redemptions: _redemptions, ...memberData } = member;
+    return NextResponse.json({ member: { ...memberData, top_rewards: topRewards } });
   } catch (error) {
     console.error('Get member error:', error);
     return NextResponse.json(
@@ -106,7 +108,7 @@ export async function GET(
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+): Promise<NextResponse> {
   try {
     const { id } = await params;
     const user = await getAuthedUser();
@@ -115,21 +117,23 @@ export async function PATCH(
     }
     const supabase = await createServerSupabaseClient();
 
-    const { data: ownerTenant } = await supabase
+    const { data: ownerTenant, error: ownerError } = await supabase
       .from('tenants').select('id').eq('auth_user_id', user.id).is('deleted_at', null).single();
+    if (ownerError) console.error('[members PATCH] tenant lookup error:', ownerError);
     let tenantId: string | null = ownerTenant?.id ?? null;
     if (!tenantId) {
-      const { data: staffRecord } = await supabase
+      const { data: staffRecord, error: staffError } = await supabase
         .from('tenant_users').select('tenant_id').eq('auth_user_id', user.id).single();
+      if (staffError) console.error('[members PATCH] staff lookup error:', staffError);
       tenantId = staffRecord?.tenant_id ?? null;
     }
     if (!tenantId) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
 
-    const body = await request.json();
+    const body = await request.json() as Record<string, unknown>;
 
     // Allowed fields to update
     const allowedFields = ['name', 'email', 'phone', 'birthday', 'accepts_email', 'accepts_push', 'status'];
-    const updates: Record<string, any> = {};
+    const updates: Record<string, unknown> = {};
 
     for (const field of allowedFields) {
       if (body[field] !== undefined) {
@@ -144,6 +148,7 @@ export async function PATCH(
       );
     }
 
+    // Service role required: update member fields — bypasses RLS for tenant-scoped admin write
     const serviceClient = createServiceRoleClient();
     const { data: member, error } = await serviceClient
       .from('members')

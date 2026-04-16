@@ -2,8 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 import { sanitizeSearch } from '../../../lib/validate';
 
+const ALLOWED_REWARD_SORT_COLUMNS = ['created_at', 'name', 'points_required', 'redemption_count', 'is_active'] as const;
+type RewardSortColumn = typeof ALLOWED_REWARD_SORT_COLUMNS[number];
+
+function sanitizeRewardSortBy(sortBy: string | null): RewardSortColumn {
+  if (!sortBy) return 'created_at';
+  return (ALLOWED_REWARD_SORT_COLUMNS as readonly string[]).includes(sortBy)
+    ? (sortBy as RewardSortColumn)
+    : 'created_at';
+}
+
 // GET /api/rewards - List rewards
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await getAuthedUser();
     if (!user) {
@@ -11,21 +21,23 @@ export async function GET(request: NextRequest) {
     }
     const supabase = await createServerSupabaseClient();
 
-    const { data: ownerTenant } = await supabase
+    const { data: ownerTenant, error: ownerError } = await supabase
       .from('tenants')
       .select('id')
       .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
+    if (ownerError) console.error('[rewards GET] tenant lookup error:', ownerError);
 
     let tenantId: string | null = ownerTenant?.id ?? null;
 
     if (!tenantId) {
-      const { data: staffRecord } = await supabase
+      const { data: staffRecord, error: staffError } = await supabase
         .from('tenant_users')
         .select('tenant_id')
         .eq('auth_user_id', user.id)
         .single();
+      if (staffError) console.error('[rewards GET] staff lookup error:', staffError);
       tenantId = staffRecord?.tenant_id ?? null;
     }
 
@@ -39,7 +51,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const search = sanitizeSearch(searchParams.get('search'));
     const isActive = searchParams.get('isActive');
-    const sortBy = searchParams.get('sortBy') || 'created_at';
+    const sortBy = sanitizeRewardSortBy(searchParams.get('sortBy'));
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
     // Build query scoped to this tenant
@@ -58,7 +70,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Apply sorting
-    query = query.order(sortBy as any, { ascending: sortOrder === 'asc' });
+    query = query.order(sortBy, { ascending: sortOrder === 'asc' });
 
     // Apply pagination
     const from = (page - 1) * limit;
@@ -94,7 +106,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/rewards - Create reward
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await getAuthedUser();
     if (!user) {
@@ -102,7 +114,7 @@ export async function POST(request: NextRequest) {
     }
     const supabase = await createServerSupabaseClient();
 
-    const body = await request.json();
+    const body = await request.json() as { name?: string; description?: string | null; points_required?: number; max_redemptions?: number | null; valid_from?: string | null; valid_until?: string | null; is_active?: boolean };
     const { name, description, points_required, max_redemptions, valid_from, valid_until, is_active } = body;
 
     // Validate input
@@ -121,21 +133,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Get tenant ID from authenticated user
-    const { data: ownerTenant } = await supabase
+    const { data: ownerTenant, error: ownerError2 } = await supabase
       .from('tenants')
       .select('id')
       .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
+    if (ownerError2) console.error('[rewards POST] tenant lookup error:', ownerError2);
 
     let tenantId: string | null = ownerTenant?.id ?? null;
 
     if (!tenantId) {
-      const { data: staffRecord } = await supabase
+      const { data: staffRecord, error: staffError2 } = await supabase
         .from('tenant_users')
         .select('tenant_id')
         .eq('auth_user_id', user.id)
         .single();
+      if (staffError2) console.error('[rewards POST] staff lookup error:', staffError2);
       tenantId = staffRecord?.tenant_id ?? null;
     }
 

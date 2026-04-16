@@ -15,7 +15,7 @@ function isSafeRedirect(url: string): boolean {
   }
 }
 
-function AuthCallbackContent() {
+function AuthCallbackContent(): JSX.Element {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +31,7 @@ function AuthCallbackContent() {
       const next = rawNext && isSafeRedirect(rawNext) ? rawNext : 'https://dashboard.loyalbase.dev';
 
       if (code) {
-        const { error } = await (supabase.auth as any).exchangeCodeForSession(code);
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
 
         if (error) {
           setError(error.message);
@@ -43,7 +43,7 @@ function AuthCallbackContent() {
         window.location.href = next;
       } else {
         // No code, try to get session directly
-        const { data: { session }, error: sessionError } = await (supabase.auth as any).getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
         if (sessionError || !session) {
           setError('Invalid or expired link');
@@ -99,7 +99,7 @@ function AuthCallbackContent() {
   );
 }
 
-export default function AuthCallbackPage() {
+export default function AuthCallbackPage(): JSX.Element {
   return (
     <Suspense fallback={
       <div className="auth-container">

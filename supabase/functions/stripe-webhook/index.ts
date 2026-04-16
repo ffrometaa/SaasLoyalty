@@ -3,6 +3,7 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 const STRIPE_WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
 
@@ -12,7 +13,7 @@ serve(async (req) => {
   // Verify webhook signature
   const body = await req.text();
   
-  let event: any;
+  let event: Record<string, unknown> & { data?: Record<string, unknown> };
   try {
     // In production, use Stripe SDK to verify
     // For now, parse JSON directly
@@ -22,7 +23,6 @@ serve(async (req) => {
     return new Response('Invalid payload', { status: 400 });
   }
 
-  // Create Supabase client with service role
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -44,23 +44,23 @@ serve(async (req) => {
   try {
     switch (event.type) {
       case 'customer.subscription.created':
-        await handleSubscriptionCreated(supabase, event.data.object);
+        await handleSubscriptionCreated(supabase, event.data.object as Record<string, unknown>);
         break;
       
       case 'customer.subscription.updated':
-        await handleSubscriptionUpdated(supabase, event.data.object);
+        await handleSubscriptionUpdated(supabase, event.data.object as Record<string, unknown>);
         break;
       
       case 'customer.subscription.deleted':
-        await handleSubscriptionDeleted(supabase, event.data.object);
+        await handleSubscriptionDeleted(supabase, event.data.object as Record<string, unknown>);
         break;
       
       case 'invoice.payment_failed':
-        await handlePaymentFailed(supabase, event.data.object);
+        await handlePaymentFailed(supabase, event.data.object as Record<string, unknown>);
         break;
       
       case 'invoice.payment_succeeded':
-        await handlePaymentSucceeded(supabase, event.data.object);
+        await handlePaymentSucceeded(supabase, event.data.object as Record<string, unknown>);
         break;
       
       default:
@@ -70,8 +70,8 @@ serve(async (req) => {
     // Mark event as processed
     if (event.id) {
       await supabase.from('stripe_events').insert({
-        id: event.id,
-        type: event.type,
+        id: event.id as string,
+        type: event.type as string,
       });
     }
 
@@ -84,27 +84,27 @@ serve(async (req) => {
   }
 });
 
-async function handleSubscriptionCreated(supabase: any, subscription: any) {
+async function handleSubscriptionCreated(supabase: SupabaseClient, subscription: Record<string, unknown>) {
   console.log('Subscription created:', subscription.id);
   
-  const customerId = subscription.customer;
-  const plan = subscription.metadata?.plan || 'starter';
+  const customerId = subscription.customer as string;
+  const plan = (subscription.metadata as Record<string, string>)?.plan || 'starter';
   
   await supabase
     .from('tenants')
     .update({
-      stripe_subscription_id: subscription.id,
+      stripe_subscription_id: subscription.id as string,
       plan: plan,
       plan_status: 'active',
     })
     .eq('stripe_customer_id', customerId);
 }
 
-async function handleSubscriptionUpdated(supabase: any, subscription: any) {
+async function handleSubscriptionUpdated(supabase: SupabaseClient, subscription: Record<string, unknown>) {
   console.log('Subscription updated:', subscription.id);
   
-  const customerId = subscription.customer;
-  const plan = subscription.metadata?.plan || 'starter';
+  const customerId = subscription.customer as string;
+  const plan = (subscription.metadata as Record<string, string>)?.plan || 'starter';
   
   // Map Stripe status to our status
   let planStatus = 'active';
@@ -123,10 +123,10 @@ async function handleSubscriptionUpdated(supabase: any, subscription: any) {
     .eq('stripe_customer_id', customerId);
 }
 
-async function handleSubscriptionDeleted(supabase: any, subscription: any) {
+async function handleSubscriptionDeleted(supabase: SupabaseClient, subscription: Record<string, unknown>) {
   console.log('Subscription deleted:', subscription.id);
   
-  const customerId = subscription.customer;
+  const customerId = subscription.customer as string;
   
   await supabase
     .from('tenants')
@@ -137,10 +137,10 @@ async function handleSubscriptionDeleted(supabase: any, subscription: any) {
     .eq('stripe_customer_id', customerId);
 }
 
-async function handlePaymentFailed(supabase: any, invoice: any) {
+async function handlePaymentFailed(supabase: SupabaseClient, invoice: Record<string, unknown>) {
   console.log('Payment failed:', invoice.id);
   
-  const customerId = invoice.customer;
+  const customerId = invoice.customer as string;
   
   await supabase
     .from('tenants')
@@ -150,10 +150,10 @@ async function handlePaymentFailed(supabase: any, invoice: any) {
   // TODO: Send email notification to tenant
 }
 
-async function handlePaymentSucceeded(supabase: any, invoice: any) {
+async function handlePaymentSucceeded(supabase: SupabaseClient, invoice: Record<string, unknown>) {
   console.log('Payment succeeded:', invoice.id);
   
-  const customerId = invoice.customer;
+  const customerId = invoice.customer as string;
   
   await supabase
     .from('tenants')

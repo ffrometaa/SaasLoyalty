@@ -2,21 +2,27 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 export type TenantRole = 'owner' | 'staff';
 
-export type TenantWithRole = {
-  tenant: {
-    id: string;
-    business_name: string;
-    slug: string;
-    plan: string;
-    plan_status: string;
-    brand_logo_url: string | null;
-    brand_color_primary: string | null;
-    brand_color_secondary: string | null;
-    stripe_customer_id: string | null;
-    [key: string]: any;
-  };
+interface RawTenantRow {
+  id: string;
+  business_name: string;
+  slug: string;
+  plan: string;
+  plan_status: string;
+  brand_logo_url: string | null;
+  brand_color_primary: string | null;
+  brand_color_secondary: string | null;
+  stripe_customer_id: string | null;
+}
+
+interface RawStaffRecord {
+  role: string;
+  tenants: RawTenantRow | null;
+}
+
+export interface TenantWithRole {
+  tenant: RawTenantRow;
   role: TenantRole;
-};
+}
 
 /**
  * Get the tenant for a user — works for both owners and staff members.
@@ -28,26 +34,29 @@ export async function getTenantForUser(
   userId: string
 ): Promise<TenantWithRole | null> {
   // 1. Check if user is the owner
-  const { data: ownerTenant } = await supabase
+  const { data: ownerTenant, error: ownerError } = await supabase
     .from('tenants')
     .select('*')
     .eq('auth_user_id', userId)
     .is('deleted_at', null)
     .single();
+  if (ownerError) console.error('[getTenantForUser] owner lookup error:', ownerError);
 
   if (ownerTenant) {
     return { tenant: ownerTenant, role: 'owner' };
   }
 
   // 2. Check if user is a staff member
-  const { data: staffRecord } = await supabase
+  const { data: staffRecord, error: staffError } = await supabase
     .from('tenant_users')
     .select('role, tenants(*)')
     .eq('auth_user_id', userId)
+    .returns<RawStaffRecord>()
     .single();
+  if (staffError) console.error('[getTenantForUser] staff lookup error:', staffError);
 
   if (staffRecord?.tenants) {
-    return { tenant: staffRecord.tenants as any, role: staffRecord.role as TenantRole };
+    return { tenant: staffRecord.tenants, role: staffRecord.role as TenantRole };
   }
 
   return null;

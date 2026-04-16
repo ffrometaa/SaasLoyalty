@@ -1,7 +1,7 @@
 import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   // Prefer Bearer token (avoids cookie race condition after signInWithPassword).
   // Fall back to cookie-based session for normal navigation.
   const authHeader = request.headers.get('Authorization');
@@ -10,40 +10,46 @@ export async function GET(request: NextRequest) {
   let user: { id: string } | null = null;
 
   if (accessToken) {
+    // Service role required: cross-tenant member lookup — bypasses RLS
     const admin = createServiceRoleClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (admin.auth as any).getUser(accessToken);
+    const { data } = await admin.auth.getUser(accessToken);
     user = data?.user ?? null;
   } else {
     const supabase = await createServerSupabaseClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: { user: cookieUser } } = await (supabase.auth as any).getUser();
+    const { data: { user: cookieUser } } = await supabase.auth.getUser();
     user = cookieUser;
   }
 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  // Service role required: cross-tenant member lookup — bypasses RLS
   const admin = createServiceRoleClient();
 
   type MemberRow = { id: string; tenant_id: string; name: string; tier: string; points_balance: number };
   type TenantRow = { id: string; business_name: string; brand_app_name: string | null; brand_logo_url: string | null; brand_color_primary: string | null };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: membersRaw } = await (admin as any)
+  const { data: membersRaw, error: membersError } = await admin
     .from('members')
     .select('id, tenant_id, name, tier, points_balance')
     .eq('auth_user_id', user.id)
     .eq('status', 'active');
+  if (membersError) {
+    console.error('[my-tenants] members query error:', membersError);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 
   const members: MemberRow[] = membersRaw ?? [];
   if (!members.length) return NextResponse.json({ memberships: [] });
 
   const tenantIds = members.map((m) => m.tenant_id);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: tenantsRaw } = await (admin as any)
+  const { data: tenantsRaw, error: tenantsError } = await admin
     .from('tenants')
     .select('id, business_name, brand_app_name, brand_logo_url, brand_color_primary')
     .in('id', tenantIds);
+  if (tenantsError) {
+    console.error('[my-tenants] tenants query error:', tenantsError);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 
   const tenants: TenantRow[] = tenantsRaw ?? [];
 

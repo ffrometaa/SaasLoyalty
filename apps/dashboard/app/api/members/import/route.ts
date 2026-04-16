@@ -12,7 +12,7 @@ function unquote(value: string): string {
 }
 
 // POST /api/members/import - Bulk import members from CSV
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await getAuthedUser();
     if (!user) {
@@ -21,27 +21,28 @@ export async function POST(request: NextRequest) {
     const supabase = await createServerSupabaseClient();
 
     // Resolve tenantId: owner first, then staff
-    const { data: ownerTenant } = await supabase
+    const { data: ownerTenant, error: ownerError } = await supabase
       .from('tenants')
       .select('id, slug')
       .eq('auth_user_id', user.id)
       .is('deleted_at', null)
       .single();
+    if (ownerError) console.error('[import] tenant lookup error:', ownerError);
 
     let tenantId: string | null = ownerTenant?.id ?? null;
     let slug: string | null = ownerTenant?.slug ?? null;
 
     if (!tenantId) {
-      const { data: staffRecord } = await supabase
+      const { data: staffRecord, error: staffError } = await supabase
         .from('tenant_users')
         .select('tenant_id, tenants(id, slug)')
         .eq('auth_user_id', user.id)
         .single();
+      if (staffError) console.error('[import] staff lookup error:', staffError);
 
       if (staffRecord) {
         tenantId = staffRecord.tenant_id ?? null;
-        const tenantData = staffRecord.tenants as any;
-        slug = tenantData?.slug ?? null;
+        slug = staffRecord.tenants?.slug ?? null;
       }
     }
 

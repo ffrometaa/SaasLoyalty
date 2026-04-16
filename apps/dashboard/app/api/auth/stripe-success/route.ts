@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createServiceRoleClient } from '@loyalty-os/lib/server';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-06-20' });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY! /* Required: STRIPE_SECRET_KEY must be defined — see .env.example */, { apiVersion: '2024-06-20' });
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   const sessionId = request.nextUrl.searchParams.get('session_id');
   const origin = `${request.nextUrl.protocol}//${request.nextUrl.host}`;
 
@@ -20,9 +20,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${origin}/login?welcome=1`);
     }
 
+    // Service role required: post-payment user creation — no session exists yet
     const supabase = createServiceRoleClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.auth as any).admin.generateLink({
+    const { data, error } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email,
       options: {

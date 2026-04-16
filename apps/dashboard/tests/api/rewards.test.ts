@@ -44,8 +44,22 @@ function makeDeleteRequest(path: string): NextRequest {
  * Chainable Supabase query builder mock.
  * Chaining methods return `this`; terminal methods resolve with configurable values.
  */
-function makeQueryChain() {
-  const chain: any = {};
+interface MockQueryChain {
+  select: ReturnType<typeof vi.fn>;
+  eq: ReturnType<typeof vi.fn>;
+  is: ReturnType<typeof vi.fn>;
+  or: ReturnType<typeof vi.fn>;
+  order: ReturnType<typeof vi.fn>;
+  limit: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  insert: ReturnType<typeof vi.fn>;
+  single: ReturnType<typeof vi.fn>;
+  range: ReturnType<typeof vi.fn>;
+  upsert: ReturnType<typeof vi.fn>;
+}
+
+function makeQueryChain(): MockQueryChain {
+  const chain = {} as MockQueryChain;
   chain.select = vi.fn().mockReturnValue(chain);
   chain.eq = vi.fn().mockReturnValue(chain);
   chain.is = vi.fn().mockReturnValue(chain);
@@ -60,12 +74,20 @@ function makeQueryChain() {
   return chain;
 }
 
+interface MockThenableChain {
+  select: ReturnType<typeof vi.fn>;
+  eq: ReturnType<typeof vi.fn>;
+  is: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+  then: (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) => Promise<unknown>;
+}
+
 /**
  * Creates a thenable chain for direct-await queries (no .single()/.range() terminal).
  * Used for soft-delete: `await serviceClient.from('rewards').update({...}).eq('id', id)`
  */
-function makeThenableChain(result: Record<string, unknown>) {
-  const chain: any = {};
+function makeThenableChain(result: Record<string, unknown>): MockThenableChain {
+  const chain = {} as MockThenableChain;
   chain.select = vi.fn().mockReturnValue(chain);
   chain.eq = vi.fn().mockReturnValue(chain);
   chain.is = vi.fn().mockReturnValue(chain);

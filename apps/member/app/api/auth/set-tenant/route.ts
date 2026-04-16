@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 import { getMemberWithTenant } from '@/lib/member/queries';
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = request.nextUrl;
   const tenantId = searchParams.get('tenantId');
 
@@ -12,8 +12,7 @@ export async function GET(request: NextRequest) {
 
   // Verify the authenticated user actually belongs to this tenant
   const supabase = await createServerSupabaseClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: { user } } = await (supabase.auth as any).getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     return NextResponse.redirect(new URL('/join', request.url));

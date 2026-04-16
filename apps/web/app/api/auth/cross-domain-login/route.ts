@@ -3,18 +3,18 @@ import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os
 
 const DASHBOARD_URL = process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://dashboard.loyalbase.dev';
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   // Read the session from cookies on loyalbase.dev
   const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await (supabase.auth as any).getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user?.email) {
     return NextResponse.redirect(`${DASHBOARD_URL}/login`);
   }
 
-  // Use service role to generate a magic link that creates a session on the dashboard domain
+  // Service role required: magic link generation via auth.admin — bypasses RLS
   const admin = createServiceRoleClient();
-  const { data, error } = await (admin.auth as any).admin.generateLink({
+  const { data, error } = await admin.auth.admin.generateLink({
     type: 'magiclink',
     email: user.email,
     options: {
