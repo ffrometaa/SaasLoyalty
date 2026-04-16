@@ -1,6 +1,12 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+
+declare module '@supabase/supabase-js' {
+  interface SupabaseAuthClient {
+    getUser(jwt?: string): Promise<{ data: { user: User | null }; error: Error | null }>;
+  }
+}
 
 // Server client for API routes and server components
 export async function createServerSupabaseClient(): Promise<ReturnType<typeof createServerClient>> {

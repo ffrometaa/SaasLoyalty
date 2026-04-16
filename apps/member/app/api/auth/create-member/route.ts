@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient, createServerSupabaseClient } from '@loyalty-os/lib/server';
+import type { SupabaseAuthClient } from '@supabase/supabase-js';
 
 function generateMemberCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   let meta: Record<string, unknown>;
 
   if (accessToken) {
-    const { data: authData, error: getTokenError } = await (serviceClient.auth as unknown as { getUser(token: string): Promise<{ data: { user: { id: string; email?: string; user_metadata: Record<string, unknown> } | null }; error: Error | null }> }).getUser(accessToken);
+    const { data: authData, error: getTokenError } = await (serviceClient.auth as unknown as SupabaseAuthClient).getUser(accessToken);
     if (getTokenError) console.error('[create-member] getUser(token) error:', getTokenError);
     const { user } = authData;
     if (!user) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });

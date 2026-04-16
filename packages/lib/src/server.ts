@@ -1,4 +1,14 @@
+import type { User } from '@supabase/supabase-js';
+
+declare module '@supabase/supabase-js' {
+  interface SupabaseAuthClient {
+    getUser(jwt?: string): Promise<{ data: { user: User | null }; error: Error | null }>;
+  }
+}
+
 export { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } from './supabase-server';
+
+// Re-export getPlatformEmailConfig with server-only restriction
 import { createServiceRoleClient } from './supabase-server';
 
 /**
