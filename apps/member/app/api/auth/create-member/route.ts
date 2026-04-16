@@ -31,7 +31,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     meta = user.user_metadata ?? {};
   } else {
     const supabase = await createServerSupabaseClient();
-    const { data: cookieAuthData, error: cookieAuthError } = await supabase.auth.getUser();
+    const { data: cookieAuthData, error: cookieAuthError } = await (supabase.auth as unknown as SupabaseAuthClient).getUser();
     if (cookieAuthError) console.error('[create-member] getUser(cookie) error:', cookieAuthError);
     const { user } = cookieAuthData;
     if (!user) return NextResponse.json({ error: 'No session' }, { status: 401 });
