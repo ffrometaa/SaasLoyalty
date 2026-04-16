@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
@@ -19,14 +23,34 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "@loyalty-os/lib": ["../../packages/lib"],
-      "@loyalty-os/lib/server": ["../../packages/lib/src/server"],
-      "@loyalty-os/ui": ["../../packages/ui"],
-      "@loyalty-os/config": ["../../packages/config"],
-      "@loyalty-os/db": ["../../packages/db"],
-    }
+      "@/*": [
+        "./*"
+      ],
+      "@loyalty-os/lib": [
+        "../../packages/lib"
+      ],
+      "@loyalty-os/lib/server": [
+        "../../packages/lib/src/server"
+      ],
+      "@loyalty-os/ui": [
+        "../../packages/ui"
+      ],
+      "@loyalty-os/config": [
+        "../../packages/config"
+      ],
+      "@loyalty-os/db": [
+        "../../packages/db"
+      ]
+    },
+    "target": "ES2017"
   },
-  "include": ["next-env.d.ts", ".next/types/**/*.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
