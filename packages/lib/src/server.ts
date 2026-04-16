@@ -1,12 +1,3 @@
-import type { User, GoTrueAdminApi } from '@supabase/supabase-js';
-
-declare module '@supabase/supabase-js' {
-  interface SupabaseAuthClient {
-    getUser(jwt?: string): Promise<{ data: { user: User | null }; error: Error | null }>;
-    admin: GoTrueAdminApi;
-  }
-}
-
 export { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } from './supabase-server';
 
 // Re-export getPlatformEmailConfig with server-only restriction
