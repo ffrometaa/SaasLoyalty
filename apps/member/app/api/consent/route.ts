@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
-import type { SupabaseAuthClient } from '@supabase/supabase-js';
+
+interface AuthWithGetUser {
+  getUser(jwt?: string): Promise<{ data: { user: { id: string; email?: string } | null }; error: Error | null }>;
+}
 
 // GET /api/consent — returns pending documents for the current member
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -23,7 +26,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (token) {
       // Service role required: consent lookup — cookie auth failed, falling back to Bearer token
       const service = createServiceRoleClient();
-      const { data, error: getTokenUserError } = await (service.auth as unknown as SupabaseAuthClient).getUser(token);
+      const { data, error: getTokenUserError } = await (service.auth as unknown as AuthWithGetUser).getUser(token);
       if (getTokenUserError) console.error('[consent GET] token getUser error:', getTokenUserError);
       user = data?.user ?? null;
     }
@@ -80,7 +83,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (token) {
       // Service role required: consent lookup — cookie auth failed, falling back to Bearer token
       const service = createServiceRoleClient();
-      const { data, error: getTokenUserError } = await (service.auth as unknown as SupabaseAuthClient).getUser(token);
+      const { data, error: getTokenUserError } = await (service.auth as unknown as AuthWithGetUser).getUser(token);
       if (getTokenUserError) console.error('[consent POST] token getUser error:', getTokenUserError);
       user = data?.user ?? null;
     }

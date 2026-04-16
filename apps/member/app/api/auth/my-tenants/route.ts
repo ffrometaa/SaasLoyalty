@@ -1,6 +1,9 @@
 import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 import { NextRequest, NextResponse } from 'next/server';
-import type { SupabaseAuthClient } from '@supabase/supabase-js';
+
+interface AuthWithGetUser {
+  getUser(jwt?: string): Promise<{ data: { user: { id: string } | null }; error: Error | null }>;
+}
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   // Prefer Bearer token (avoids cookie race condition after signInWithPassword).
@@ -13,7 +16,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (accessToken) {
     // Service role required: cross-tenant member lookup — bypasses RLS
     const admin = createServiceRoleClient();
-    const { data, error: getTokenError } = await (admin.auth as unknown as SupabaseAuthClient).getUser(accessToken);
+    const { data, error: getTokenError } = await (admin.auth as unknown as AuthWithGetUser).getUser(accessToken);
     if (getTokenError) console.error('[my-tenants] getUser(token) error:', getTokenError);
     user = data?.user ?? null;
   } else {

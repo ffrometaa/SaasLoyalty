@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient, createServerSupabaseClient } from '@loyalty-os/lib/server';
-import type { SupabaseAuthClient } from '@supabase/supabase-js';
+
+interface AuthWithGetUser {
+  getUser(jwt?: string): Promise<{ data: { user: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null }; error: Error | null }>;
+}
 
 function generateMemberCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -22,7 +25,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   let meta: Record<string, unknown>;
 
   if (accessToken) {
-    const { data: authData, error: getTokenError } = await (serviceClient.auth as unknown as SupabaseAuthClient).getUser(accessToken);
+    const { data: authData, error: getTokenError } = await (serviceClient.auth as unknown as AuthWithGetUser).getUser(accessToken);
     if (getTokenError) console.error('[create-member] getUser(token) error:', getTokenError);
     const { user } = authData;
     if (!user) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
@@ -31,7 +34,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     meta = user.user_metadata ?? {};
   } else {
     const supabase = await createServerSupabaseClient();
-    const { data: cookieAuthData, error: cookieAuthError } = await (supabase.auth as unknown as SupabaseAuthClient).getUser();
+    const { data: cookieAuthData, error: cookieAuthError } = await (supabase.auth as unknown as AuthWithGetUser).getUser();
     if (cookieAuthError) console.error('[create-member] getUser(cookie) error:', cookieAuthError);
     const { user } = cookieAuthData;
     if (!user) return NextResponse.json({ error: 'No session' }, { status: 401 });
