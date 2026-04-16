@@ -7,7 +7,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
   const body = await request.json().catch(() => null) as { locale?: unknown } | null;
   const locale = body?.locale;
 
-  if (!locale || !VALID_LOCALES.includes(locale)) {
+  if (!locale || typeof locale !== 'string' || !VALID_LOCALES.includes(locale)) {
     return NextResponse.json({ error: 'Invalid locale' }, { status: 400 });
   }
 

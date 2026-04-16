@@ -49,7 +49,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Filter by valid dates if set
     const now = new Date();
-    const activeRewards = (rewards || []).filter((reward) => {
+    const activeRewards = (rewards || []).filter((reward: RewardRow) => {
       if (reward.valid_from && new Date(reward.valid_from) > now) return false;
       if (reward.valid_until && new Date(reward.valid_until) < now) return false;
       if (reward.max_redemptions && reward.redemption_count >= reward.max_redemptions) return false;
