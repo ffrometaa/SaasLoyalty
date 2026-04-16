@@ -53,6 +53,9 @@ importers:
       '@upstash/redis':
         specifier: ^1.37.0
         version: 1.37.0
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
       html5-qrcode:
         specifier: ^2.3.8
         version: 2.3.8
