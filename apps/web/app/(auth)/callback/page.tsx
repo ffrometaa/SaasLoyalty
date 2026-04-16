@@ -30,8 +30,11 @@ function AuthCallbackContent(): JSX.Element {
       const rawNext = searchParams.get('next');
       const next = rawNext && isSafeRedirect(rawNext) ? rawNext : 'https://dashboard.loyalbase.dev';
 
+      interface AuthWithCodeExchange {
+        exchangeCodeForSession(code: string): Promise<{ error: Error | null }>;
+      }
       if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        const { error } = await (supabase.auth as unknown as AuthWithCodeExchange).exchangeCodeForSession(code);
 
         if (error) {
           setError(error.message);
