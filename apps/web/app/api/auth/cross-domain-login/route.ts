@@ -13,8 +13,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   // Service role required: magic link generation via auth.admin — bypasses RLS
+  interface AuthWithAdmin {
+    admin: {
+      generateLink(params: { type: string; email: string; options?: { redirectTo?: string } }): Promise<{
+        data: { properties?: { action_link?: string } } | null; error: Error | null;
+      }>;
+    };
+  }
   const admin = createServiceRoleClient();
-  const { data, error } = await admin.auth.admin.generateLink({
+  const { data, error } = await (admin.auth as unknown as AuthWithAdmin).admin.generateLink({
     type: 'magiclink',
     email: user.email,
     options: {

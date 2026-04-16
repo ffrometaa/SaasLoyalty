@@ -21,8 +21,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Service role required: post-payment user creation — no session exists yet
+    interface AuthWithAdmin {
+      admin: {
+        generateLink(params: { type: string; email: string; options?: { redirectTo?: string } }): Promise<{
+          data: { properties?: { action_link?: string } } | null; error: Error | null;
+        }>;
+      };
+    }
     const supabase = createServiceRoleClient();
-    const { data, error } = await supabase.auth.admin.generateLink({
+    const { data, error } = await (supabase.auth as unknown as AuthWithAdmin).admin.generateLink({
       type: 'magiclink',
       email,
       options: {

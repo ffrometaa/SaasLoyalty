@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@loyalty-os/lib/server';
 import { buildBilingualEmail, buildPasswordResetEmail } from '@loyalty-os/email';
 
+interface AuthWithAdmin {
+  admin: {
+    generateLink(params: { type: string; email: string; options?: { redirectTo?: string } }): Promise<{
+      data: { properties?: { action_link?: string } } | null; error: Error | null;
+    }>;
+  };
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const body = await request.json() as { email?: unknown };
   const { email } = body;
@@ -14,7 +22,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const serviceClient = createServiceRoleClient();
   const memberAppUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://member.loyalbase.dev';
 
-  const { data, error } = await serviceClient.auth.admin.generateLink({
+  const { data, error } = await (serviceClient.auth as unknown as AuthWithAdmin).admin.generateLink({
     type: 'recovery',
     email: email.trim().toLowerCase(),
     options: {

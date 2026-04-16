@@ -88,7 +88,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
       }
 
-      const { data: authUser, error: authUserError } = await service.auth.admin.getUserById(tenant.auth_user_id);
+      interface AuthWithAdmin {
+        admin: {
+          getUserById(uid: string): Promise<{ data: { user: { id: string; email?: string } | null }; error: Error | null }>;
+        };
+      }
+      const { data: authUser, error: authUserError } = await (service.auth as unknown as AuthWithAdmin).admin.getUserById(tenant.auth_user_id);
       if (authUserError) console.error('[impersonate POST] getUserById error:', authUserError);
 
       targetAuthUserId = tenant.auth_user_id;

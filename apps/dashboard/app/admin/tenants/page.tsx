@@ -54,8 +54,13 @@ async function getAllTenants(): Promise<TenantEnriched[]> {
 
       // Get owner email from auth.users via auth_user_id
       let ownerEmail = '';
+      interface AuthWithAdmin {
+        admin: {
+          getUserById(uid: string): Promise<{ data: { user: { id: string; email?: string } | null }; error: Error | null }>;
+        };
+      }
       if (t.auth_user_id) {
-        const { data: user, error: userError } = await service.auth.admin.getUserById(t.auth_user_id);
+        const { data: user, error: userError } = await (service.auth as unknown as AuthWithAdmin).admin.getUserById(t.auth_user_id);
         if (userError) console.error('[getAllTenants] getUserById error:', userError);
         ownerEmail = user?.user?.email ?? '';
       }

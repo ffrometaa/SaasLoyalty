@@ -30,10 +30,16 @@ async function getTenantDetail(tenantId: string = ''): Promise<{
   if (tenantError) console.error('[getTenantDetail] tenant query error:', tenantError);
   if (!tenant) return null;
 
+  interface AuthWithAdmin {
+    admin: {
+      getUserById(uid: string): Promise<{ data: { user: { id: string; email?: string } | null }; error: Error | null }>;
+    };
+  }
+
   // Owner email
   let ownerEmail = '';
   if (tenant.auth_user_id) {
-    const { data, error: authUserError } = await service.auth.admin.getUserById(tenant.auth_user_id);
+    const { data, error: authUserError } = await (service.auth as unknown as AuthWithAdmin).admin.getUserById(tenant.auth_user_id);
     if (authUserError) console.error('[getTenantDetail] getUserById error:', authUserError);
     ownerEmail = data?.user?.email ?? '';
   }
