@@ -21,14 +21,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   let meta: Record<string, unknown>;
 
   if (accessToken) {
-    const { data: { user } } = await serviceClient.auth.getUser(accessToken);
+    const { data: authData, error: getTokenError } = await (serviceClient.auth as unknown as { getUser(token: string): Promise<{ data: { user: { id: string; email?: string; user_metadata: Record<string, unknown> } | null }; error: Error | null }> }).getUser(accessToken);
+    if (getTokenError) console.error('[create-member] getUser(token) error:', getTokenError);
+    const { user } = authData;
     if (!user) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     userId = user.id;
     userEmail = user.email ?? '';
     meta = user.user_metadata ?? {};
   } else {
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: cookieAuthData, error: cookieAuthError } = await supabase.auth.getUser();
+    if (cookieAuthError) console.error('[create-member] getUser(cookie) error:', cookieAuthError);
+    const { user } = cookieAuthData;
     if (!user) return NextResponse.json({ error: 'No session' }, { status: 401 });
     userId = user.id;
     userEmail = user.email ?? '';

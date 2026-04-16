@@ -12,11 +12,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (accessToken) {
     // Service role required: cross-tenant member lookup — bypasses RLS
     const admin = createServiceRoleClient();
-    const { data } = await admin.auth.getUser(accessToken);
+    const { data, error: getTokenError } = await (admin.auth as unknown as { getUser(token: string): Promise<{ data: { user: { id: string } | null }; error: Error | null }> }).getUser(accessToken);
+    if (getTokenError) console.error('[my-tenants] getUser(token) error:', getTokenError);
     user = data?.user ?? null;
   } else {
     const supabase = await createServerSupabaseClient();
-    const { data: { user: cookieUser } } = await supabase.auth.getUser();
+    const { data: { user: cookieUser }, error: cookieAuthError } = await supabase.auth.getUser();
+    if (cookieAuthError) console.error('[my-tenants] getUser(cookie) error:', cookieAuthError);
     user = cookieUser;
   }
 

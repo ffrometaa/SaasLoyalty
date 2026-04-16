@@ -8,7 +8,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   let user = null;
 
   try {
-    const { data } = await supabase.auth.getUser();
+    const { data, error: getUserError } = await supabase.auth.getUser();
+    if (getUserError) console.error('[consent GET] getUser error:', getUserError);
     user = data?.user ?? null;
   } catch (err) {
     console.error('[consent] cookie auth error:', err);
@@ -21,7 +22,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (token) {
       // Service role required: consent lookup — cookie auth failed, falling back to Bearer token
       const service = createServiceRoleClient();
-      const { data } = await service.auth.getUser(token);
+      const { data, error: getTokenUserError } = await (service.auth as unknown as { getUser(token: string): Promise<{ data: { user: { id: string } | null }; error: Error | null }> }).getUser(token);
+      if (getTokenUserError) console.error('[consent GET] token getUser error:', getTokenUserError);
       user = data?.user ?? null;
     }
   }
@@ -64,7 +66,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   let user = null;
 
   try {
-    const { data } = await supabase.auth.getUser();
+    const { data, error: getUserError } = await supabase.auth.getUser();
+    if (getUserError) console.error('[consent POST] getUser error:', getUserError);
     user = data?.user ?? null;
   } catch (err) {
     console.error('[consent] cookie auth error:', err);
@@ -76,7 +79,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (token) {
       // Service role required: consent lookup — cookie auth failed, falling back to Bearer token
       const service = createServiceRoleClient();
-      const { data } = await service.auth.getUser(token);
+      const { data, error: getTokenUserError } = await (service.auth as unknown as { getUser(token: string): Promise<{ data: { user: { id: string } | null }; error: Error | null }> }).getUser(token);
+      if (getTokenUserError) console.error('[consent POST] token getUser error:', getTokenUserError);
       user = data?.user ?? null;
     }
   }
