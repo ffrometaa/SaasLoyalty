@@ -79,7 +79,7 @@ async function getAllTenants(): Promise<TenantEnriched[]> {
         member_count: memberCount ?? 0,
         owner_email: ownerEmail,
         last_activity_at: lastVisit.data?.created_at ?? null,
-        mrr: t.plan_status === 'active' ? getPlanMRR(t.plan) : 0,
+        mrr: t.plan_status === 'active' ? getPlanMRR(t.plan ?? undefined) : 0,
       };
     })
   );

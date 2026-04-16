@@ -4,6 +4,30 @@ import { RevenueCharts } from '@/components/admin/RevenueCharts';
 
 export const dynamic = 'force-dynamic';
 
+interface TenantSummaryRow {
+  id: string;
+  plan: string;
+  plan_status: string;
+  created_at: string;
+}
+
+interface AtRiskTenant {
+  id: string;
+  business_name: string;
+  plan: string;
+  plan_status: string;
+  trial_ends_at: string | null;
+}
+
+interface TrialTenant {
+  plan_status: string;
+}
+
+interface MrrSnapshot {
+  snapshot_date: string;
+  mrr_total: number;
+}
+
 function getPlanMRR(plan = '') {
   if (plan === 'starter') return 79;
   if (plan === 'pro') return 199;
@@ -17,14 +41,15 @@ async function getRevenueData() {
   const { data: allTenants } = await service
     .from('tenants')
     .select('id, plan, plan_status, created_at')
-    .is('deleted_at', null);
+    .is('deleted_at', null)
+    .returns<TenantSummaryRow[]>();
 
   const tenants = allTenants ?? [];
-  const activeTenants = tenants.filter((t = { plan_status: '' }) => t.plan_status === 'active');
-  const trialingTenants = tenants.filter((t = { plan_status: '' }) => t.plan_status === 'trialing');
-  const pastDueTenants = tenants.filter((t = { plan_status: '' }) => t.plan_status === 'past_due');
+  const activeTenants = tenants.filter((t: TenantSummaryRow) => t.plan_status === 'active');
+  const trialingTenants = tenants.filter((t: TenantSummaryRow) => t.plan_status === 'trialing');
+  const pastDueTenants = tenants.filter((t: TenantSummaryRow) => t.plan_status === 'past_due');
 
-  const currentMRR = activeTenants.reduce((s = 0, t = { plan: '' }) => s + getPlanMRR(t.plan), 0);
+  const currentMRR = activeTenants.reduce((sum: number, t: TenantSummaryRow) => sum + getPlanMRR(t.plan), 0);
   const currentARR = currentMRR * 12;
 
   const arpt = activeTenants.length > 0 ? Math.round(currentMRR / activeTenants.length) : 0;
@@ -42,25 +67,27 @@ async function getRevenueData() {
     : '0.0';
 
   const newMRR = activeTenants
-    .filter((t = { created_at: '' }) => t.created_at >= startOfMonth)
-    .reduce((s = 0, t = { plan: '' }) => s + getPlanMRR(t.plan), 0);
+    .filter((t: TenantSummaryRow) => t.created_at >= startOfMonth)
+    .reduce((sum: number, t: TenantSummaryRow) => sum + getPlanMRR(t.plan), 0);
 
   const threeDays = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
   const { data: atRiskTenants } = await service
     .from('tenants')
     .select('id, business_name, plan, plan_status, trial_ends_at')
     .or(`plan_status.eq.past_due,and(plan_status.eq.trialing,trial_ends_at.lte.${threeDays})`)
-    .is('deleted_at', null);
+    .is('deleted_at', null)
+    .returns<AtRiskTenant[]>();
 
   // Trial conversion rate
   const { data: trialTenants } = await service
     .from('tenants')
     .select('plan_status')
     .not('trial_ends_at', 'is', null)
-    .is('deleted_at', null);
+    .is('deleted_at', null)
+    .returns<TrialTenant[]>();
 
   const trialTotal = trialTenants?.length ?? 0;
-  const trialConverted = trialTenants?.filter((t = { plan_status: '' }) => t.plan_status === 'active').length ?? 0;
+  const trialConverted = trialTenants?.filter((t: TrialTenant) => t.plan_status === 'active').length ?? 0;
   const trialConversionRate = trialTotal > 0
     ? ((trialConverted / trialTotal) * 100).toFixed(1)
     : null;
@@ -77,7 +104,8 @@ async function getRevenueData() {
     .select('snapshot_date, mrr_total')
     .gte('snapshot_date', twoMonthsAgo.toISOString().split('T')[0])
     .order('snapshot_date', { ascending: false })
-    .limit(60);
+    .limit(60)
+    .returns<MrrSnapshot[]>();
 
   let nrr: string | null = null;
   if (snapshots && snapshots.length >= 2) {
@@ -96,15 +124,15 @@ async function getRevenueData() {
     const label = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
 
     const approxMRR = activeTenants
-      .filter((t = { created_at: '' }) => t.created_at < monthEnd)
-      .reduce((s = 0, t = { plan: '' }) => s + getPlanMRR(t.plan), 0);
+      .filter((t: TenantSummaryRow) => t.created_at < monthEnd)
+      .reduce((sum: number, t: TenantSummaryRow) => sum + getPlanMRR(t.plan), 0);
 
     mrrGrowth.push({ month: label, mrr: approxMRR });
   }
 
   // Plan distribution
   const planDist = ['starter', 'pro', 'scale', 'enterprise'].map(plan => {
-    const count = activeTenants.filter((t = { plan: '' }) => t.plan === plan).length;
+    const count = activeTenants.filter((t: TenantSummaryRow) => t.plan === plan).length;
     const mrr = count * getPlanMRR(plan);
     const pct = activeTenants.length > 0 ? ((count / activeTenants.length) * 100).toFixed(1) : '0';
     const mrrPct = currentMRR > 0 ? ((mrr / currentMRR) * 100).toFixed(1) : '0';

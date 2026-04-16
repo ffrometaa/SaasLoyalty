@@ -26,7 +26,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
   );
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  interface AuthWithExchange {
+    exchangeCodeForSession(code: string): Promise<{ error: Error | null }>;
+  }
+  const { error } = await (supabase.auth as unknown as AuthWithExchange).exchangeCodeForSession(code);
   if (error) {
     return NextResponse.redirect(`${origin}/login?error=auth_failed`);
   }

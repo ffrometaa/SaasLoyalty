@@ -21,8 +21,11 @@ export default function AuthRecoveryPage() {
         return;
       }
 
+      interface AuthWithSetSession {
+        setSession(tokens: { access_token: string; refresh_token: string }): Promise<{ error: Error | null }>;
+      }
       const supabase = getSupabaseClient();
-      const { error: sessionError } = await supabase.auth.setSession({
+      const { error: sessionError } = await (supabase.auth as unknown as AuthWithSetSession).setSession({
         access_token: accessToken,
         refresh_token: refreshToken,
       });

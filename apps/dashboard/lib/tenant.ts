@@ -12,6 +12,8 @@ interface RawTenantRow {
   brand_color_primary: string | null;
   brand_color_secondary: string | null;
   stripe_customer_id: string | null;
+  auth_user_id: string | null;
+  created_at: string;
 }
 
 interface RawStaffRecord {

@@ -37,7 +37,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    if (error || !data.properties?.action_link) {
+    if (error || !data?.properties?.action_link) {
       return NextResponse.redirect(`${origin}/login?welcome=1`);
     }
 

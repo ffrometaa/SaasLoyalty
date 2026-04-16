@@ -4,21 +4,39 @@ import { LogsTable } from '@/components/admin/LogsTable';
 
 export const dynamic = 'force-dynamic';
 
+interface RawPlatformEventRow {
+  id: string;
+  action_type: string;
+  target_type: string;
+  target_id: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+  super_admins: { id: string; full_name: string; email: string } | null;
+}
+
+interface AdminRow {
+  id: string;
+  full_name: string;
+  email: string;
+}
+
 async function getLogs() {
   const service = createServiceRoleClient();
 
-  const { data: events } = await service
+  const { data: rawEvents } = await service
     .from('platform_events')
     .select('id, action_type, target_type, target_id, metadata, created_at, super_admins(id, full_name, email)')
     .order('created_at', { ascending: false })
-    .limit(500);
+    .limit(500)
+    .returns<RawPlatformEventRow[]>();
 
   const { data: admins } = await service
     .from('super_admins')
     .select('id, full_name, email')
-    .eq('is_active', true);
+    .eq('is_active', true)
+    .returns<AdminRow[]>();
 
-  return { events: events ?? [], admins: admins ?? [] };
+  return { events: rawEvents ?? [], admins: admins ?? [] };
 }
 
 export default async function AdminLogsPage() {

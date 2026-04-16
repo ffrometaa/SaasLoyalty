@@ -79,7 +79,7 @@ async function getImpersonateData(): Promise<{
 
   return {
     tenants: tenants ?? [],
-    members: (members ?? []).map((m) => ({
+    members: (members ?? []).map((m: RawMemberRow) => ({
       id: m.id,
       tenant_id: m.tenant_id,
       tenant_name: m.tenants?.business_name ?? 'Unknown',
@@ -89,7 +89,7 @@ async function getImpersonateData(): Promise<{
       points_balance: m.points_balance,
       status: m.status,
     })),
-    recentLogs: (recentLogs ?? []).map((l) => ({
+    recentLogs: (recentLogs ?? []).map((l: RawLogRow) => ({
       id: l.id,
       impersonation_level: l.impersonation_level,
       started_at: l.started_at,

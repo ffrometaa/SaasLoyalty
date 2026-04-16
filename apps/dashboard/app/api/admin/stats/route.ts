@@ -12,12 +12,19 @@ export async function GET(): Promise<NextResponse> {
     // Service role required: cross-tenant reads across all tenants and members (bypasses RLS by design)
     const admin = createServiceRoleClient();
 
+    interface TenantRow {
+      id: string; business_name: string; business_type: string | null; slug: string | null;
+      plan: string | null; plan_status: string | null; stripe_customer_id: string | null;
+      trial_ends_at: string | null; created_at: string;
+    }
+
     // All tenants
-    const { data: tenants, error: tenantsError } = await admin
+    const { data: rawTenants, error: tenantsError } = await admin
       .from('tenants')
       .select('id, business_name, business_type, slug, plan, plan_status, stripe_customer_id, trial_ends_at, created_at')
       .is('deleted_at', null)
       .order('created_at', { ascending: false });
+    const tenants = rawTenants as TenantRow[] | null;
 
     if (tenantsError) throw tenantsError;
 

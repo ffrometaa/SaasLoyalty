@@ -5,12 +5,55 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
+interface TenantRow {
+  id: string;
+  business_name: string;
+  business_type: string | null;
+  plan: string;
+  plan_status: string;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  trial_ends_at: string | null;
+  created_at: string;
+  slug: string;
+  auth_user_id: string | null;
+}
+
+interface TenantMemberRow {
+  id: string;
+  name: string;
+  email: string;
+  tier: string;
+  points: number;
+  total_visits: number;
+  last_visit_at: string | null;
+  status: string;
+}
+
+interface TenantCampaignRow {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  recipient_count: number | null;
+  sent_at: string | null;
+  created_at: string;
+}
+
+interface TenantEventRow {
+  id: string;
+  action_type: string;
+  target_type: string;
+  created_at: string;
+  super_admins: { full_name: string; email: string } | null;
+}
+
 async function getTenantDetail(tenantId: string = ''): Promise<{
-  tenant: Record<string, unknown> & { owner_email: string };
-  members: Record<string, unknown>[];
+  tenant: TenantRow & { owner_email: string };
+  members: TenantMemberRow[];
   memberCount: number;
-  campaigns: Record<string, unknown>[];
-  events: Record<string, unknown>[];
+  campaigns: TenantCampaignRow[];
+  events: TenantEventRow[];
   metrics: {
     activeMembers: number;
     visitsThisMonth: number;
@@ -22,10 +65,11 @@ async function getTenantDetail(tenantId: string = ''): Promise<{
 
   const { data: tenant, error: tenantError } = await service
     .from('tenants')
-    .select('*')
+    .select('id, business_name, business_type, plan, plan_status, stripe_customer_id, stripe_subscription_id, trial_ends_at, created_at, slug, auth_user_id')
     .eq('id', tenantId)
     .is('deleted_at', null)
-    .single();
+    .single()
+    .returns<TenantRow>();
 
   if (tenantError) console.error('[getTenantDetail] tenant query error:', tenantError);
   if (!tenant) return null;
@@ -55,19 +99,22 @@ async function getTenantDetail(tenantId: string = ''): Promise<{
       .select('id, name, email, tier, points, total_visits, last_visit_at, status', { count: 'exact' })
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
-      .limit(50),
+      .limit(50)
+      .returns<TenantMemberRow[]>(),
     service
       .from('campaigns')
       .select('id, name, type, status, recipient_count, sent_at, created_at')
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
-      .limit(30),
+      .limit(30)
+      .returns<TenantCampaignRow[]>(),
     service
       .from('platform_events')
       .select('id, action_type, target_type, created_at, super_admins(full_name, email)')
       .eq('target_id', tenantId)
       .order('created_at', { ascending: false })
-      .limit(30),
+      .limit(30)
+      .returns<TenantEventRow[]>(),
     Promise.all([
       service.from('members').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId).eq('status', 'active'),
       service.from('visits').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId)

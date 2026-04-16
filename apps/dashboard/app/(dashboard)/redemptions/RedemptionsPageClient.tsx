@@ -125,6 +125,13 @@ export function RedemptionsPageClient({ initialHistory, initialTodayCount }: Pro
       const data = await response.json() as { success?: boolean; error?: string; redemption?: { member?: { name?: string; email?: string }; reward?: { name?: string }; points_spent?: number; used_at?: string } };
       if (response.ok && data.success) {
         const r = data.redemption;
+        if (!r) {
+          setResult({
+            success: false,
+            message: 'Redemption processed but server returned no details. Please refresh the history to verify.',
+          });
+          return;
+        }
         setResult({
           success: true,
           message: 'Redemption successful!',

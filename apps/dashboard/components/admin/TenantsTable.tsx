@@ -19,7 +19,31 @@ const PLAN_STYLES = Object.fromEntries(Object.entries({
   enterprise: 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/25',
 }));
 
-function ActionMenu({ tenant = { id: '', business_name: '', plan: '', plan_status: '', stripe_customer_id: null }, onAction = (_type = '', _tenant = { id: '', business_name: '', plan: '', plan_status: '' }) => {} }) {
+interface ActionMenuTenant {
+  id: string;
+  business_name: string;
+  plan: string | null;
+  plan_status: string | null;
+  stripe_customer_id: string | null;
+}
+
+interface TenantRow extends ActionMenuTenant {
+  business_type: string | null;
+  slug: string | null;
+  trial_ends_at: string | null;
+  created_at: string;
+  auth_user_id: string | null;
+  member_count: number;
+  owner_email: string;
+  last_activity_at: string | null;
+  mrr: number;
+}
+
+interface TenantsTableProps {
+  initialTenants?: TenantRow[];
+}
+
+function ActionMenu({ tenant = { id: '', business_name: '', plan: '', plan_status: '', stripe_customer_id: null }, onAction = (_type: string, _tenant: ActionMenuTenant) => {} }: { tenant?: ActionMenuTenant; onAction?: (type: string, tenant: ActionMenuTenant) => void }) {
   const [open, setOpen] = useState(false);
 
   const stripeUrl = tenant.stripe_customer_id
@@ -81,7 +105,7 @@ function ActionMenu({ tenant = { id: '', business_name: '', plan: '', plan_statu
   );
 }
 
-export function TenantsTable({ initialTenants = [{ id: '', business_name: '', business_type: '', plan: '', plan_status: '', member_count: 0, owner_email: '', mrr: 0, last_activity_at: null, created_at: '', stripe_customer_id: null }].slice(0, 0) }) {
+export function TenantsTable({ initialTenants = [{ id: '', business_name: '', business_type: null, slug: null, plan: null, plan_status: null, stripe_customer_id: null, trial_ends_at: null, created_at: '', auth_user_id: null, member_count: 0, owner_email: '', last_activity_at: null, mrr: 0 }].slice(0, 0) }: TenantsTableProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [tenants, setTenants] = useState(initialTenants);
@@ -102,8 +126,8 @@ export function TenantsTable({ initialTenants = [{ id: '', business_name: '', bu
 
   const [errorMsg, setErrorMsg] = useState('');
 
-  function handleAction(type = '', tenant = { id: '', business_name: '', plan: '', plan_status: '' }) {
-    if (type === 'delete') { setDeleteTarget(tenant); setDeleteConfirmName(''); }
+  function handleAction(type: string, tenant: ActionMenuTenant) {
+    if (type === 'delete') { setDeleteTarget({ id: tenant.id, business_name: tenant.business_name, plan: tenant.plan ?? '', plan_status: tenant.plan_status ?? '' }); setDeleteConfirmName(''); }
     if (type === 'suspend') {
       startTransition(async () => {
         await suspendTenant(tenant.id, '');
@@ -117,8 +141,8 @@ export function TenantsTable({ initialTenants = [{ id: '', business_name: '', bu
       });
     }
     if (type === 'changePlan') {
-      setChangePlanTarget(tenant);
-      setNewPlan(tenant.plan);
+      setChangePlanTarget({ id: tenant.id, business_name: tenant.business_name, plan: tenant.plan ?? '' });
+      setNewPlan(tenant.plan ?? '');
       setPlanReason('');
       setPlanExpiry('');
     }
@@ -232,12 +256,12 @@ export function TenantsTable({ initialTenants = [{ id: '', business_name: '', bu
                   </td>
                   <td className="px-4 py-3 text-slate-400">{t.owner_email || '—'}</td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${PLAN_STYLES[t.plan] ?? 'bg-slate-500/15 text-slate-300'}`}>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${PLAN_STYLES[t.plan ?? ''] ?? 'bg-slate-500/15 text-slate-300'}`}>
                       {t.plan}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${STATUS_STYLES[t.plan_status] ?? 'bg-slate-500/15 text-slate-300'}`}>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${STATUS_STYLES[t.plan_status ?? ''] ?? 'bg-slate-500/15 text-slate-300'}`}>
                       {t.plan_status?.replace('_', ' ')}
                     </span>
                   </td>

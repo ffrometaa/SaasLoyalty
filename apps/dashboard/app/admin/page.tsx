@@ -4,6 +4,27 @@ import { AdminCharts } from '@/components/admin/AdminCharts';
 
 export const dynamic = 'force-dynamic';
 
+interface TenantSummaryRow {
+  id: string;
+  business_name: string;
+  plan: string;
+  plan_status: string;
+  created_at: string;
+}
+
+interface TenantGrowthRow {
+  created_at: string;
+}
+
+interface PlatformEventRow {
+  id: string;
+  action_type: string;
+  target_type: string;
+  target_id: string | null;
+  created_at: string;
+  super_admins: { full_name: string; email: string } | null;
+}
+
 function getPlanMRR(plan = '') {
   if (plan === 'starter') return 79;
   if (plan === 'pro') return 199;
@@ -25,7 +46,8 @@ async function getPlatformStats() {
     service
       .from('tenants')
       .select('id, business_name, plan, plan_status, created_at')
-      .is('deleted_at', null),
+      .is('deleted_at', null)
+      .returns<TenantSummaryRow[]>(),
     service
       .from('members')
       .select('id', { count: 'exact', head: true })
@@ -42,27 +64,29 @@ async function getPlatformStats() {
       .from('platform_events')
       .select('id, action_type, target_type, target_id, created_at, super_admins(full_name, email)')
       .order('created_at', { ascending: false })
-      .limit(20),
+      .limit(20)
+      .returns<PlatformEventRow[]>(),
     service
       .from('tenants')
       .select('created_at')
       .is('deleted_at', null)
       .gte('created_at', new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: true }),
+      .order('created_at', { ascending: true })
+      .returns<TenantGrowthRow[]>(),
   ]);
 
   const allTenants = tenants ?? [];
-  const activeTenants = allTenants.filter((t = { plan_status: '' }) => t.plan_status === 'active').length;
-  const trialingTenants = allTenants.filter((t = { plan_status: '' }) => t.plan_status === 'trialing').length;
+  const activeTenants = allTenants.filter((t: TenantSummaryRow) => t.plan_status === 'active').length;
+  const trialingTenants = allTenants.filter((t: TenantSummaryRow) => t.plan_status === 'trialing').length;
 
   const totalMRR = allTenants
-    .filter((t = { plan_status: '' }) => t.plan_status === 'active')
-    .reduce((sum = 0, t = { plan: '' }) => sum + getPlanMRR(t.plan), 0);
+    .filter((t: TenantSummaryRow) => t.plan_status === 'active')
+    .reduce((sum: number, t: TenantSummaryRow) => sum + getPlanMRR(t.plan), 0);
 
   // MRR by plan
   const mrrByPlan = Object.fromEntries(
     ['starter', 'pro', 'scale'].map(plan => {
-      const count = allTenants.filter((t = { plan_status: '', plan: '' }) => t.plan_status === 'active' && t.plan === plan).length;
+      const count = allTenants.filter((t: TenantSummaryRow) => t.plan_status === 'active' && t.plan === plan).length;
       return [plan, count * getPlanMRR(plan)];
     })
   );
@@ -74,7 +98,7 @@ async function getPlatformStats() {
     d.setDate(1);
     d.setMonth(d.getMonth() - i);
     const label = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-    const count = (tenantGrowth ?? []).filter((t = { created_at: '' }) => {
+    const count = (tenantGrowth ?? []).filter((t: TenantGrowthRow) => {
       const created = new Date(t.created_at);
       return created.getFullYear() === d.getFullYear() && created.getMonth() === d.getMonth();
     }).length;

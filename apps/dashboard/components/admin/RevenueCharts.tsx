@@ -17,6 +17,11 @@ const STATUS_STYLES = Object.fromEntries(Object.entries({
   trialing: 'bg-blue-500/15 text-blue-400',
 }));
 
+interface MrrPoint { month: string; mrr: number; }
+interface PlanDistribution { plan: string; count: number; pct: string; mrr: number; mrrPct: string; }
+interface AtRiskTenant { id: string; business_name: string; plan_status: string; trial_ends_at: string | null; plan: string; }
+interface RevenueChartsProps { mrrGrowth?: MrrPoint[]; planDist?: PlanDistribution[]; atRiskTenants?: AtRiskTenant[]; }
+
 function LineTooltip({ active = false, payload = [{ dataKey: '', color: '', value: 0 }].slice(0, 0), label = '' }) {
   if (!active || !payload?.length) return null;
   return (
@@ -32,8 +37,8 @@ function LineTooltip({ active = false, payload = [{ dataKey: '', color: '', valu
 export function RevenueCharts({
   mrrGrowth = [{ month: '', mrr: 0 }].slice(0, 0),
   planDist = [{ plan: '', count: 0, pct: '0', mrr: 0, mrrPct: '0' }].slice(0, 0),
-  atRiskTenants = [{ id: '', business_name: '', plan_status: '', trial_ends_at: '', plan: '' }].slice(0, 0),
-}) {
+  atRiskTenants = [{ id: '', business_name: '', plan_status: '', trial_ends_at: null, plan: '' }].slice(0, 0),
+}: RevenueChartsProps) {
   return (
     <div className="space-y-6">
       {/* MRR Growth */}

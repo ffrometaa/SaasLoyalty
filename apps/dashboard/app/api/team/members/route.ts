@@ -22,13 +22,15 @@ export async function GET(): Promise<NextResponse> {
       canRemove: false,
     };
 
+    type StaffRow = { id: string; auth_user_id: string; email: string; role: 'staff'; created_at: string };
+
     // Staff members
-    const { data: staffRows, error: staffError } = await supabase
+    const { data: rawStaffRows, error: staffError } = await supabase
       .from('tenant_users')
       .select('id, auth_user_id, email, role, created_at')
       .eq('tenant_id', result.tenant.id)
-      .order('created_at', { ascending: true })
-      .returns<Array<{ id: string; auth_user_id: string; email: string; role: 'staff'; created_at: string }>>();
+      .order('created_at', { ascending: true });
+    const staffRows = rawStaffRows as StaffRow[] | null;
 
     if (staffError) throw staffError;
 

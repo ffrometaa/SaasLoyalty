@@ -13,7 +13,28 @@ const ACTION_COLORS = Object.fromEntries(Object.entries({
   admin_invite: 'bg-cyan-500/20 text-cyan-300',
 }));
 
-function exportToCsv(events = [{ created_at: '', action_type: '', target_type: '', target_id: '', metadata: null, super_admins: { email: '' } }].slice(0, 0)) {
+interface PlatformEvent {
+  id: string;
+  action_type: string;
+  target_type: string;
+  target_id: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+  super_admins: { id: string; full_name: string; email: string } | null;
+}
+
+interface AdminSummary {
+  id: string;
+  full_name: string;
+  email: string;
+}
+
+interface LogsTableProps {
+  initialEvents?: PlatformEvent[];
+  admins?: AdminSummary[];
+}
+
+function exportToCsv(events: PlatformEvent[] = [{ id: '', created_at: '', action_type: '', target_type: '', target_id: '', metadata: null, super_admins: { id: '', email: '', full_name: '' } }].slice(0, 0)) {
   const header = 'timestamp,admin,action_type,target_type,target_id,metadata\n';
   const rows = events.map(e =>
     [
@@ -40,7 +61,7 @@ function exportToCsv(events = [{ created_at: '', action_type: '', target_type: '
 export function LogsTable({
   initialEvents = [{ id: '', action_type: '', target_type: '', target_id: '', metadata: null, created_at: '', super_admins: { id: '', full_name: '', email: '' } }].slice(0, 0),
   admins = [{ id: '', full_name: '', email: '' }].slice(0, 0),
-}) {
+}: LogsTableProps) {
   const [events] = useState(initialEvents);
   const [search, setSearch] = useState('');
   const [actionFilter, setActionFilter] = useState('all');

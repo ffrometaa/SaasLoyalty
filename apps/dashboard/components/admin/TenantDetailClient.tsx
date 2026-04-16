@@ -37,7 +37,69 @@ function InfoRow({ label = '', children = <></> }) {
   );
 }
 
-export function TenantDetailClient({ data = { tenant: { id: '', business_name: '', business_type: '', plan: '', plan_status: '', stripe_customer_id: null, stripe_subscription_id: null, owner_email: '', trial_ends_at: null, created_at: '', slug: '' }, members: [{ id: '', name: '', email: '', tier: '', points: 0, total_visits: 0, last_visit_at: null, status: '' }].slice(0, 0), memberCount: 0, campaigns: [{ id: '', name: '', type: '', status: '', recipient_count: 0, sent_at: null, created_at: '' }].slice(0, 0), events: [{ id: '', action_type: '', target_type: '', created_at: '', super_admins: { full_name: '', email: '' } }].slice(0, 0), metrics: { activeMembers: 0, visitsThisMonth: 0, redemptions: 0 } } }) {
+interface TenantSummary {
+  id: string;
+  business_name: string;
+  business_type: string | null;
+  plan: string;
+  plan_status: string;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  owner_email: string;
+  trial_ends_at: string | null;
+  created_at: string;
+  slug: string;
+}
+
+interface TenantMemberRow {
+  id: string;
+  name: string;
+  email: string;
+  tier: string;
+  points: number;
+  total_visits: number;
+  last_visit_at: string | null;
+  status: string;
+}
+
+interface TenantCampaignRow {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  recipient_count: number | null;
+  sent_at: string | null;
+  created_at: string;
+}
+
+interface TenantEventRow {
+  id: string;
+  action_type: string;
+  target_type: string;
+  created_at: string;
+  super_admins: { full_name: string; email: string } | null;
+}
+
+interface TenantMetrics {
+  activeMembers: number;
+  visitsThisMonth: number;
+  redemptions: number;
+}
+
+interface TenantDetailData {
+  tenant: TenantSummary;
+  members: TenantMemberRow[];
+  memberCount: number;
+  campaigns: TenantCampaignRow[];
+  events: TenantEventRow[];
+  metrics: TenantMetrics;
+}
+
+interface TenantDetailClientProps {
+  data?: TenantDetailData;
+}
+
+export function TenantDetailClient({ data = { tenant: { id: '', business_name: '', business_type: '', plan: '', plan_status: '', stripe_customer_id: null, stripe_subscription_id: null, owner_email: '', trial_ends_at: null, created_at: '', slug: '' }, members: [{ id: '', name: '', email: '', tier: '', points: 0, total_visits: 0, last_visit_at: null, status: '' }].slice(0, 0), memberCount: 0, campaigns: [{ id: '', name: '', type: '', status: '', recipient_count: 0, sent_at: null, created_at: '' }].slice(0, 0), events: [{ id: '', action_type: '', target_type: '', created_at: '', super_admins: { full_name: '', email: '' } }].slice(0, 0), metrics: { activeMembers: 0, visitsThisMonth: 0, redemptions: 0 } } }: TenantDetailClientProps) {
   const { tenant, members, memberCount, campaigns, events, metrics } = data;
   const router = useRouter();
   const [isPending, startTransition] = useTransition();

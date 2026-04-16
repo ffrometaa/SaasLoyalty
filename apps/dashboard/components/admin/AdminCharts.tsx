@@ -30,6 +30,10 @@ const ACTION_COLORS = Object.fromEntries(Object.entries({
   admin_invite: 'bg-cyan-500/20 text-cyan-300',
 }));
 
+interface TenantGrowthPoint { month: string; count: number; }
+interface RecentEvent { id: string; action_type: string; target_type: string; target_id: string | null; created_at: string; super_admins: { full_name: string; email: string } | null; }
+interface AdminChartsProps { mrrByPlan?: Record<string, number>; tenantGrowth?: TenantGrowthPoint[]; recentEvents?: RecentEvent[]; }
+
 function CustomTooltip({ active = false, payload = [{ name: '', value: 0 }].slice(0, 0) }) {
   if (!active || !payload?.length) return null;
   return (
@@ -53,8 +57,8 @@ function BarTooltip({ active = false, payload = [{ value: 0 }].slice(0, 0), labe
 export function AdminCharts({
   mrrByPlan = Object.fromEntries(Object.entries({ '': 0 })),
   tenantGrowth = [{ month: '', count: 0 }].slice(0, 0),
-  recentEvents = [{ id: '', action_type: '', target_type: '', target_id: '', created_at: '', super_admins: { full_name: '', email: '' } }].slice(0, 0),
-}) {
+  recentEvents = [{ id: '', action_type: '', target_type: '', target_id: null, created_at: '', super_admins: null }].slice(0, 0),
+}: AdminChartsProps) {
   const pieData = Object.entries(mrrByPlan)
     .filter(([, v]) => v > 0)
     .map(([plan, value]) => ({ name: PLAN_LABELS[plan] ?? plan, value, plan }));
