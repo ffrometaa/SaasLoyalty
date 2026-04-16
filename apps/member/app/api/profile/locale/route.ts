@@ -4,7 +4,7 @@ import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os
 const VALID_LOCALES = ['en', 'es'];
 
 export async function PATCH(request: NextRequest): Promise<NextResponse> {
-  const body = await request.json().catch(() => null);
+  const body = await request.json().catch(() => null) as { locale?: unknown } | null;
   const locale = body?.locale;
 
   if (!locale || !VALID_LOCALES.includes(locale)) {

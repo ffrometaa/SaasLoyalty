@@ -12,7 +12,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   // Verify the authenticated user actually belongs to this tenant
   const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError) console.error('[set-tenant] getUser error:', authError);
 
   if (!user) {
     return NextResponse.redirect(new URL('/join', request.url));

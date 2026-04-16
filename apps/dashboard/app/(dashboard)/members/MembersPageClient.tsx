@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import clsx from 'clsx';
 import type React from 'react';
-import Link from 'next/link';
 import {
   Search, ChevronLeft, ChevronRight, UserPlus, CheckCircle,
   Upload, Users, FileText, Link2, Send, Download,
@@ -98,7 +97,7 @@ export function MembersPageClient({ initialMembers, initialTotal }: Props): JSX.
 
   const itemsPerPage = 20;
 
-  const fetchMembers = useCallback(async (page = currentPage, search = searchQuery): Promise<void> => {
+  const fetchMembers = useCallback(async (page: number = currentPage, search: string = searchQuery): Promise<void> => {
     setPageLoading(true);
     try {
       const params = new URLSearchParams({
@@ -229,7 +228,7 @@ export function MembersPageClient({ initialMembers, initialTotal }: Props): JSX.
     }
   };
 
-  const closeAdjustPoints = () => {
+  const closeAdjustPoints = (): void => {
     setIsAdjustPointsOpen(false);
     setAdjustAmount(0);
     setAdjustReason('');
@@ -262,7 +261,7 @@ export function MembersPageClient({ initialMembers, initialTotal }: Props): JSX.
     }
   };
 
-  const closeQuickBlast = () => {
+  const closeQuickBlast = (): void => {
     setIsQuickBlastOpen(false);
     setBlastSubject('');
     setBlastMessage('');

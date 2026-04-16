@@ -25,7 +25,7 @@ export async function GET(
     }
     if (!tenantId) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
 
-    // Fetch the reward scoped to this tenant
+    // Service role required: reward fetch scoped to tenant — bypasses RLS for read
     const serviceClient = createServiceRoleClient();
     const { data: reward, error } = await serviceClient
       .from('rewards')
@@ -88,6 +88,7 @@ export async function PATCH(
       );
     }
 
+    // Service role required: reward update scoped to tenant — bypasses RLS for write
     const serviceClient = createServiceRoleClient();
     const { data: reward, error } = await serviceClient
       .from('rewards')
@@ -133,6 +134,7 @@ export async function DELETE(
     }
     if (!tenantId) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
 
+    // Service role required: reward soft-delete scoped to tenant — bypasses RLS for write
     const serviceClient = createServiceRoleClient();
     const { data: reward, error } = await serviceClient
       .from('rewards')

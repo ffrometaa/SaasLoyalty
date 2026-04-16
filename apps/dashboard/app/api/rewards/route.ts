@@ -160,7 +160,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Create reward
+    // Service role required: reward creation — bypasses RLS for tenant-scoped insert
     const serviceClient = createServiceRoleClient();
     const { data: reward, error } = await serviceClient
       .from('rewards')

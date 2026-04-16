@@ -50,24 +50,27 @@ export const viewport: Viewport = {
 async function getPendingConsentCount(): Promise<number> {
   try {
     const supabase = await createServerSupabaseClient();
-    const { data: userData } = await supabase.auth.getUser();
+    const { data: userData, error: authError } = await supabase.auth.getUser();
+    if (authError) console.error('[layout] getUser error:', authError);
     const user = userData?.user ?? null;
     if (!user) return 0;
 
     // Service role required: server-side consent check — bypasses RLS for layout data
     const service = createServiceRoleClient();
-    const { data: member } = await service
+    const { data: member, error: memberError } = await service
       .from('members')
       .select('id')
       .eq('auth_user_id', user.id)
       .limit(1)
       .single();
+    if (memberError) console.error('[layout] member lookup error:', memberError);
 
     if (!member) return 0;
 
-    const { data: pending } = await service.rpc('get_pending_consents', {
+    const { data: pending, error: pendingError } = await service.rpc('get_pending_consents', {
       p_member_id: member.id,
     });
+    if (pendingError) console.error('[layout] get_pending_consents error:', pendingError);
 
     return pending?.length ?? 0;
   } catch {

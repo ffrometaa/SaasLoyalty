@@ -171,13 +171,13 @@ export function RedemptionsPageClient({ initialHistory, initialTodayCount }: Pro
   const handleProcess = (): Promise<void> => processCode(code).then(() => setCode(''));
   const handleVerify = (): Promise<void> => verifyCode(code).then(() => setCode(''));
 
-  const handleScan = useCallback((scannedCode: string) => {
+  const handleScan = useCallback((scannedCode: string): void => {
     setMode('manual');
     setCode(scannedCode);
     processCode(scannedCode);
   }, [processCode]);
 
-  const handleVerifyScan = useCallback((scannedCode: string) => {
+  const handleVerifyScan = useCallback((scannedCode: string): void => {
     // Stay in scan view but show preview
     verifyCode(scannedCode);
   }, [verifyCode]);

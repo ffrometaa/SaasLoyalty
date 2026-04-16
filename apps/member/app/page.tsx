@@ -111,7 +111,8 @@ function progressWidthClass(current: number, goal: number): string {
 export default async function HomePage(): Promise<JSX.Element> {
   const t = await getTranslations('home');
   const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError) console.error('[homepage] getUser error:', authError);
 
   const tenantId = (await cookies()).get('loyalty_tenant_id')?.value;
 

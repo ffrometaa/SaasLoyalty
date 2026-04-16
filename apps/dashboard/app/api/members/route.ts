@@ -16,7 +16,8 @@ const fetchMembersList = unstable_cache(
     status: string | null,
     sortBy: string,
     sortOrder: string,
-  ) => {
+  ): Promise<{ members: Record<string, unknown>[]; pagination: { page: number; limit: number; total: number; totalPages: number } }> => {
+    // Service role required: unstable_cache runs outside request context — no session available
     const serviceClient = createServiceRoleClient();
 
     let query = serviceClient
@@ -156,6 +157,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'Subscription is not active' }, { status: 403 });
     }
 
+    // Service role required: plan limit enforcement — bypasses RLS for cross-tenant count
     const { count: memberCount, error: memberCountError } = await createServiceRoleClient()
       .from('members')
       .select('id', { count: 'exact', head: true })

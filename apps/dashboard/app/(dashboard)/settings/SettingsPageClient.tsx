@@ -82,6 +82,19 @@ interface Props {
   initialSettings: SettingsData | null;
 }
 
+function progressWidthClass(pct: number): string {
+  const p = Math.min(100, Math.round(pct));
+  if (p >= 100) return 'w-full';
+  if (p >= 88) return 'w-11/12';
+  if (p >= 75) return 'w-3/4';
+  if (p >= 63) return 'w-2/3';
+  if (p >= 50) return 'w-1/2';
+  if (p >= 38) return 'w-5/12';
+  if (p >= 25) return 'w-1/4';
+  if (p >= 13) return 'w-1/6';
+  return 'w-1/12';
+}
+
 export function SettingsPageClient({ initialSettings }: Props): JSX.Element {
   const t = useTranslations('settings');
 
@@ -844,17 +857,12 @@ export function SettingsPageClient({ initialSettings }: Props): JSX.Element {
                   {/* Preview */}
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <p className="text-sm font-medium text-gray-700 mb-3">Preview</p>
+                    <style>{`.branding-preview-primary{background-color:${branding.primaryColor}}.branding-preview-accent{background-color:${branding.accentColor}}`}</style>
                     <div className="flex gap-3">
-                      <button
-                        className="px-4 py-2 rounded-lg text-white text-sm font-medium bg-[var(--preview-primary)]"
-                        ref={(el: HTMLButtonElement | null) => { if (el) el.style.setProperty('--preview-primary', branding.primaryColor); }}
-                      >
+                      <button className="px-4 py-2 rounded-lg text-white text-sm font-medium branding-preview-primary">
                         Primary Button
                       </button>
-                      <button
-                        className="px-4 py-2 rounded-lg text-white text-sm font-medium bg-[var(--preview-accent)]"
-                        ref={(el: HTMLButtonElement | null) => { if (el) el.style.setProperty('--preview-accent', branding.accentColor); }}
-                      >
+                      <button className="px-4 py-2 rounded-lg text-white text-sm font-medium branding-preview-accent">
                         Accent Button
                       </button>
                     </div>
@@ -991,15 +999,9 @@ export function SettingsPageClient({ initialSettings }: Props): JSX.Element {
                       </div>
                       <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-brand-purple rounded-full w-[var(--usage-width)]"
-                          ref={(el: HTMLDivElement | null) => {
-                            if (el) el.style.setProperty(
-                              '--usage-width',
-                              usage.memberLimit
-                                ? `${Math.min(100, Math.round((usage.activeMembers / usage.memberLimit) * 100))}%`
-                                : '0%'
-                            );
-                          }}
+                          className={clsx('h-full bg-brand-purple rounded-full', progressWidthClass(
+                            usage.memberLimit ? Math.min(100, Math.round((usage.activeMembers / usage.memberLimit) * 100)) : 0
+                          ))}
                         />
                       </div>
                     </div>

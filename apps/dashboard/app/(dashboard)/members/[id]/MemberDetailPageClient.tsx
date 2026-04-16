@@ -85,6 +85,19 @@ interface Props {
   memberId: string;
 }
 
+function progressWidthClass(pct: number): string {
+  const p = Math.min(100, Math.round(pct));
+  if (p >= 100) return 'w-full';
+  if (p >= 88) return 'w-11/12';
+  if (p >= 75) return 'w-3/4';
+  if (p >= 63) return 'w-2/3';
+  if (p >= 50) return 'w-1/2';
+  if (p >= 38) return 'w-5/12';
+  if (p >= 25) return 'w-1/4';
+  if (p >= 13) return 'w-1/6';
+  return 'w-1/12';
+}
+
 export function MemberDetailPageClient({ initialMember, memberId }: Props): JSX.Element {
   const t = useTranslations('members');
   const tCommon = useTranslations('common');
@@ -368,8 +381,7 @@ export function MemberDetailPageClient({ initialMember, memberId }: Props): JSX.
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-brand-purple rounded-full transition-all w-[var(--progress)]"
-                    ref={(el: HTMLDivElement | null) => { if (el) el.style.setProperty('--progress', `${Math.min(progressToNext, 100)}%`); }}
+                    className={clsx('h-full bg-brand-purple rounded-full transition-all', progressWidthClass(Math.min(progressToNext, 100)))}
                   />
                 </div>
               </div>

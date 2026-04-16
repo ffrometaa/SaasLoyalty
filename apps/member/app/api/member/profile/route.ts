@@ -11,7 +11,8 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     const tenantId = (await cookies()).get('loyalty_tenant_id')?.value;
     if (!tenantId) return NextResponse.json({ error: 'No tenant' }, { status: 400 });
 
-    const { name } = await request.json();
+    const body = await request.json() as { name?: unknown };
+    const { name } = body;
     if (!name || typeof name !== 'string' || !name.trim()) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }

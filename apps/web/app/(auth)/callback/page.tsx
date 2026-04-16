@@ -22,7 +22,7 @@ function AuthCallbackContent(): JSX.Element {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const handleCallback = async () => {
+    const handleCallback = async (): Promise<void> => {
       const supabase = getSupabaseClient();
 
       // Get the code from URL
