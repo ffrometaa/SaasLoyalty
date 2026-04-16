@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import type { Session } from '@supabase/supabase-js';
+import type { User } from '@supabase/supabase-js';
 import { getSupabaseClient } from '@loyalty-os/lib';
 
 interface InviteInfo {
@@ -21,7 +21,7 @@ interface Props {
 export function InvitePageClient({ token, initialInvite, initialError }: Props): JSX.Element {
   const [invite] = useState<InviteInfo | null>(initialInvite);
   const [inviteError] = useState<string | null>(initialError);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Auth form state
@@ -38,9 +38,9 @@ export function InvitePageClient({ token, initialInvite, initialError }: Props):
   useEffect(() => {
     // Session check is browser-side auth state — cannot be replaced by server-side fetch
     const supabase = getSupabaseClient();
-    supabase.auth.getSession().then(({ data: { session: sess }, error: sessionError }): void => {
-      if (sessionError) { setLoading(false); return; }
-      setSession(sess);
+    supabase.auth.getUser().then(({ data: { user: u }, error: userError }): void => {
+      if (userError) { setLoading(false); return; }
+      setUser(u);
       setLoading(false);
     });
   }, []);
@@ -60,12 +60,12 @@ export function InvitePageClient({ token, initialInvite, initialError }: Props):
         if (error) throw error;
       }
 
-      const { data: { session: newSession }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) throw sessionError;
-      setSession(newSession);
+      const { data: { user: newUser }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      setUser(newUser);
 
       // Auto-accept after successful auth
-      if (newSession) {
+      if (newUser) {
         const res = await fetch('/api/invite/accept', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -168,11 +168,11 @@ export function InvitePageClient({ token, initialInvite, initialError }: Props):
           <div className="auth-alert auth-alert-error mb-4">{authError}</div>
         )}
 
-        {session ? (
+        {user ? (
           // Logged in — show accept button
           <div className="text-center">
             <p className="text-gray-400 text-sm mb-6">
-              Logged in as <span className="text-white">{session.user.email}</span>
+              Logged in as <span className="text-white">{user.email}</span>
             </p>
             <button
               onClick={handleAccept}
@@ -186,7 +186,7 @@ export function InvitePageClient({ token, initialInvite, initialError }: Props):
               <button
                 onClick={async (): Promise<void> => {
                   await getSupabaseClient().auth.signOut();
-                  setSession(null);
+                  setUser(null);
                 }}
                 className="text-purple-300 hover:underline"
               >

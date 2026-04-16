@@ -45,16 +45,8 @@ function AuthCallbackContent(): JSX.Element {
         // Redirect to dashboard or specified page
         window.location.href = next;
       } else {
-        // No code, try to get session directly
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-        if (sessionError || !session) {
-          setError('Invalid or expired link');
-          setLoading(false);
-          return;
-        }
-
-        window.location.href = next;
+        window.location.href = '/login?error=missing_code';
+        return;
       }
     };
 

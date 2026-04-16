@@ -103,7 +103,10 @@ export async function updatePassword(newPassword: string) {
  */
 export async function getSession() {
   const supabase = getSupabaseClient();
-  const { data: { session }, error } = await supabase.auth.getSession();
+  interface AuthWithGetSession {
+    getSession(): Promise<{ data: { session: import('@supabase/supabase-js').Session | null }; error: Error | null }>;
+  }
+  const { data: { session }, error } = await (supabase.auth as unknown as AuthWithGetSession).getSession();
   
   if (error) {
     return { session: null, error: { message: error.message } };
