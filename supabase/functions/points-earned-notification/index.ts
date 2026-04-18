@@ -36,6 +36,11 @@ serve(async (req: Request) => {
     });
   }
 
+  // Kill switch
+  if (Deno.env.get('DISABLE_MEMBER_NOTIFICATIONS') === 'true') {
+    return Response.json({ ok: true, skipped: 'disabled', durationMs: 0 });
+  }
+
   const body = await req.json() as {
     transaction_id: string;
     member_id: string;
@@ -201,9 +206,7 @@ serve(async (req: Request) => {
     });
   }
 
-  console.log(
-    `points-earned-notification: member=${member_id} delivered=${delivered} skipped=${skipped} in ${Date.now() - started}ms`
-  );
+  console.log(`[points-earned-notification] delivered=${delivered} skipped=${skipped} errors=${errors.length} durationMs=${Date.now() - started}`);
 
   return new Response(
     JSON.stringify({ ok: true, delivered, skipped, durationMs: Date.now() - started, errors }),
