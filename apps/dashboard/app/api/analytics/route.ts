@@ -145,7 +145,7 @@ const fetchAnalyticsData = unstable_cache(
       .gte('created_at', from)
       .lte('created_at', to)
       .not('amount', 'is', null);
-    const revenue_this_month = visitsWithAmount?.reduce((s, v) => s + (v.amount ?? 0), 0) ?? 0;
+    const revenue_this_month = visitsWithAmount?.reduce((s: number, v: { amount: number | null }) => s + (v.amount ?? 0), 0) ?? 0;
 
     // Revenue last period (mirror from/to but shifted back by same duration)
     const durationMs = new Date(to).getTime() - new Date(from).getTime();
@@ -158,7 +158,7 @@ const fetchAnalyticsData = unstable_cache(
       .gte('created_at', lastFrom)
       .lte('created_at', lastTo)
       .not('amount', 'is', null);
-    const revenue_last_month = lastVisitsWithAmount?.reduce((s, v) => s + (v.amount ?? 0), 0) ?? 0;
+    const revenue_last_month = lastVisitsWithAmount?.reduce((s: number, v: { amount: number | null }) => s + (v.amount ?? 0), 0) ?? 0;
     const revenue_change = revenue_last_month === 0
       ? 0
       : Math.round(((revenue_this_month - revenue_last_month) / revenue_last_month) * 100);
