@@ -44,11 +44,11 @@ const nextConfig = {
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }];
   },
+  outputFileTracingRoot: path.join(__dirname, '../../'),
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb',
     },
-    outputFileTracingRoot: path.join(__dirname, '../../'),
   },
 };
 
