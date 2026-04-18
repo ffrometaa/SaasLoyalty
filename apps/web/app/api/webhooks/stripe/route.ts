@@ -191,10 +191,31 @@ async function handleCheckoutCompleted(supabase: SupabaseClient, session: Stripe
 
   // Send welcome email to the new customer
   if (customerEmail) {
+    // Fetch founding partner status for welcome email
+    let trialDays = 14;
+    let isFoundingPartner = false;
+
+    const { data: tenantData } = await supabase
+      .from('tenants')
+      .select('is_founding_partner, trial_ends_at')
+      .eq('slug', tenantSlug)
+      .single();
+
+    if (tenantData) {
+      isFoundingPartner = tenantData.is_founding_partner ?? false;
+      if (tenantData.trial_ends_at) {
+        trialDays = Math.max(1, Math.ceil(
+          (new Date(tenantData.trial_ends_at).getTime() - Date.now()) / 86_400_000
+        ));
+      }
+    }
+
     await sendWelcomeEmail({
       businessName: businessName || tenantSlug,
       email: customerEmail,
       plan,
+      trialDays,
+      isFoundingPartner,
     });
   }
 }
@@ -300,10 +321,14 @@ async function sendWelcomeEmail({
   businessName,
   email,
   plan,
+  trialDays = 14,
+  isFoundingPartner = false,
 }: {
   businessName: string;
   email: string;
   plan: string;
+  trialDays?: number;
+  isFoundingPartner?: boolean;
 }): Promise<void> {
   // From address should match tenant custom domain when available for better deliverability.
   // Default: LoyaltyOS <hello@loyalbase.dev>
@@ -314,6 +339,8 @@ async function sendWelcomeEmail({
     businessName,
     plan,
     dashboardUrl: 'https://dashboard.loyalbase.dev',
+    trialDays,
+    isFoundingPartner,
   });
 
   const { subject, html } = buildBilingualEmail({

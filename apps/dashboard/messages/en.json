@@ -475,6 +475,13 @@
     "comingSoonCta": "Upgrade to Pro →",
     "trialLinkText": "Request a 45-day free trial"
   },
+  "trialBanner": {
+    "daysRemaining": "You have {days} days left in your trial.",
+    "oneDay": "You have 1 day left in your trial!",
+    "upgradeNow": "Upgrade now",
+    "foundingPartner": "Founding Partner",
+    "urgentSuffix": "Upgrade now to keep your data."
+  },
   "langSwitch": {
     "en": "EN",
     "es": "ES"

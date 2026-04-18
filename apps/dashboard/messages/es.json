@@ -475,6 +475,13 @@
     "comingSoonCta": "Actualizar a Pro →",
     "trialLinkText": "Solicitar prueba gratuita de 45 días"
   },
+  "trialBanner": {
+    "daysRemaining": "Te quedan {days} días de prueba.",
+    "oneDay": "¡Te queda 1 día de prueba!",
+    "upgradeNow": "Actualizá tu plan",
+    "foundingPartner": "Founding Partner",
+    "urgentSuffix": "Actualizá ahora para conservar tus datos."
+  },
   "langSwitch": {
     "en": "EN",
     "es": "ES"

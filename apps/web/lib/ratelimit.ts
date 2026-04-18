@@ -26,3 +26,16 @@ export function getInviteTokenRatelimit(): Ratelimit | null {
     analytics: false,
   });
 }
+
+/** 3 requests per 15 minutes — resend magic link / OTP per IP */
+export function getResendMagicLinkRatelimit(): Ratelimit | null {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  return new Ratelimit({
+    redis: new Redis({ url, token }),
+    limiter: Ratelimit.slidingWindow(3, '15 m'),
+    prefix: 'loyalty:rl:web:resend-magic-link',
+    analytics: false,
+  });
+}

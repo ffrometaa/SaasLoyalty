@@ -334,6 +334,24 @@
       "loading": "Cargando...",
       "errTooShort": "La contraseña debe tener al menos 8 caracteres",
       "errMismatch": "Las contraseñas no coinciden"
+    },
+    "registrationComplete": {
+      "title": "¡Revisá tu email!",
+      "subtitle": "Te enviamos un email de confirmación para completar tu registro.",
+      "didntReceive": "¿No recibiste el email?",
+      "resend": "Reenviar confirmación",
+      "sending": "Enviando...",
+      "sent": "¡Email enviado! Revisá tu bandeja de entrada.",
+      "useCode": "Ingresar código de verificación",
+      "otpLabel": "Código de verificación de 6 dígitos",
+      "otpPlaceholder": "123456",
+      "verify": "Verificar código",
+      "verifying": "Verificando...",
+      "rateLimited": "Demasiados intentos. Intentá de nuevo en {minutes} minutos.",
+      "error": "Algo salió mal. Por favor intentá de nuevo.",
+      "otpError": "Código inválido o expirado. Por favor intentá de nuevo.",
+      "goToSignIn": "Ir a iniciar sesión",
+      "trialNote": "El período de prueba de {trialDays} días comienza cuando accedés al dashboard por primera vez."
     }
   },
   "dashboardPreview": {

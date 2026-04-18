@@ -334,6 +334,24 @@
       "loading": "Loading...",
       "errTooShort": "Password must be at least 8 characters",
       "errMismatch": "Passwords do not match"
+    },
+    "registrationComplete": {
+      "title": "Check your email!",
+      "subtitle": "We've sent a confirmation email to complete your registration.",
+      "didntReceive": "Didn't receive the email?",
+      "resend": "Resend confirmation",
+      "sending": "Sending...",
+      "sent": "Email sent! Check your inbox.",
+      "useCode": "Enter verification code instead",
+      "otpLabel": "6-digit verification code",
+      "otpPlaceholder": "123456",
+      "verify": "Verify code",
+      "verifying": "Verifying...",
+      "rateLimited": "Too many attempts. Try again in {minutes} minutes.",
+      "error": "Something went wrong. Please try again.",
+      "otpError": "Invalid or expired code. Please try again.",
+      "goToSignIn": "Go to sign in",
+      "trialNote": "{trialDays}-day free trial starts when you first access your dashboard."
     }
   },
   "dashboardPreview": {

@@ -1,6 +1,97 @@
-import Link from 'next/link';
+'use client';
 
-export default function RegistrationCompletePage() {
+import { useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { getSupabaseClient } from '@loyalty-os/lib';
+
+type Status =
+  | 'idle'
+  | 'sending'
+  | 'sent'
+  | 'rate-limited'
+  | 'error'
+  | 'otp-input'
+  | 'otp-verifying'
+  | 'success'
+  | 'otp-error';
+
+function RegistrationCompleteContent() {
+  const t = useTranslations('auth.registrationComplete');
+  const searchParams = useSearchParams();
+  const email = searchParams.get('email');
+
+  const [status, setStatus] = useState<Status>('idle');
+  const [otpCode, setOtpCode] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [retryAfterMinutes, setRetryAfterMinutes] = useState(0);
+
+  const handleResend = async () => {
+    if (!email) return;
+
+    setStatus('sending');
+    setErrorMessage('');
+
+    try {
+      const res = await fetch('/api/auth/resend-magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, type: 'magiclink' }),
+      });
+
+      if (res.status === 429) {
+        const retryAfter = Number(res.headers.get('Retry-After') ?? '900');
+        setRetryAfterMinutes(Math.ceil(retryAfter / 60));
+        setStatus('rate-limited');
+        return;
+      }
+
+      if (!res.ok) {
+        setStatus('error');
+        setErrorMessage(t('error'));
+        return;
+      }
+
+      setStatus('sent');
+    } catch {
+      setStatus('error');
+      setErrorMessage(t('error'));
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!email || otpCode.length !== 6) return;
+
+    setStatus('otp-verifying');
+    setErrorMessage('');
+
+    try {
+      const supabase = getSupabaseClient();
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otpCode,
+        type: 'email',
+      });
+
+      if (error) {
+        setStatus('otp-error');
+        setErrorMessage(t('otpError'));
+        return;
+      }
+
+      setStatus('success');
+      const dashboardUrl =
+        process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://app.loyalbase.dev';
+      window.location.href = `${dashboardUrl}/auth/callback?next=/`;
+    } catch {
+      setStatus('otp-error');
+      setErrorMessage(t('otpError'));
+    }
+  };
+
+  const isResendDisabled = !email || status === 'sending';
+
   return (
     <div className="auth-container">
       <div className="auth-card max-w-lg">
@@ -10,10 +101,11 @@ export default function RegistrationCompletePage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <h2 className="auth-title mt-4">Check your email!</h2>
-          <p className="auth-subtitle mt-2">
-            We&apos;ve sent a confirmation email to complete your registration.
-          </p>
+          <h2 className="auth-title mt-4">{t('title')}</h2>
+          <p className="auth-subtitle mt-2">{t('subtitle')}</p>
+          {email && (
+            <p className="mt-1 text-sm text-indigo-400 font-medium">{email}</p>
+          )}
         </div>
 
         <div className="mt-6 space-y-4">
@@ -36,31 +128,124 @@ export default function RegistrationCompletePage() {
               </div>
               <div className="ml-3 flex-1">
                 <p className="text-sm text-amber-800">
-                  <strong>14-day free trial</strong> starts when you first access your dashboard after confirming your email.
+                  <strong>14-day free trial</strong>{' '}
+                  {t('trialNote', { trialDays: 14 })}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
+        {/* Status messages */}
+        {status === 'sent' && (
+          <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">
+            {t('sent')}
+          </div>
+        )}
+
+        {status === 'rate-limited' && (
+          <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">
+            {t('rateLimited', { minutes: retryAfterMinutes })}
+          </div>
+        )}
+
+        {(status === 'error') && (
+          <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">
+            {errorMessage || t('error')}
+          </div>
+        )}
+
+        {/* Resend section */}
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
-            Didn&apos;t receive the email?{' '}
-            <button className="auth-link">
-              Resend confirmation
-            </button>
+            {!email
+              ? t('didntReceive')
+              : (
+                <>
+                  {t('didntReceive')}{' '}
+                  <button
+                    onClick={handleResend}
+                    disabled={isResendDisabled}
+                    className="auth-link disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {status === 'sending' ? t('sending') : t('resend')}
+                  </button>
+                </>
+              )
+            }
           </p>
         </div>
+
+        {/* OTP entry link — shows after successful resend */}
+        {status === 'sent' && email && (
+          <div className="mt-3 text-center">
+            <button
+              onClick={() => setStatus('otp-input')}
+              className="text-sm text-indigo-600 hover:text-indigo-500 underline"
+            >
+              {t('useCode')}
+            </button>
+          </div>
+        )}
+
+        {/* OTP input form */}
+        {(status === 'otp-input' || status === 'otp-verifying' || status === 'otp-error') && (
+          <div className="mt-4 space-y-3">
+            <div>
+              <label htmlFor="otp-code" className="auth-label">
+                {t('otpLabel')}
+              </label>
+              <div className="mt-2">
+                <input
+                  id="otp-code"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  value={otpCode}
+                  placeholder={t('otpPlaceholder')}
+                  onChange={(e) => {
+                    const numeric = e.target.value.replace(/\D/g, '');
+                    setOtpCode(numeric);
+                  }}
+                  className="auth-input"
+                />
+              </div>
+            </div>
+
+            {status === 'otp-error' && (
+              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-800">
+                {errorMessage || t('otpError')}
+              </div>
+            )}
+
+            <button
+              onClick={handleVerifyOtp}
+              disabled={otpCode.length !== 6 || status === 'otp-verifying'}
+              className="auth-button disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {status === 'otp-verifying' ? t('verifying') : t('verify')}
+            </button>
+          </div>
+        )}
 
         <div className="mt-6 border-t pt-6">
           <Link
             href="/login"
             className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
           >
-            Go to sign in
+            {t('goToSignIn')}
           </Link>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegistrationCompletePage() {
+  return (
+    <Suspense fallback={null}>
+      <RegistrationCompleteContent />
+    </Suspense>
   );
 }

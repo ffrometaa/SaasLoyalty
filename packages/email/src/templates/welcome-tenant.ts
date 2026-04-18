@@ -1,22 +1,48 @@
 import { emailButton, emailHeading, emailParagraph, emailHighlight } from '../template';
 
-export function buildWelcomeTenantEmail({ businessName = '', plan = '', dashboardUrl = '' }) {
+export interface WelcomeTenantEmailParams {
+  businessName?: string;
+  plan?: string;
+  dashboardUrl?: string;
+  trialDays?: number;
+  isFoundingPartner?: boolean;
+}
+
+export function buildWelcomeTenantEmail({
+  businessName = '',
+  plan = '',
+  dashboardUrl = '',
+  trialDays = 14,
+  isFoundingPartner = false,
+}: WelcomeTenantEmailParams = {}) {
   const url = dashboardUrl || 'https://dashboard.loyalbase.dev';
   const planLabel = plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : 'Starter';
 
-  const enSubject = `Welcome to LoyaltyOS, ${businessName}! Your 14-day trial is active`;
-  const esSubject = `¡Bienvenido a LoyaltyOS, ${businessName}! Tu período de prueba de 14 días está activo`;
+  const enSubject = `Welcome to LoyaltyOS, ${businessName}! Your ${trialDays}-day trial is active`;
+  const esSubject = `¡Bienvenido a LoyaltyOS, ${businessName}! Tu período de prueba de ${trialDays} días está activo`;
+
+  const enFoundingCallout = isFoundingPartner
+    ? emailHighlight(
+        `🌟 You're a Founding Partner! Enjoy your extended ${trialDays}-day trial and 20% lifetime discount.`
+      )
+    : '';
+
+  const esFoundingCallout = isFoundingPartner
+    ? emailHighlight(
+        `🌟 ¡Sos Founding Partner! Disfrutá tu trial extendido de ${trialDays} días y 20% de descuento de por vida.`
+      )
+    : '';
 
   const enHtmlContent = `
     ${emailHeading(`Welcome to LoyaltyOS! 🎉`)}
-    ${emailParagraph(`Hi <strong>${businessName}</strong>, your LoyaltyOS account has been created successfully on the <strong>${planLabel}</strong> plan. You have 14 days to explore all features for free.`)}
+    ${emailParagraph(`Hi <strong>${businessName}</strong>, your LoyaltyOS account has been created successfully on the <strong>${planLabel}</strong> plan. You have ${trialDays} days to explore all features for free.`)}
+    ${enFoundingCallout}
     ${emailHighlight(`
       <strong>Next steps:</strong>
       <ol style="margin:10px 0 0; padding-left:20px; color:#334155; line-height:2;">
-        <li>Go to your dashboard and complete your business profile</li>
-        <li>Configure your first rewards</li>
-        <li>Share your member app link with your customers</li>
-        <li>Start recording visits and earning points!</li>
+        <li><a href="${url}/settings" style="color:#4f46e5;">Complete your business profile</a></li>
+        <li><a href="${url}/rewards" style="color:#4f46e5;">Create your first reward</a></li>
+        <li><a href="${url}/members" style="color:#4f46e5;">Invite your first member</a></li>
       </ol>
     `)}
     ${emailButton('Go to Dashboard →', url)}
@@ -25,14 +51,14 @@ export function buildWelcomeTenantEmail({ businessName = '', plan = '', dashboar
 
   const esHtmlContent = `
     ${emailHeading(`¡Bienvenido a LoyaltyOS! 🎉`)}
-    ${emailParagraph(`Hola <strong>${businessName}</strong>, tu cuenta de LoyaltyOS fue creada exitosamente con el plan <strong>${planLabel}</strong>. Tenés 14 días gratis para explorar todas las funcionalidades.`)}
+    ${emailParagraph(`Hola <strong>${businessName}</strong>, tu cuenta de LoyaltyOS fue creada exitosamente con el plan <strong>${planLabel}</strong>. Tenés ${trialDays} días gratis para explorar todas las funcionalidades.`)}
+    ${esFoundingCallout}
     ${emailHighlight(`
       <strong>Primeros pasos:</strong>
       <ol style="margin:10px 0 0; padding-left:20px; color:#334155; line-height:2;">
-        <li>Ingresá al dashboard y completá tu perfil de negocio</li>
-        <li>Configurá tus primeras recompensas</li>
-        <li>Compartí el link de tu app con tus clientes</li>
-        <li>¡Empezá a registrar visitas y acumular puntos!</li>
+        <li><a href="${url}/settings" style="color:#4f46e5;">Completá tu perfil de negocio</a></li>
+        <li><a href="${url}/rewards" style="color:#4f46e5;">Creá tu primera recompensa</a></li>
+        <li><a href="${url}/members" style="color:#4f46e5;">Invitá a tu primer miembro</a></li>
       </ol>
     `)}
     ${emailButton('Ir al Dashboard →', url)}

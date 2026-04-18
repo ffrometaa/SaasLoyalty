@@ -6,10 +6,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY! /* Required: STRIPE_SEC
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const sessionId = request.nextUrl.searchParams.get('session_id');
-  const origin = `${request.nextUrl.protocol}//${request.nextUrl.host}`;
+  const webUrl = process.env.NEXT_PUBLIC_WEB_URL || 'https://loyalbase.dev';
 
   if (!sessionId) {
-    return NextResponse.redirect(`${origin}/login?welcome=1`);
+    return NextResponse.redirect(`${webUrl}/registration-complete`);
   }
 
   try {
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const email = checkoutSession.customer_email || checkoutSession.customer_details?.email;
 
     if (!email) {
-      return NextResponse.redirect(`${origin}/login?welcome=1`);
+      return NextResponse.redirect(`${webUrl}/registration-complete`);
     }
 
     // Service role required: post-payment user creation — no session exists yet
@@ -29,6 +29,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       };
     }
     const supabase = createServiceRoleClient();
+    const origin = `${request.nextUrl.protocol}//${request.nextUrl.host}`;
     const { data, error } = await (supabase.auth as unknown as AuthWithAdmin).admin.generateLink({
       type: 'magiclink',
       email,
@@ -38,12 +39,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     if (error || !data?.properties?.action_link) {
-      return NextResponse.redirect(`${origin}/login?welcome=1`);
+      return NextResponse.redirect(
+        `${webUrl}/registration-complete?email=${encodeURIComponent(email)}`,
+      );
     }
 
     // Redirect through the magic link — this establishes a session on dashboard.loyalbase.dev automatically
     return NextResponse.redirect(data.properties.action_link);
   } catch {
-    return NextResponse.redirect(`${origin}/login?welcome=1`);
+    return NextResponse.redirect(`${webUrl}/registration-complete`);
   }
 }

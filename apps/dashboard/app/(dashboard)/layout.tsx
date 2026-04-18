@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Sidebar } from '../../components/Sidebar';
 import { SuperAdminBanner } from '../../components/SuperAdminBanner';
+import { PlanTrialBanner } from '../../components/PlanTrialBanner';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -18,6 +19,7 @@ export default function DashboardLayout({
       <Sidebar />
       <div className="lg:pl-64 flex flex-col min-h-screen">
         <SuperAdminBanner />
+        <PlanTrialBanner />
         <main className="flex-1 pt-16 lg:pt-0">
           {children}
         </main>
