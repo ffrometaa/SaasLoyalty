@@ -10,6 +10,7 @@ export * from './templates/points-earned';
 export * from './templates/reward-redeemed';
 export * from './templates/birthday';
 export * from './templates/referral-bonus';
+export * from './templates/reward-available';
 export * from './templates/points-expiry';
 export * from './templates/trial-expiry';
 export * from './templates/payment-failed';
