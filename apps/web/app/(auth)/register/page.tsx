@@ -14,10 +14,14 @@ function RegisterPageInner(): JSX.Element {
   const searchParams = useSearchParams();
   const isFoundingSource = searchParams.get('source') === 'founding';
 
+  const planParam = searchParams.get('plan');
+  const initialPlan: 'starter' | 'pro' | 'scale' =
+    planParam === 'pro' || planParam === 'scale' ? planParam : 'starter';
+
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro' | 'scale'>('starter');
+  const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro' | 'scale'>(initialPlan);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
   const [foundingAvailable, setFoundingAvailable] = useState(false);
 
@@ -369,10 +373,16 @@ function RegisterPageInner(): JSX.Element {
               <h4 className="font-semibold text-white text-sm">{t('orderSummary')}</h4>
               <div className="mt-2 flex justify-between text-sm">
                 <span className="text-white/50">{PLANS[selectedPlan].name}</span>
-                <span className="font-medium text-white">${PLANS[selectedPlan].price}{t('perMonth')}</span>
+                {billingPeriod === 'annual' ? (
+                  <span className="font-medium text-white">
+                    ${Math.round(PLANS[selectedPlan].price * 10 / 12)}{t('perMonth')} (billed annually)
+                  </span>
+                ) : (
+                  <span className="font-medium text-white">${PLANS[selectedPlan].price}{t('perMonth')}</span>
+                )}
               </div>
               <p className="mt-1 text-xs text-white/30">
-                {t('trialNote', { price: PLANS[selectedPlan].price })}
+                {t('trialNote', { price: billingPeriod === 'annual' ? Math.round(PLANS[selectedPlan].price * 10 / 12) : PLANS[selectedPlan].price })}
               </p>
             </div>
 

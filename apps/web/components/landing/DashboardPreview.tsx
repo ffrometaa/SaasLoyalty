@@ -1,18 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
-
-const BarChart = dynamic(() => import('recharts').then((m) => m.BarChart), { ssr: false });
-const Bar = dynamic(() => import('recharts').then((m) => m.Bar), { ssr: false });
-const XAxis = dynamic(() => import('recharts').then((m) => m.XAxis), { ssr: false });
-const YAxis = dynamic(() => import('recharts').then((m) => m.YAxis), { ssr: false });
-const Tooltip = dynamic(() => import('recharts').then((m) => m.Tooltip), { ssr: false });
-const ResponsiveContainer = dynamic(
-  () => import('recharts').then((m) => m.ResponsiveContainer),
-  { ssr: false }
-);
 
 const VISIT_VALUES = [42, 58, 65, 71, 98, 112, 55];
 const TOP_PRODUCTS_SALES = [312, 256, 190];
@@ -163,31 +152,33 @@ export function DashboardPreview() {
                 <div className="text-xs font-semibold text-white/40 mb-4 tracking-wide uppercase">
                   {t('chartTitle')}
                 </div>
-                <div style={{ height: 180 }}>
-                  {active && (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={visitData} barSize={24}>
-                        <XAxis
-                          dataKey="day"
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }}
-                        />
-                        <YAxis hide />
-                        <Tooltip
-                          cursor={{ fill: 'rgba(124,58,237,0.08)' }}
-                          contentStyle={{
-                            background: '#111118',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '8px',
-                            color: '#fff',
-                            fontSize: 12,
-                          }}
-                        />
-                        <Bar dataKey="visits" fill="#7c3aed" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  )}
+                <div style={{ height: 180 }} className="flex flex-col justify-end gap-0">
+                  <div className="flex items-end gap-1.5 h-36 px-1">
+                    {visitData.map((d, i) => {
+                      const maxVal = Math.max(...VISIT_VALUES);
+                      const heightPct = Math.round((d.visits / maxVal) * 100);
+                      return (
+                        <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                          <div
+                            className="w-full rounded-t transition-all duration-700"
+                            style={{
+                              height: active ? `${heightPct}%` : '0%',
+                              background: 'linear-gradient(180deg, #9f67ff, #7c3aed)',
+                              opacity: 0.75 + i * 0.035,
+                              transitionDelay: `${i * 60}ms`,
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex gap-1.5 px-1 mt-1">
+                    {visitData.map((d, i) => (
+                      <div key={i} className="flex-1 text-center" style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>
+                        {d.day}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

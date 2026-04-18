@@ -57,7 +57,6 @@ const organizationSchema = {
   '@type': 'Organization',
   name: 'LoyalBase',
   url: 'https://loyalbase.dev',
-  logo: 'https://loyalbase.dev/logo.png',
   description:
     'White-label loyalty and membership platform for local businesses. Branded member app, automated retention campaigns, and real-time analytics.',
   address: {

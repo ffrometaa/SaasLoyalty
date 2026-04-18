@@ -33,6 +33,14 @@ const securityHeaders = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ['@loyalty-os/ui', '@loyalty-os/config', '@loyalty-os/db', '@loyalty-os/email'],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'dashboard.loyalbase.dev',
+      },
+    ],
+  },
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }];
   },

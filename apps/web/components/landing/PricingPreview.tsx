@@ -18,6 +18,7 @@ export function PricingPreview() {
       features: [t('plan0_f0'), t('plan0_f1'), t('plan0_f2'), t('plan0_f3'), t('plan0_f4')],
       highlight: false,
       enterprise: false,
+      slug: 'starter',
     },
     {
       name: t('plan1_name'),
@@ -27,6 +28,7 @@ export function PricingPreview() {
       features: [t('plan1_f0'), t('plan1_f1'), t('plan1_f2'), t('plan1_f3'), t('plan1_f4'), t('plan1_f5')],
       highlight: true,
       enterprise: false,
+      slug: 'pro',
     },
     {
       name: t('plan2_name'),
@@ -36,6 +38,7 @@ export function PricingPreview() {
       features: [t('plan2_f0'), t('plan2_f1'), t('plan2_f2'), t('plan2_f3'), t('plan2_f4'), t('plan2_f5')],
       highlight: false,
       enterprise: false,
+      slug: 'scale',
     },
   ];
 
@@ -219,7 +222,7 @@ export function PricingPreview() {
                 </div>
               ) : (
                 <Link
-                  href="/register"
+                  href={`/register?plan=${plan.slug}`}
                   className="block w-full text-center py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02]"
                   style={
                     plan.highlight
