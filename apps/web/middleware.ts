@@ -87,8 +87,8 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const isApiRoute = pathname.startsWith('/api');
 
   const { data: { user }, error: authError } = await (supabase.auth as unknown as AuthWithGetUser).getUser();
-  if (authError) {
-    // Auth failure — treat as unauthenticated and continue; protected routes will redirect to login
+  if (authError && authError.message !== 'Auth session missing!') {
+    // Log unexpected auth errors only — missing session is expected for unauthenticated users
     console.error('[middleware] getUser failed:', authError.message);
   }
 

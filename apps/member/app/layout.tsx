@@ -51,7 +51,7 @@ async function getPendingConsentCount(): Promise<number> {
   try {
     const supabase = await createServerSupabaseClient();
     const { data: userData, error: authError } = await supabase.auth.getUser();
-    if (authError) console.error('[layout] getUser error:', authError);
+    if (authError && authError.message !== 'Auth session missing!') console.error('[layout] getUser error:', authError);
     const user = userData?.user ?? null;
     if (!user) return 0;
 

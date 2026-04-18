@@ -1,5 +1,5 @@
 import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
+import { Redis } from '@upstash/redis/cloudflare';
 
 function makeRedis(): Redis | null {
   const url = process.env.UPSTASH_REDIS_REST_URL;
