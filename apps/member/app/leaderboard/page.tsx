@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import { createServerSupabaseClient } from '@loyalty-os/lib/server';
 import { BottomNav } from '@/components/member/BottomNav';
 import { BrandTheme } from '@/components/member/BrandTheme';
+import Link from 'next/link';
 
 interface LeaderboardEntry {
   rank: number;
@@ -23,14 +24,14 @@ interface Snapshot {
   generated_at: string;
 }
 
-async function getLeaderboard(tenantId: string): Promise<Snapshot | null> {
+async function getLeaderboard(tenantId: string, periodType: 'month' | 'week'): Promise<Snapshot | null> {
   try {
     const supabase = await createServerSupabaseClient();
     const { data } = await supabase
       .from('leaderboard_snapshots')
       .select('entries, period_key, period_type, generated_at')
       .eq('tenant_id', tenantId)
-      .eq('period_type', 'month')
+      .eq('period_type', periodType)
       .order('generated_at', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -49,7 +50,14 @@ const TIER_COLORS: Record<string, string> = {
 
 const RANK_MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
-export default async function LeaderboardPage() {
+export default async function LeaderboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ period?: string }>;
+}) {
+  const params = await searchParams;
+  const periodType = params.period === 'week' ? 'week' : 'month';
+
   const user = await getServerUser();
   if (!user) redirect('/login');
 
@@ -58,7 +66,7 @@ export default async function LeaderboardPage() {
   if (!member) redirect('/login');
 
   const t = await getTranslations('leaderboard');
-  const snapshot = await getLeaderboard(member.tenant_id);
+  const snapshot = await getLeaderboard(member.tenant_id, periodType);
   const entries = (snapshot?.entries ?? []) as LeaderboardEntry[];
   const memberEntry = entries.find(e => e.memberId === member.id);
 
@@ -80,6 +88,20 @@ export default async function LeaderboardPage() {
         <div className="px-5 pt-12 pb-6" style={{ background: 'var(--brand-primary)' }}>
           <h1 className="text-2xl font-bold text-white mb-1">{t('title')}</h1>
           <p className="text-white/70 text-sm">{periodLabel || t('monthlyClassification')}</p>
+          <div className="flex gap-2 mt-2">
+            <Link
+              href="?period=month"
+              className={`text-sm px-3 py-1 rounded-full border ${periodType === 'month' ? 'bg-white text-gray-900 font-semibold' : 'text-white/70 border-white/30'}`}
+            >
+              {t('monthToggle')}
+            </Link>
+            <Link
+              href="?period=week"
+              className={`text-sm px-3 py-1 rounded-full border ${periodType === 'week' ? 'bg-white text-gray-900 font-semibold' : 'text-white/70 border-white/30'}`}
+            >
+              {t('weekToggle')}
+            </Link>
+          </div>
         </div>
 
         {/* My position sticky card */}

@@ -77,10 +77,13 @@ export default function ReferralsPage() {
           <>
             {/* How it works */}
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              <div className="bg-gradient-to-br from-purple-600 to-purple-800 px-6 py-6 text-white">
+              <div
+                className="px-6 py-6 text-white"
+                style={{ background: 'linear-gradient(135deg, var(--brand-primary), color-mix(in srgb, var(--brand-primary) 70%, black))' }}
+              >
                 <Gift className="h-8 w-8 mb-3 opacity-90" />
                 <h2 className="text-lg font-bold mb-1">{t('earn')}</h2>
-                <p className="text-sm text-purple-200">{t('earnDesc')}</p>
+                <p className="text-sm text-white/70">{t('earnDesc')}</p>
               </div>
               <div className="px-6 py-5 flex gap-6">
                 <div className="flex-1 text-center">
@@ -112,7 +115,8 @@ export default function ReferralsPage() {
               </div>
               <button
                 onClick={handleShare}
-                className="w-full py-3 rounded-xl bg-purple-600 text-white text-sm font-semibold hover:bg-purple-700 active:scale-95 transition-all"
+                className="w-full py-3 rounded-xl text-white text-sm font-semibold active:scale-95 transition-all"
+                style={{ background: 'var(--brand-primary)' }}
               >
                 {t('share')}
               </button>

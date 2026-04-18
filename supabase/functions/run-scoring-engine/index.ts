@@ -266,13 +266,30 @@ serve(async (req: Request) => {
             .order('points_lifetime', { ascending: false })
             .limit(100);
 
-          const entries = (members2 ?? []).map((m: { id: string; name: string | null; tier: string | null; points_lifetime: number | null }, i: number) => ({
-            rank: i + 1,
+          const { data: prevSnapshot } = await supabase
+            .from('leaderboard_snapshots')
+            .select('entries')
+            .eq('tenant_id', tenantId)
+            .eq('period_type', periodType)
+            .neq('period_key', periodKey)
+            .order('generated_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          const prevRankMap = new Map<string, number>();
+          if (prevSnapshot?.entries && Array.isArray(prevSnapshot.entries)) {
+            for (const e of prevSnapshot.entries as Array<{ memberId: string; rank: number }>) {
+              prevRankMap.set(e.memberId, e.rank);
+            }
+          }
+
+          const entries = (members2 ?? []).map((m: { id: string; name: string | null; tier: string | null; points_lifetime: number | null }, index: number) => ({
+            rank: index + 1,
             memberId: m.id,
             name: m.name ?? 'Member',
             tier: m.tier ?? 'bronze',
             points: m.points_lifetime ?? 0,
-            delta: 0,
+            delta: prevRankMap.has(m.id) ? prevRankMap.get(m.id)! - index - 1 : 0,
           }));
 
           await supabase.from('leaderboard_snapshots').upsert(

@@ -239,7 +239,7 @@ export default async function HomePage(): Promise<JSX.Element> {
         {member.tenant.referral_enabled && member.referral_code && (
           <ReferralPromptCard
             referralCode={member.referral_code}
-            pointsForReferree={member.tenant.referral_points_referee ?? 50}
+            pointsForReferee={member.tenant.referral_points_referee ?? 50}
           />
         )}
 

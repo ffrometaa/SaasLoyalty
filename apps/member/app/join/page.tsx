@@ -105,8 +105,14 @@ export default function JoinPage() {
       validateCode(initial, true);
     }
 
-    const refCode = params.get('ref')?.trim().toUpperCase();
-    if (refCode) setReferralCode(refCode);
+    const storedRef = localStorage.getItem('loyalty_ref_code');
+    const refCode = params.get('ref')?.trim().toUpperCase() || storedRef || null;
+    if (refCode) {
+      setReferralCode(refCode);
+      if (params.get('ref')) {
+        localStorage.setItem('loyalty_ref_code', refCode);
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -235,6 +241,7 @@ export default function JoinPage() {
     }
 
     await waitForAuthCookies();
+    localStorage.removeItem('loyalty_ref_code');
     window.location.href = `/api/auth/set-tenant?tenantId=${tenant!.id}`;
   }
 

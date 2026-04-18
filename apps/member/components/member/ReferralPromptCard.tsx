@@ -4,10 +4,10 @@ import Link from 'next/link';
 
 interface Props {
   referralCode: string;
-  pointsForReferree: number;
+  pointsForReferee: number;
 }
 
-export function ReferralPromptCard({ referralCode, pointsForReferree }: Props) {
+export function ReferralPromptCard({ referralCode, pointsForReferee }: Props) {
   return (
     <Link
       href="/profile/referrals"
@@ -21,7 +21,7 @@ export function ReferralPromptCard({ referralCode, pointsForReferree }: Props) {
         </p>
         <p className="text-xs text-gray-500 mt-0.5">
           Your code: <span className="font-mono font-semibold tracking-wider">{referralCode}</span>
-          {' · '}friend gets <span className="font-semibold">{pointsForReferree} pts</span>
+          {' · '}friend gets <span className="font-semibold">{pointsForReferee} pts</span>
         </p>
       </div>
       <svg className="h-4 w-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
