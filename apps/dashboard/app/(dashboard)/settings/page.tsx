@@ -76,6 +76,7 @@ export default async function SettingsPage(): Promise<JSX.Element> {
         referralEnabled: tenant.referral_enabled ?? false,
         referralPointsReferrer: tenant.referral_points_referrer ?? 50,
         referralPointsReferee: tenant.referral_points_referee ?? 50,
+        hasStripeCustomer: !!tenant.stripe_customer_id,
       };
     }
   }

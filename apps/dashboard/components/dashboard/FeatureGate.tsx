@@ -1,9 +1,10 @@
 'use client';
 
-import Link from 'next/link';
+import { useState } from 'react';
 import { planHasFeature, getUpgradePlan, PLAN_CONFIGS } from '@/lib/plans/features';
 import type { Plan, Feature } from '@/lib/plans/features';
 import { useTranslations } from 'next-intl';
+import { openBillingPortal } from '@/lib/billing/openBillingPortal';
 
 interface FeatureGateProps {
   plan: Plan;
@@ -28,6 +29,26 @@ export function FeatureGate({
   bypass = false,
 }: FeatureGateProps) {
   const t = useTranslations('upgrade');
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [portalError, setPortalError] = useState<string | null>(null);
+
+  async function handleUpgradeClick() {
+    setPortalLoading(true);
+    setPortalError(null);
+    try {
+      const result = await openBillingPortal();
+      if ('url' in result) {
+        window.location.href = result.url;
+      } else if (result.error === 'no_stripe_customer') {
+        setPortalError('Contact support@loyalbase.dev to upgrade your plan.');
+      } else {
+        setPortalError('Something went wrong. Please try again.');
+      }
+    } finally {
+      setPortalLoading(false);
+    }
+  }
+
   // When overridePlan is provided (plan preview mode), use it instead of the real plan.
   const effectivePlan = overridePlan ?? plan;
   const hasAccess = bypass || planHasFeature(effectivePlan, feature);
@@ -69,12 +90,16 @@ export function FeatureGate({
 
         {upgradePlan && (
           <div className="flex flex-col items-center gap-2">
-            <Link
-              href="/settings?tab=billing"
-              className="px-4 py-2 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-[#7c3aed] to-[#2563eb] hover:opacity-90 transition-opacity"
+            <button
+              onClick={handleUpgradeClick}
+              disabled={portalLoading}
+              className="px-4 py-2 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-[#7c3aed] to-[#2563eb] hover:opacity-90 transition-opacity disabled:opacity-60"
             >
-              {t('upgradeTo', { name: upgradeName })}
-            </Link>
+              {portalLoading ? 'Opening...' : t('upgradeTo', { name: upgradeName })}
+            </button>
+            {portalError && (
+              <p className="mt-2 text-xs text-center text-amber-700">{portalError}</p>
+            )}
             {trialHref && (
               <a
                 href={trialHref}

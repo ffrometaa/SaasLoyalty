@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (!tenant?.stripe_customer_id) {
-      return NextResponse.json({ error: 'No billing account found' }, { status: 404 });
+      return NextResponse.json({ error: 'no_stripe_customer' }, { status: 404 });
     }
 
     const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL || 'https://dashboard.loyalbase.dev';

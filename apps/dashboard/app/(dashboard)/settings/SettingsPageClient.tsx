@@ -30,6 +30,7 @@ import { FeedbackTab } from '../../../components/FeedbackTab';
 import { SectionErrorBoundary } from '../../../components/SectionErrorBoundary';
 import { planHasFeature } from '../../../lib/plans/features';
 import type { Plan } from '../../../lib/plans/features';
+import { openBillingPortal } from '../../../lib/billing/openBillingPortal';
 
 interface Invoice {
   id: string;
@@ -76,6 +77,7 @@ export interface SettingsData {
   referralEnabled?: boolean;
   referralPointsReferrer?: number;
   referralPointsReferee?: number;
+  hasStripeCustomer?: boolean;
 }
 
 interface Props {
@@ -135,6 +137,7 @@ export function SettingsPageClient({ initialSettings }: Props): JSX.Element {
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
 
   // Billing state
+  const [hasStripeCustomer, setHasStripeCustomer] = useState(initialSettings?.hasStripeCustomer ?? false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [closeConfirmName, setCloseConfirmName] = useState('');
@@ -235,6 +238,7 @@ export function SettingsPageClient({ initialSettings }: Props): JSX.Element {
       if (data.plan) setPlan(data.plan);
       if (data.planStatus) setPlanStatus(data.planStatus);
       if (data.trialEndsAt !== undefined) setTrialEndsAt(data.trialEndsAt ?? null);
+      setHasStripeCustomer(data.hasStripeCustomer ?? false);
       setLoyaltyRules({
         pointsPerDollar: data.pointsPerDollar ?? 1,
         silverThreshold: data.tierSilverThreshold ?? 1000,
@@ -357,18 +361,43 @@ export function SettingsPageClient({ initialSettings }: Props): JSX.Element {
     { id: 'feedback', label: 'Feedback', icon: MessageSquare },
   ];
 
+  const [manageSubscriptionError, setManageSubscriptionError] = useState<string | null>(null);
+
+  // Upsell portal state
+  const [upsellLoading, setUpsellLoading] = useState(false);
+  const [upsellError, setUpsellError] = useState<string | null>(null);
+
   const handleManageSubscription = async (): Promise<void> => {
     setPortalLoading(true);
+    setManageSubscriptionError(null);
     try {
-      const res = await fetch('/api/billing/portal');
-      const data = await res.json() as { url?: string; error?: string };
-      if (data.url) {
-        window.location.href = data.url;
+      const result = await openBillingPortal();
+      if ('url' in result) {
+        window.location.href = result.url;
+      } else if (result.error === 'no_stripe_customer') {
+        setManageSubscriptionError('Contact support@loyalbase.dev to activate your subscription.');
       } else {
-        alert(data.error || 'Unable to open billing portal');
+        setManageSubscriptionError('Something went wrong. Please try again.');
       }
     } finally {
       setPortalLoading(false);
+    }
+  };
+
+  const handleUpsellPortal = async (): Promise<void> => {
+    setUpsellLoading(true);
+    setUpsellError(null);
+    try {
+      const result = await openBillingPortal();
+      if ('url' in result) {
+        window.location.href = result.url;
+      } else if (result.error === 'no_stripe_customer') {
+        setUpsellError('Contact support@loyalbase.dev to upgrade your plan.');
+      } else {
+        setUpsellError('Something went wrong. Please try again.');
+      }
+    } finally {
+      setUpsellLoading(false);
     }
   };
 
@@ -914,13 +943,16 @@ export function SettingsPageClient({ initialSettings }: Props): JSX.Element {
                       ))}
                     </ul>
 
-                    <a
-                      href="/settings?tab=billing"
-                      onClick={() => setActiveTab('billing')}
-                      className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:opacity-90 transition-opacity"
+                    <button
+                      onClick={handleUpsellPortal}
+                      disabled={upsellLoading}
+                      className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:opacity-90 transition-opacity disabled:opacity-60"
                     >
-                      Upgrade to Pro →
-                    </a>
+                      {upsellLoading ? 'Opening...' : 'Upgrade to Pro →'}
+                    </button>
+                    {upsellError && (
+                      <p className="mt-2 text-sm text-amber-700">{upsellError}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -970,14 +1002,26 @@ export function SettingsPageClient({ initialSettings }: Props): JSX.Element {
                 </div>
 
                 <div className="flex flex-wrap gap-3">
-                  <button
-                    onClick={handleManageSubscription}
-                    disabled={portalLoading}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    {portalLoading ? 'Opening...' : 'Manage Subscription'}
-                  </button>
+                  {hasStripeCustomer ? (
+                    <div>
+                      <button
+                        onClick={handleManageSubscription}
+                        disabled={portalLoading}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        {portalLoading ? 'Opening...' : planStatus === 'trialing' ? 'Activate Subscription' : 'Manage Subscription'}
+                      </button>
+                      {manageSubscriptionError && (
+                        <p className="mt-2 text-sm text-red-600">{manageSubscriptionError}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                      <p className="font-medium">No billing account linked</p>
+                      <p className="mt-1">Contact us at <a href="mailto:support@loyalbase.dev" className="underline">support@loyalbase.dev</a> to activate your subscription.</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1562,11 +1606,15 @@ export function SettingsPageClient({ initialSettings }: Props): JSX.Element {
                           ))}
                         </ul>
                         <button
-                          onClick={() => setActiveTab('billing')}
-                          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:opacity-90 transition-opacity"
+                          onClick={handleUpsellPortal}
+                          disabled={upsellLoading}
+                          className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:opacity-90 transition-opacity disabled:opacity-60"
                         >
-                          Upgrade to Scale
+                          {upsellLoading ? 'Opening...' : 'Upgrade to Scale'}
                         </button>
+                        {upsellError && (
+                          <p className="mt-2 text-sm text-amber-700">{upsellError}</p>
+                        )}
                       </div>
                     </div>
                   )}
