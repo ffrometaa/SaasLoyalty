@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import type { RewardItem } from '@/lib/member/types';
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -42,10 +43,11 @@ export function RewardCard({ reward, available, onLockedTap }: RewardCardProps) 
         style={{ background: bg }}
       >
         {reward.image_url ? (
-          <img
+          <Image
             src={reward.image_url}
             alt={reward.name}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
           />
         ) : (
           <span style={{ fontSize: 36 }}>{emoji}</span>

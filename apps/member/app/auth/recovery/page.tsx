@@ -38,7 +38,7 @@ export default function AuthRecoveryPage() {
     }
 
     handle();
-  }, [router]);
+  }, [router, t]);
 
   if (error) {
     return (

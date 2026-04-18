@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRedemption } from '@/hooks/useRedemption';
 import type { RewardItem, MemberProfile } from '@/lib/member/types';
 
@@ -44,8 +45,8 @@ export function RewardDetail({ reward, member }: RewardDetailProps) {
     if (result) {
       const params = new URLSearchParams({
         id: result.id,
-        code: result.code,
-        qr: result.qr_data,
+        code: result.alphanumeric_code,
+        qr: result.qr_code,
         pts: String(result.points_spent),
         exp: result.expires_at,
         name: result.reward_name,
@@ -74,14 +75,15 @@ export function RewardDetail({ reward, member }: RewardDetailProps) {
 
         {/* Image */}
         <div
-          className="w-20 h-20 rounded-[20px] flex items-center justify-center mb-3.5"
+          className="relative w-20 h-20 rounded-[20px] flex items-center justify-center mb-3.5"
           style={{ background: 'white', border: '1px solid var(--border)' }}
         >
           {reward.image_url ? (
-            <img
+            <Image
               src={reward.image_url}
               alt={reward.name}
-              className="w-full h-full object-cover rounded-[20px]"
+              fill
+              className="object-cover rounded-[20px]"
             />
           ) : (
             <span style={{ fontSize: 40 }}>{emoji}</span>
