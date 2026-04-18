@@ -715,5 +715,25 @@
       "planEnterprise": "Enterprise",
       "exitPreview": "Salir de la Vista Previa"
     }
+  },
+  "onboarding": {
+    "title": "Empezá con LoyaltyOS",
+    "subtitle": "Completá estos pasos para lanzar tu programa de fidelización",
+    "steps": {
+      "profile_complete": "Completá tu perfil de negocio",
+      "reward_created": "Creá tu primera recompensa",
+      "member_invited": "Invitá a tu primer miembro",
+      "reward_shared": "Compartí una recompensa en redes sociales"
+    },
+    "stepLinks": {
+      "profile_complete": "/settings",
+      "reward_created": "/rewards",
+      "member_invited": "/members",
+      "reward_shared": "/rewards"
+    },
+    "dismiss": "Descartar",
+    "allDone": "¡Todo listo! Tu programa de fidelización está activo.",
+    "copyLink": "Copiar enlace",
+    "copied": "¡Copiado!"
   }
 }

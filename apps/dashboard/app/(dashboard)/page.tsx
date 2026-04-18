@@ -5,6 +5,7 @@ import { Users, Gift, TrendingUp, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { MetricCard } from '../../components/MetricCard';
 import { SectionErrorBoundary } from '../../components/SectionErrorBoundary';
+import { OnboardingChecklist } from '../../components/OnboardingChecklist';
 import { useTranslations } from 'next-intl';
 
 type Metrics = {
@@ -69,6 +70,7 @@ export default function DashboardPage() {
   return (
     <SectionErrorBoundary section="Resumen">
     <div className="p-6 lg:p-8" ref={scrollRef}>
+      <OnboardingChecklist />
       {/* Header */}
       <div className="mb-8 animate-on-scroll">
         <h1 className="text-2xl font-bold gradient-text">{t('title')}</h1>

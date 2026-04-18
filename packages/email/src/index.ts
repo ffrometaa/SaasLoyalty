@@ -18,3 +18,5 @@ export * from './templates/member-invite';
 export * from './templates/member-activation';
 export * from './templates/password-reset';
 export * from './templates/feedback-notification';
+export * from './templates/onboarding-day3';
+export * from './templates/onboarding-day7';

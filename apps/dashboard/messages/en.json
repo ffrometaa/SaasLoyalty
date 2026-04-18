@@ -715,5 +715,25 @@
       "planEnterprise": "Enterprise",
       "exitPreview": "Exit Preview"
     }
+  },
+  "onboarding": {
+    "title": "Get started with LoyaltyOS",
+    "subtitle": "Complete these steps to launch your loyalty program",
+    "steps": {
+      "profile_complete": "Complete your business profile",
+      "reward_created": "Create your first reward",
+      "member_invited": "Invite your first member",
+      "reward_shared": "Share a reward on social media"
+    },
+    "stepLinks": {
+      "profile_complete": "/settings",
+      "reward_created": "/rewards",
+      "member_invited": "/members",
+      "reward_shared": "/rewards"
+    },
+    "dismiss": "Dismiss",
+    "allDone": "You're all set! Your loyalty program is ready.",
+    "copyLink": "Copy share link",
+    "copied": "Copied!"
   }
 }
