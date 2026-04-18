@@ -89,17 +89,18 @@ const fetchAnalyticsData = unstable_cache(
     }
 
     // Tier distribution — reuse allMembers
+    type MemberRow = { visits_total: number | null; status: string; points_balance: number | null };
     const tier_distribution = [
-      { tier: 'bronze',   count: allMembers?.filter(m => (m.visits_total ?? 0) < 5).length ?? 0 },
-      { tier: 'silver',   count: allMembers?.filter(m => (m.visits_total ?? 0) >= 5 && (m.visits_total ?? 0) < 15).length ?? 0 },
-      { tier: 'gold',     count: allMembers?.filter(m => (m.visits_total ?? 0) >= 15 && (m.visits_total ?? 0) < 30).length ?? 0 },
-      { tier: 'platinum', count: allMembers?.filter(m => (m.visits_total ?? 0) >= 30).length ?? 0 },
+      { tier: 'bronze',   count: allMembers?.filter((m: MemberRow) => (m.visits_total ?? 0) < 5).length ?? 0 },
+      { tier: 'silver',   count: allMembers?.filter((m: MemberRow) => (m.visits_total ?? 0) >= 5 && (m.visits_total ?? 0) < 15).length ?? 0 },
+      { tier: 'gold',     count: allMembers?.filter((m: MemberRow) => (m.visits_total ?? 0) >= 15 && (m.visits_total ?? 0) < 30).length ?? 0 },
+      { tier: 'platinum', count: allMembers?.filter((m: MemberRow) => (m.visits_total ?? 0) >= 30).length ?? 0 },
     ];
 
     // Points liability (active members with balance)
     const points_liability = allMembers
-      ?.filter(m => m.status === 'active')
-      .reduce((s, m) => s + (m.points_balance ?? 0), 0) ?? 0;
+      ?.filter((m: MemberRow) => m.status === 'active')
+      .reduce((s: number, m: MemberRow) => s + (m.points_balance ?? 0), 0) ?? 0;
 
     // Visits heatmap (day_of_week x hour_of_day — precomputed in visits table)
     const { data: visitData } = await db
