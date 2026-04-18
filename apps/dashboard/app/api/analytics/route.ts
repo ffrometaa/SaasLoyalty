@@ -76,7 +76,8 @@ const fetchAnalyticsData = unstable_cache(
       .from('members')
       .select('visits_total, status, points_balance')
       .eq('tenant_id', tenantId)
-      .is('deleted_at', null);
+      .is('deleted_at', null)
+      .returns<{ visits_total: number | null; status: string; points_balance: number | null }[]>();
 
     const segments = { frequent: 0, regular: 0, occasional: 0, atRisk: 0, inactive: 0 };
     for (const m of allMembers || []) {
