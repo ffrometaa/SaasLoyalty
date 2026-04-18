@@ -452,5 +452,17 @@
     "tryAgain": "Reintentar",
     "goHome": "Ir al inicio",
     "syncedNote": "Tus datos de fidelidad se sincronizan cuando vuelvas a tener conexión."
+  },
+  "actions": {
+    "errors": {
+      "memberNotFound": "Miembro no encontrado.",
+      "rewardNotFound": "Recompensa no encontrada.",
+      "rewardUnavailable": "Esta recompensa ya no está disponible.",
+      "rewardTenantMismatch": "Recompensa no disponible para este negocio.",
+      "insufficientPoints": "No tenés suficientes puntos para canjear esta recompensa.",
+      "maxPerMemberReached": "Ya alcanzaste el límite de canjes para esta recompensa.",
+      "redemptionFailed": "Error al procesar el canje. Intentá de nuevo."
+    },
+    "transactionDescription": "Canje — {name}"
   }
 }

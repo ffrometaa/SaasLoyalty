@@ -4,12 +4,14 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { QrCode, ChevronLeft, CheckCircle, Clock, Gift, Loader2 } from 'lucide-react';
+import { RedemptionQRCanvas } from '@/components/member/RedemptionQRCanvas';
 
 type Redemption = {
   id: string;
   reward_name: string;
   status: 'pending' | 'used' | 'expired';
-  alphanumeric_code: string;
+  code: string | null;
+  qr_data: string | null;
   expires_at: string;
   used_at: string | null;
 };
@@ -158,20 +160,19 @@ export default function MyRedemptionsPage() {
             
             {/* QR Code */}
             <div className="mt-6 p-4 bg-gray-100 rounded-xl inline-block">
-              <div className="w-48 h-48 bg-white border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center">
-                <div className="text-center">
-                  <QrCode className="h-16 w-16 text-gray-400 mx-auto" />
-                  <p className="text-xs text-gray-400 mt-2">{t('qrCode')}</p>
+              {selectedRedemption.qr_data && selectedRedemption.code ? (
+                <RedemptionQRCanvas
+                  qrData={selectedRedemption.qr_data}
+                  code={selectedRedemption.code}
+                />
+              ) : (
+                <div className="w-48 h-48 bg-white border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center">
+                  <div className="text-center">
+                    <QrCode className="h-16 w-16 text-gray-400 mx-auto" />
+                    <p className="text-xs text-gray-400 mt-2">{t('qrCode')}</p>
+                  </div>
                 </div>
-              </div>
-            </div>
-            
-            {/* Alphanumeric Code */}
-            <div className="mt-6 p-4 bg-indigo-50 rounded-xl">
-              <p className="text-sm text-indigo-600">{t('orEnterCode')}</p>
-              <p className="text-3xl font-mono font-bold text-indigo-700 tracking-widest mt-1">
-                {selectedRedemption.alphanumeric_code}
-              </p>
+              )}
             </div>
             
             {/* Expiration */}

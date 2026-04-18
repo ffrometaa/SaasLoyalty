@@ -3,6 +3,7 @@
 import { createServerSupabaseClient, createServiceRoleClient } from '@loyalty-os/lib/server';
 import { getMemberRedemptionCount } from './queries';
 import type { RedemptionResult } from './types';
+import { getTranslations } from 'next-intl/server';
 
 function generateCode(tenantSlug: string): string {
   const prefix = tenantSlug.slice(0, 2).toUpperCase();
@@ -18,6 +19,7 @@ export async function createRedemption(
   rewardId: string,
   memberId: string
 ): Promise<{ success: true; data: RedemptionResult } | { success: false; error: string }> {
+  const t = await getTranslations('actions');
   const supabase = await createServerSupabaseClient();
   const serviceClient = createServiceRoleClient();
 
@@ -36,10 +38,10 @@ export async function createRedemption(
   ]);
 
   if (memberRes.error || !memberRes.data) {
-    return { success: false, error: 'Miembro no encontrado.' };
+    return { success: false, error: t('errors.memberNotFound') };
   }
   if (rewardRes.error || !rewardRes.data) {
-    return { success: false, error: 'Recompensa no encontrada.' };
+    return { success: false, error: t('errors.rewardNotFound') };
   }
 
   const member = memberRes.data as {
@@ -62,23 +64,23 @@ export async function createRedemption(
 
   // 2. Validate reward is active
   if (!reward.is_active || reward.deleted_at) {
-    return { success: false, error: 'Esta recompensa ya no está disponible.' };
+    return { success: false, error: t('errors.rewardUnavailable') };
   }
 
   // 3. Validate tenant match
   if (member.tenant_id !== reward.tenant_id) {
-    return { success: false, error: 'Recompensa no disponible para este negocio.' };
+    return { success: false, error: t('errors.rewardTenantMismatch') };
   }
 
   // 4. Check sufficient points
   if (member.points_balance < reward.points_cost) {
-    return { success: false, error: 'No tenés suficientes puntos para canjear esta recompensa.' };
+    return { success: false, error: t('errors.insufficientPoints') };
   }
 
   // 5. Check max_per_member
   const redemptionCount = await getMemberRedemptionCount(memberId, rewardId);
   if (redemptionCount >= reward.max_per_member) {
-    return { success: false, error: 'Ya alcanzaste el límite de canjes para esta recompensa.' };
+    return { success: false, error: t('errors.maxPerMemberReached') };
   }
 
   // 6. Generate code and QR data
@@ -113,7 +115,7 @@ export async function createRedemption(
 
   if (redemptionError || !redemption) {
     console.error('Redemption insert error:', redemptionError);
-    return { success: false, error: 'Error al procesar el canje. Intentá de nuevo.' };
+    return { success: false, error: t('errors.redemptionFailed') };
   }
 
   // 8. Insert transaction
@@ -126,7 +128,7 @@ export async function createRedemption(
     type: 'redeem',
     points: -reward.points_cost,
     points_balance: newBalance,
-    description: `Canje — ${reward.name}`,
+    description: t('transactionDescription', { name: reward.name }),
   });
 
   if (transactionError) {
@@ -134,14 +136,23 @@ export async function createRedemption(
     console.error('Transaction insert error:', transactionError);
   }
 
-  // 9. Update member points balance
-  const { error: updateError } = await serviceClient
+  // 9. Update member points balance — atomic conditional UPDATE guards against race conditions.
+  // If another concurrent request already decremented the balance, the .gte() guard fails → count=0.
+  // TODO: replace with atomic Postgres RPC function for true single-round-trip safety
+  const { count: updatedCount, error: updateError } = await serviceClient
     .from('members')
-    .update({ points_balance: newBalance, updated_at: new Date().toISOString() })
-    .eq('id', memberId);
+    .update({
+      points_balance: member.points_balance - reward.points_cost,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', memberId)
+    .gte('points_balance', reward.points_cost)
+    .select('id', { count: 'exact', head: true });
 
-  if (updateError) {
-    console.error('Member points update error:', updateError);
+  if (updateError || !updatedCount || updatedCount === 0) {
+    // Compensating delete — redemption row was already inserted; clean it up
+    await serviceClient.from('redemptions').delete().eq('id', redemption.id);
+    return { success: false, error: t('errors.insufficientPoints') };
   }
 
   return {

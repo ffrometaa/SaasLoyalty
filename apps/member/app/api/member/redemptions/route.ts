@@ -32,7 +32,8 @@ export async function GET() {
       .select(`
         id,
         status,
-        alphanumeric_code,
+        code,
+        qr_data,
         expires_at,
         used_at,
         rewards (
@@ -46,7 +47,8 @@ export async function GET() {
     type RedemptionRow = {
       id: string;
       status: string;
-      alphanumeric_code: string | null;
+      code: string | null;
+      qr_data: string | null;
       expires_at: string | null;
       used_at: string | null;
       rewards: { name: string } | null;
@@ -56,7 +58,8 @@ export async function GET() {
       id: r.id,
       reward_name: r.rewards?.name || 'Reward',
       status: r.status,
-      alphanumeric_code: r.alphanumeric_code,
+      code: r.code,
+      qr_data: r.qr_data,
       expires_at: r.expires_at,
       used_at: r.used_at,
     }));

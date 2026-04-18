@@ -452,5 +452,17 @@
     "tryAgain": "Try Again",
     "goHome": "Go to Home",
     "syncedNote": "Your loyalty data is synced when you're back online."
+  },
+  "actions": {
+    "errors": {
+      "memberNotFound": "Member not found.",
+      "rewardNotFound": "Reward not found.",
+      "rewardUnavailable": "This reward is no longer available.",
+      "rewardTenantMismatch": "Reward not available for this business.",
+      "insufficientPoints": "You don't have enough points to redeem this reward.",
+      "maxPerMemberReached": "You've reached the redemption limit for this reward.",
+      "redemptionFailed": "Error processing redemption. Please try again."
+    },
+    "transactionDescription": "Redemption — {name}"
   }
 }
