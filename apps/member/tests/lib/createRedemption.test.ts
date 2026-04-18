@@ -150,12 +150,12 @@ describe('createRedemption', () => {
     });
   });
 
-  it('happy path: returns { success: true } with code and qr_data', async () => {
+  it('happy path: returns { success: true } with alphanumeric_code and qr_code', async () => {
     const result = await createRedemption('reward-1', 'member-1');
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.code).toBeDefined();
-      expect(result.data.qr_data).toBeDefined();
+      expect(result.data.alphanumeric_code).toBeDefined();
+      expect(result.data.qr_code).toBeDefined();
       expect(result.data.reward_name).toBe('Free Coffee');
     }
   });

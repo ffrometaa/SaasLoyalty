@@ -10,8 +10,8 @@ type Redemption = {
   id: string;
   reward_name: string;
   status: 'pending' | 'used' | 'expired';
-  code: string | null;
-  qr_data: string | null;
+  alphanumeric_code: string | null;
+  qr_code: string | null;
   expires_at: string;
   used_at: string | null;
 };
@@ -160,10 +160,10 @@ export default function MyRedemptionsPage() {
             
             {/* QR Code */}
             <div className="mt-6 p-4 bg-gray-100 rounded-xl inline-block">
-              {selectedRedemption.qr_data && selectedRedemption.code ? (
+              {selectedRedemption.qr_code && selectedRedemption.alphanumeric_code ? (
                 <RedemptionQRCanvas
-                  qrData={selectedRedemption.qr_data}
-                  code={selectedRedemption.code}
+                  qrData={selectedRedemption.qr_code}
+                  code={selectedRedemption.alphanumeric_code}
                 />
               ) : (
                 <div className="w-48 h-48 bg-white border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center">

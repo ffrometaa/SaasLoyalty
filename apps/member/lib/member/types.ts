@@ -74,8 +74,8 @@ export interface TransactionItem {
 
 export interface RedemptionResult {
   id: string;
-  code: string;
-  qr_data: string;
+  alphanumeric_code: string;
+  qr_code: string;
   points_spent: number;
   expires_at: string;
   reward_name: string;

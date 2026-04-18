@@ -17,7 +17,7 @@ export function RedemptionQR({ redemption }: RedemptionQRProps) {
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    QRCode.toCanvas(canvasRef.current, redemption.qr_data, {
+    QRCode.toCanvas(canvasRef.current, redemption.qr_code, {
       width: 148,
       margin: 1,
       color: {
@@ -25,7 +25,7 @@ export function RedemptionQR({ redemption }: RedemptionQRProps) {
         light: '#ffffff',
       },
     });
-  }, [redemption.qr_data]);
+  }, [redemption.qr_code]);
 
   const expiryDate = new Date(redemption.expires_at).toLocaleDateString(undefined, {
     day: 'numeric',
@@ -78,7 +78,7 @@ export function RedemptionQR({ redemption }: RedemptionQRProps) {
           className="text-2xl font-medium tracking-[6px]"
           style={{ color: 'var(--clay-dark)', fontFamily: "'Jost', sans-serif" }}
         >
-          {redemption.code}
+          {redemption.alphanumeric_code}
         </p>
       </div>
 

@@ -8,15 +8,28 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status');
 
-    // Get member ID from header
-    const memberId = request.headers.get('x-member-id');
-    
-    if (!memberId) {
+    // Resolve member ID from authenticated session
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
       return NextResponse.json(
-        { error: 'Member context required' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
+
+    const { data: member } = await supabase
+      .from('members')
+      .select('id')
+      .eq('auth_user_id', user.id)
+      .single();
+    if (!member) {
+      return NextResponse.json(
+        { error: 'Member not found' },
+        { status: 404 }
+      );
+    }
+
+    const memberId = member.id;
 
     let query = supabase
       .from('redemptions')

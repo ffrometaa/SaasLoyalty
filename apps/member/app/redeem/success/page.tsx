@@ -21,8 +21,8 @@ export default async function RedeemSuccessPage({ searchParams }: SuccessPagePro
 
   const redemption = {
     id: params.id,
-    code: params.code,
-    qr_data: params.qr,
+    alphanumeric_code: params.code,
+    qr_code: params.qr,
     points_spent: Number(params.pts ?? 0),
     expires_at: params.exp,
     reward_name: params.name,
