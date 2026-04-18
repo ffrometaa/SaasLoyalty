@@ -716,6 +716,63 @@
       "exitPreview": "Salir de la Vista Previa"
     }
   },
+  "setupWizard": {
+    "title": "Configurá tu programa de fidelización",
+    "subtitle": "Completá estos 5 pasos para lanzar tu programa",
+    "steps": {
+      "businessProfile": "Perfil del negocio",
+      "branding": "Identidad visual",
+      "loyaltyRules": "Reglas de fidelización",
+      "firstReward": "Crear una recompensa",
+      "inviteMember": "Agregar un miembro"
+    },
+    "nav": {
+      "next": "Siguiente",
+      "back": "Volver",
+      "skip": "Omitir por ahora",
+      "finish": "Finalizar configuración",
+      "finishLater": "Terminar después",
+      "complete": "Completar configuración"
+    },
+    "businessProfile": {
+      "heading": "Contanos sobre tu negocio",
+      "nameLabel": "Nombre del negocio",
+      "phoneLabel": "Teléfono",
+      "addressLabel": "Dirección",
+      "nameRequired": "El nombre del negocio es obligatorio"
+    },
+    "branding": {
+      "heading": "Hacelo tuyo",
+      "primaryColorLabel": "Color principal",
+      "accentColorLabel": "Color de acento",
+      "logoLabel": "Logo",
+      "upsell": "La personalización de identidad visual está disponible en el plan Pro.",
+      "upgrade": "Actualizar a Pro"
+    },
+    "loyaltyRules": {
+      "heading": "Definí tus reglas de fidelización",
+      "pointsPerDollarLabel": "Puntos por dólar gastado",
+      "welcomeBonusLabel": "Puntos de bienvenida",
+      "invalidNumber": "Debe ser un número positivo"
+    },
+    "firstReward": {
+      "heading": "Creá tu primera recompensa",
+      "nameLabel": "Nombre de la recompensa",
+      "descriptionLabel": "Descripción",
+      "pointsLabel": "Puntos necesarios",
+      "nameRequired": "El nombre de la recompensa es obligatorio",
+      "pointsRequired": "Los puntos necesarios deben ser un número positivo"
+    },
+    "inviteMember": {
+      "heading": "Agregá tu primer miembro",
+      "nameLabel": "Nombre completo",
+      "emailLabel": "Email",
+      "phoneLabel": "Teléfono",
+      "nameRequired": "El nombre es obligatorio"
+    },
+    "launchCta": "Iniciar asistente de configuración",
+    "allSet": "¡Todo listo!"
+  },
   "onboarding": {
     "title": "Empezá con LoyaltyOS",
     "subtitle": "Completá estos pasos para lanzar tu programa de fidelización",

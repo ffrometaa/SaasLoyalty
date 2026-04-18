@@ -38,6 +38,7 @@ const TENANT_DATA = {
   onboarding_completed_at: null,
   onboarding_dismissed_at: null,
   onboarding_reward_shared_at: null,
+  setup_wizard_completed_at: null,
 };
 
 // ─── SETUP ────────────────────────────────────────────────────────────────────
@@ -100,6 +101,7 @@ describe('GET /api/onboarding-checklist', () => {
     expect(res.status).toBe(200);
     expect(body.steps.reward_created).toBe(false);
     expect(body.steps.member_invited).toBe(false);
+    expect(body.setupWizardCompleted).toBe(false);
   });
 
   it('reward_created is true when reward count > 0', async () => {
@@ -192,6 +194,57 @@ describe('GET /api/onboarding-checklist', () => {
 
     expect(res.status).toBe(200);
     expect(body.isDismissed).toBe(true);
+  });
+
+  it('setupWizardCompleted=false when setup_wizard_completed_at is null', async () => {
+    (getAuthedUser as Mock).mockResolvedValueOnce({ id: 'user-1' });
+
+    const tenantChain = makeQueryChain();
+    tenantChain.single.mockResolvedValueOnce({ data: TENANT_DATA, error: null });
+
+    const countChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockResolvedValue({ count: 0, error: null }),
+    };
+
+    const fromMock = vi.fn()
+      .mockReturnValueOnce(tenantChain)
+      .mockReturnValueOnce(countChain)
+      .mockReturnValueOnce(countChain);
+
+    (createServerSupabaseClient as Mock).mockResolvedValueOnce({ from: fromMock });
+
+    const res = await GET();
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.setupWizardCompleted).toBe(false);
+  });
+
+  it('setupWizardCompleted=true when setup_wizard_completed_at is set', async () => {
+    (getAuthedUser as Mock).mockResolvedValueOnce({ id: 'user-1' });
+
+    const tenantData = { ...TENANT_DATA, setup_wizard_completed_at: '2026-04-17T12:00:00Z' };
+    const tenantChain = makeQueryChain();
+    tenantChain.single.mockResolvedValueOnce({ data: tenantData, error: null });
+
+    const countChain = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockResolvedValue({ count: 0, error: null }),
+    };
+
+    const fromMock = vi.fn()
+      .mockReturnValueOnce(tenantChain)
+      .mockReturnValueOnce(countChain)
+      .mockReturnValueOnce(countChain);
+
+    (createServerSupabaseClient as Mock).mockResolvedValueOnce({ from: fromMock });
+
+    const res = await GET();
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.setupWizardCompleted).toBe(true);
   });
 });
 

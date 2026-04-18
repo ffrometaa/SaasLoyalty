@@ -716,6 +716,63 @@
       "exitPreview": "Exit Preview"
     }
   },
+  "setupWizard": {
+    "title": "Set up your loyalty program",
+    "subtitle": "Complete these 5 steps to launch your program",
+    "steps": {
+      "businessProfile": "Business Profile",
+      "branding": "Branding",
+      "loyaltyRules": "Loyalty Rules",
+      "firstReward": "Create a Reward",
+      "inviteMember": "Add a Member"
+    },
+    "nav": {
+      "next": "Next",
+      "back": "Back",
+      "skip": "Skip for now",
+      "finish": "Finish setup",
+      "finishLater": "Finish later",
+      "complete": "Complete setup"
+    },
+    "businessProfile": {
+      "heading": "Tell us about your business",
+      "nameLabel": "Business name",
+      "phoneLabel": "Phone number",
+      "addressLabel": "Address",
+      "nameRequired": "Business name is required"
+    },
+    "branding": {
+      "heading": "Make it yours",
+      "primaryColorLabel": "Primary color",
+      "accentColorLabel": "Accent color",
+      "logoLabel": "Logo",
+      "upsell": "Branding customization is available on the Pro plan.",
+      "upgrade": "Upgrade to Pro"
+    },
+    "loyaltyRules": {
+      "heading": "Set your loyalty rules",
+      "pointsPerDollarLabel": "Points per dollar spent",
+      "welcomeBonusLabel": "Welcome bonus points",
+      "invalidNumber": "Must be a positive number"
+    },
+    "firstReward": {
+      "heading": "Create your first reward",
+      "nameLabel": "Reward name",
+      "descriptionLabel": "Description",
+      "pointsLabel": "Points required",
+      "nameRequired": "Reward name is required",
+      "pointsRequired": "Points required must be a positive number"
+    },
+    "inviteMember": {
+      "heading": "Add your first member",
+      "nameLabel": "Full name",
+      "emailLabel": "Email",
+      "phoneLabel": "Phone",
+      "nameRequired": "Name is required"
+    },
+    "launchCta": "Launch setup wizard",
+    "allSet": "You're all set!"
+  },
   "onboarding": {
     "title": "Get started with LoyaltyOS",
     "subtitle": "Complete these steps to launch your loyalty program",

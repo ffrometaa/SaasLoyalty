@@ -19,6 +19,8 @@ vi.mock('next-intl', () => ({
       'allDone': "You're all set! Your loyalty program is ready.",
       'copyLink': 'Copy share link',
       'copied': 'Copied!',
+      // setupWizard keys
+      'launchCta': 'Launch setup wizard',
     };
     return map[key] ?? key;
   },
@@ -51,6 +53,7 @@ const ALL_STEPS_PENDING = {
   allDone: false,
   isDismissed: false,
   planStatus: 'trialing',
+  setupWizardCompleted: false,
 };
 
 const ALL_STEPS_DONE = {
@@ -63,6 +66,7 @@ const ALL_STEPS_DONE = {
   allDone: true,
   isDismissed: false,
   planStatus: 'trialing',
+  setupWizardCompleted: false,
 };
 
 const DISMISSED = {
@@ -162,6 +166,26 @@ describe('OnboardingChecklist', () => {
 
     await waitFor(() => {
       expect(container.firstChild).toBeNull();
+    });
+  });
+
+  it('setup wizard CTA is visible when setupWizardCompleted=false', async () => {
+    vi.stubGlobal('fetch', mockFetch(ALL_STEPS_PENDING));
+
+    render(<OnboardingChecklist />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Launch setup wizard').length).toBeGreaterThan(0);
+    });
+  });
+
+  it('setup wizard CTA is absent when setupWizardCompleted=true', async () => {
+    vi.stubGlobal('fetch', mockFetch({ ...ALL_STEPS_PENDING, setupWizardCompleted: true }));
+
+    render(<OnboardingChecklist />);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Launch setup wizard')).not.toBeInTheDocument();
     });
   });
 

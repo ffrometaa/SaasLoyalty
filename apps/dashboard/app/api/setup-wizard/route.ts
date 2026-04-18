@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, getAuthedUser } from '@loyalty-os/lib/server';
 
-// GET /api/onboarding-checklist
+// GET /api/setup-wizard
 export async function GET(): Promise<NextResponse> {
   try {
     const user = await getAuthedUser();
@@ -13,7 +13,7 @@ export async function GET(): Promise<NextResponse> {
 
     const { data, error } = await supabase
       .from('tenants')
-      .select('id, plan_status, onboarding_completed_at, onboarding_dismissed_at, onboarding_reward_shared_at, setup_wizard_completed_at')
+      .select('id, setup_wizard_completed_at, setup_wizard_dismissed_at, business_name, brand_color_primary, points_per_dollar, welcome_bonus_points')
       .eq('auth_user_id', user.id)
       .single();
 
@@ -21,53 +21,23 @@ export async function GET(): Promise<NextResponse> {
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     }
 
-    // Count rewards and members in parallel
-    const [rewardsResult, membersResult] = await Promise.all([
-      supabase
-        .from('rewards')
-        .select('id', { count: 'exact', head: true })
-        .eq('tenant_id', data.id),
-      supabase
-        .from('members')
-        .select('id', { count: 'exact', head: true })
-        .eq('tenant_id', data.id),
-    ]);
-
-    const rewardCount = rewardsResult.count ?? 0;
-    const memberCount = membersResult.count ?? 0;
-
-    const steps = {
-      profile_complete: true, // always true if they're logged in
-      reward_created: rewardCount > 0,
-      member_invited: memberCount > 0,
-      reward_shared: !!data.onboarding_reward_shared_at,
-    };
-
-    const allDone = Object.values(steps).every(Boolean);
-    const isDismissed = !!data.onboarding_dismissed_at;
-
-    // Auto-complete: if all steps done and not yet stamped
-    if (allDone && !data.onboarding_completed_at) {
-      await supabase
-        .from('tenants')
-        .update({ onboarding_completed_at: new Date().toISOString() })
-        .eq('id', data.id);
-    }
-
     return NextResponse.json({
-      steps,
-      allDone,
-      isDismissed,
-      planStatus: data.plan_status,
-      setupWizardCompleted: !!data.setup_wizard_completed_at,
+      completedAt: data.setup_wizard_completed_at,
+      dismissedAt: data.setup_wizard_dismissed_at,
+      prefill: {
+        businessName: data.business_name,
+        primaryColor: data.brand_color_primary,
+        pointsPerDollar: data.points_per_dollar,
+        welcomeBonusPoints: data.welcome_bonus_points,
+      },
     });
   } catch (err) {
-    console.error('[onboarding-checklist GET]', err);
+    console.error('[setup-wizard GET]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-// PATCH /api/onboarding-checklist
+// PATCH /api/setup-wizard
 export async function PATCH(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await getAuthedUser();
@@ -78,7 +48,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     const body = await request.json() as { action?: string };
     const { action } = body;
 
-    if (action !== 'dismiss' && action !== 'mark_shared') {
+    if (action !== 'complete' && action !== 'dismiss') {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
 
@@ -95,9 +65,9 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     }
 
     const updatePayload =
-      action === 'dismiss'
-        ? { onboarding_dismissed_at: new Date().toISOString() }
-        : { onboarding_reward_shared_at: new Date().toISOString() };
+      action === 'complete'
+        ? { setup_wizard_completed_at: new Date().toISOString() }
+        : { setup_wizard_dismissed_at: new Date().toISOString() };
 
     await supabase
       .from('tenants')
@@ -106,7 +76,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('[onboarding-checklist PATCH]', err);
+    console.error('[setup-wizard PATCH]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

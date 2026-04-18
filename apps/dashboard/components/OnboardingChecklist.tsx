@@ -17,6 +17,7 @@ type ChecklistData = {
   allDone: boolean;
   isDismissed: boolean;
   planStatus: string;
+  setupWizardCompleted: boolean;
 };
 
 const STEP_KEYS: (keyof ChecklistSteps)[] = [
@@ -28,6 +29,7 @@ const STEP_KEYS: (keyof ChecklistSteps)[] = [
 
 export function OnboardingChecklist() {
   const t = useTranslations('onboarding');
+  const tSetup = useTranslations('setupWizard');
   const [data, setData] = useState<ChecklistData | null>(null);
   const [loading, setLoading] = useState(true);
   const [hidden, setHidden] = useState(false);
@@ -104,6 +106,21 @@ export function OnboardingChecklist() {
         </button>
       </div>
       <p className="text-sm text-gray-500 mb-5">{t('subtitle')}</p>
+
+      {/* Setup wizard CTA */}
+      {!data.setupWizardCompleted && (
+        <div className="mb-5 flex items-center justify-between rounded-lg bg-indigo-50 border border-indigo-100 px-4 py-3">
+          <span className="text-sm font-medium text-indigo-700">
+            {tSetup('launchCta')}
+          </span>
+          <Link
+            href="/setup"
+            className="text-xs font-semibold px-3 py-1.5 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+          >
+            {tSetup('launchCta')} →
+          </Link>
+        </div>
+      )}
 
       {/* Steps */}
       <ol className="space-y-3">
