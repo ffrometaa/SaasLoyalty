@@ -3,7 +3,7 @@ import { unstable_cache } from 'next/cache';
 import { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 
 const fetchAnalyticsData = unstable_cache(
-  async (tenantId: string) => {
+  async (tenantId: string, from: string, to: string) => {
     const db = createServiceRoleClient();
 
     const now = new Date();
@@ -74,7 +74,7 @@ const fetchAnalyticsData = unstable_cache(
     // Member segments by visit frequency
     const { data: allMembers } = await db
       .from('members')
-      .select('visits_total, status')
+      .select('visits_total, status, points_balance')
       .eq('tenant_id', tenantId)
       .is('deleted_at', null);
 
@@ -86,6 +86,19 @@ const fetchAnalyticsData = unstable_cache(
       else if (m.visits_total >= 2) segments.occasional++;
       else segments.atRisk++;
     }
+
+    // Tier distribution — reuse allMembers
+    const tier_distribution = [
+      { tier: 'bronze',   count: allMembers?.filter(m => (m.visits_total ?? 0) < 5).length ?? 0 },
+      { tier: 'silver',   count: allMembers?.filter(m => (m.visits_total ?? 0) >= 5 && (m.visits_total ?? 0) < 15).length ?? 0 },
+      { tier: 'gold',     count: allMembers?.filter(m => (m.visits_total ?? 0) >= 15 && (m.visits_total ?? 0) < 30).length ?? 0 },
+      { tier: 'platinum', count: allMembers?.filter(m => (m.visits_total ?? 0) >= 30).length ?? 0 },
+    ];
+
+    // Points liability (active members with balance)
+    const points_liability = allMembers
+      ?.filter(m => m.status === 'active')
+      .reduce((s, m) => s + (m.points_balance ?? 0), 0) ?? 0;
 
     // Visits heatmap (day_of_week x hour_of_day — precomputed in visits table)
     const { data: visitData } = await db
@@ -122,6 +135,56 @@ const fetchAnalyticsData = unstable_cache(
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
 
+    // Revenue this period
+    const { data: visitsWithAmount } = await db
+      .from('visits')
+      .select('amount')
+      .eq('tenant_id', tenantId)
+      .gte('created_at', from)
+      .lte('created_at', to)
+      .not('amount', 'is', null);
+    const revenue_this_month = visitsWithAmount?.reduce((s, v) => s + (v.amount ?? 0), 0) ?? 0;
+
+    // Revenue last period (mirror from/to but shifted back by same duration)
+    const durationMs = new Date(to).getTime() - new Date(from).getTime();
+    const lastFrom = new Date(new Date(from).getTime() - durationMs).toISOString();
+    const lastTo = from;
+    const { data: lastVisitsWithAmount } = await db
+      .from('visits')
+      .select('amount')
+      .eq('tenant_id', tenantId)
+      .gte('created_at', lastFrom)
+      .lte('created_at', lastTo)
+      .not('amount', 'is', null);
+    const revenue_last_month = lastVisitsWithAmount?.reduce((s, v) => s + (v.amount ?? 0), 0) ?? 0;
+    const revenue_change = revenue_last_month === 0
+      ? 0
+      : Math.round(((revenue_this_month - revenue_last_month) / revenue_last_month) * 100);
+
+    // New members monthly (last 12 months)
+    const twelveMonthsAgo = new Date();
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 11);
+    twelveMonthsAgo.setDate(1);
+    twelveMonthsAgo.setHours(0, 0, 0, 0);
+    const { data: newMembersRaw } = await db
+      .from('members')
+      .select('created_at')
+      .eq('tenant_id', tenantId)
+      .gte('created_at', twelveMonthsAgo.toISOString());
+    // Group by month in JS
+    const monthlyMap = new Map<string, number>();
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(twelveMonthsAgo);
+      d.setMonth(d.getMonth() + i);
+      const key = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      monthlyMap.set(key, 0);
+    }
+    for (const m of (newMembersRaw ?? [])) {
+      const key = new Date(m.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      if (monthlyMap.has(key)) monthlyMap.set(key, (monthlyMap.get(key) ?? 0) + 1);
+    }
+    const new_members_monthly = Array.from(monthlyMap.entries()).map(([month, count]) => ({ month, count }));
+
     return {
       metrics: {
         activeMembers: activeMembers || 0,
@@ -133,11 +196,18 @@ const fetchAnalyticsData = unstable_cache(
           visitsThisMonth: visitsChange,
           pointsRedeemedThisMonth: pointsChange,
           retentionRate: 0,
+          revenue: revenue_change,
         },
       },
       segments,
       heatmap,
       topRewards,
+      revenue_this_month,
+      revenue_last_month,
+      revenue_change,
+      points_liability,
+      new_members_monthly,
+      tier_distribution,
     };
   },
   ['analytics'],
@@ -177,7 +247,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
     }
 
-    const data = await fetchAnalyticsData(tenantId);
+    // Parse date range params
+    const searchParams = request.nextUrl.searchParams;
+    const now = new Date();
+    const defaultFrom = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const defaultTo = now.toISOString();
+    const from = searchParams.get('from') ?? defaultFrom;
+    const to = searchParams.get('to') ?? defaultTo;
+
+    const data = await fetchAnalyticsData(tenantId, from, to);
     return NextResponse.json(data);
   } catch (error) {
     console.error('Analytics API error:', error);

@@ -3,10 +3,8 @@ import { unstable_cache } from 'next/cache';
 import { createServerSupabaseClient, createServiceRoleClient, getAuthedUser } from '@loyalty-os/lib/server';
 
 const fetchCampaignsData = unstable_cache(
-  async (tenantId: string) => {
+  async (tenantId: string, from: string, to: string) => {
     const db = createServiceRoleClient();
-    const now = new Date();
-    const eightWeeksAgo = new Date(now.getTime() - 56 * 86400000).toISOString();
 
     const [
       { data: campaigns },
@@ -22,19 +20,27 @@ const fetchCampaignsData = unstable_cache(
         .select('points, created_at')
         .eq('tenant_id', tenantId)
         .eq('type', 'earn')
-        .gte('created_at', eightWeeksAgo),
+        .gte('created_at', from)
+        .lte('created_at', to),
       db.from('transactions')
         .select('points, created_at')
         .eq('tenant_id', tenantId)
         .eq('type', 'redeem')
-        .gte('created_at', eightWeeksAgo),
+        .gte('created_at', from)
+        .lte('created_at', to),
     ]);
 
-    // Build weekly points timeline (last 8 weeks)
+    // Build weekly points timeline anchored from `from`
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+    const totalMs = toDate.getTime() - fromDate.getTime();
+    const weekMs = 7 * 86400000;
+    const numWeeks = Math.max(1, Math.ceil(totalMs / weekMs));
     const weeks: { label: string; earned: number; redeemed: number }[] = [];
-    for (let i = 7; i >= 0; i--) {
-      const weekStart = new Date(now.getTime() - (i + 1) * 7 * 86400000);
-      const weekEnd = new Date(now.getTime() - i * 7 * 86400000);
+
+    for (let i = 0; i < numWeeks; i++) {
+      const weekStart = new Date(fromDate.getTime() + i * weekMs);
+      const weekEnd = new Date(fromDate.getTime() + (i + 1) * weekMs);
       const label = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
       const earned = (earnTx ?? []).filter((t: { points: number; created_at: string }) => {
@@ -95,7 +101,14 @@ export async function GET(request: NextRequest) {
     const tenantId = await resolveTenantId(supabase, user.id);
     if (!tenantId) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
 
-    const data = await fetchCampaignsData(tenantId);
+    const searchParams = request.nextUrl.searchParams;
+    const now = new Date();
+    const defaultFrom = new Date(now.getTime() - 56 * 86400000).toISOString();
+    const defaultTo = now.toISOString();
+    const from = searchParams.get('from') ?? defaultFrom;
+    const to = searchParams.get('to') ?? defaultTo;
+
+    const data = await fetchCampaignsData(tenantId, from, to);
     return NextResponse.json(data);
   } catch (err) {
     console.error('Campaigns analytics API error:', err);
